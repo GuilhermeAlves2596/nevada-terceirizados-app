@@ -11,6 +11,8 @@ import '../../features/contracts/data/repositories/mock_contract_repository.dart
 import '../../features/contracts/domain/repositories/contract_repository.dart';
 import '../../features/employees/data/repositories/mock_user_repository.dart';
 import '../../features/employees/domain/repositories/user_repository.dart';
+import '../../features/executions/data/repositories/mock_task_execution_repository.dart';
+import '../../features/executions/domain/repositories/task_execution_repository.dart';
 import '../../features/locations/data/repositories/mock_location_repository.dart';
 import '../../features/locations/domain/repositories/location_repository.dart';
 import '../../features/tasks/data/repositories/mock_task_repository.dart';
@@ -53,4 +55,9 @@ final checklistRepositoryProvider = Provider<ChecklistRepository>((ref) {
 
 final taskRepositoryProvider = Provider<TaskRepository>((ref) {
   return MockTaskRepository(ref.watch(mockDatabaseProvider));
+});
+
+final taskExecutionRepositoryProvider =
+    Provider<TaskExecutionRepository>((ref) {
+  return MockTaskExecutionRepository(ref.watch(mockDatabaseProvider));
 });

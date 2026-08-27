@@ -7,6 +7,7 @@ import '../../features/auth/presentation/controllers/auth_state.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/dashboard/presentation/pages/employee_dashboard_page.dart';
 import '../../features/dashboard/presentation/pages/supervisor_dashboard_page.dart';
+import '../../features/executions/presentation/pages/task_execution_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import 'route_paths.dart';
 
@@ -60,6 +61,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RoutePaths.employeeDashboard,
         builder: (context, state) => const EmployeeDashboardPage(),
+      ),
+      GoRoute(
+        path: '${RoutePaths.employeeTasks}/:id',
+        builder: (context, state) =>
+            TaskExecutionPage(taskId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: RoutePaths.employeeProfile,

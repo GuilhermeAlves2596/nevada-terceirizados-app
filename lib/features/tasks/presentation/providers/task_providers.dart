@@ -5,6 +5,17 @@ import '../../../../app/providers/company_catalog.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../models/task_view.dart';
 
+/// Uma tarefa específica já resolvida para exibição (header da execução).
+final taskViewByIdProvider =
+    FutureProvider.autoDispose.family<TaskView?, String>((ref, taskId) async {
+  final companyId = ref.watch(currentUserProvider)?.companyId;
+  if (companyId == null) return null;
+  final catalog = await ref.watch(companyCatalogProvider.future);
+  final task = await ref.watch(taskRepositoryProvider).getById(taskId);
+  if (task == null) return null;
+  return TaskView.resolve(task, catalog);
+});
+
 /// Tarefas do funcionário autenticado, já resolvidas para exibição.
 final employeeTaskViewsProvider =
     FutureProvider.autoDispose<List<TaskView>>((ref) async {

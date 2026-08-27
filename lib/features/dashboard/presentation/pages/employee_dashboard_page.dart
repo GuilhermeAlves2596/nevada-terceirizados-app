@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../app/router/route_paths.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_radius.dart';
 import '../../../../app/theme/app_spacing.dart';
@@ -135,7 +137,11 @@ class _Content extends ConsumerWidget {
           AppSpacing.gapSm,
           ...late.map((v) => Padding(
                 padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                child: TaskCard(view: v),
+                child: TaskCard(
+                  view: v,
+                  onTap: () =>
+                      context.push('${RoutePaths.employeeTasks}/${v.task.id}'),
+                ),
               )),
           AppSpacing.gapMd,
         ],
@@ -153,7 +159,11 @@ class _Content extends ConsumerWidget {
         else
           ...today.map((v) => Padding(
                 padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                child: TaskCard(view: v),
+                child: TaskCard(
+                  view: v,
+                  onTap: () =>
+                      context.push('${RoutePaths.employeeTasks}/${v.task.id}'),
+                ),
               )),
       ],
     );
