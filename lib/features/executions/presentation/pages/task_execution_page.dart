@@ -18,6 +18,7 @@ import '../../../tasks/presentation/models/task_view.dart';
 import '../../../tasks/presentation/providers/task_providers.dart';
 import '../../domain/entities/task_execution.dart';
 import '../controllers/task_execution_controller.dart';
+import '../utils/photo_capture.dart';
 import '../widgets/checklist_execution_tile.dart';
 import '../widgets/execution_photo_strip.dart';
 
@@ -55,7 +56,63 @@ class _TaskExecutionPageState extends ConsumerState<TaskExecutionPage> {
 
   Future<void> _start() => _runBusy(_controller.start);
 
-  Future<void> _addPhoto() => _runBusy(_controller.addPhoto);
+  Future<void> _addPhoto() async {
+    final file = await PhotoCapture.pick(context);
+    if (file == null || !mounted) return;
+    final bytes = await file.readAsBytes();
+    if (!mounted) return;
+
+    final confirmed = await _reviewPhoto(bytes);
+    if (!mounted) return;
+    if (confirmed == true) {
+      await _runBusy(() => _controller.addPhoto(localPath: file.path));
+    } else if (confirmed == false) {
+      // "Refazer" — abre a captura novamente.
+      await _addPhoto();
+    }
+  }
+
+  Future<bool?> _reviewPhoto(Uint8List bytes) {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => Dialog(
+        clipBehavior: Clip.antiAlias,
+        shape:
+            const RoundedRectangleBorder(borderRadius: AppRadius.brLg),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 360),
+              child: Image.memory(bytes, fit: BoxFit.cover, width: double.infinity),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => Navigator.pop(context, false),
+                      icon: const Icon(Icons.refresh, size: 18),
+                      label: const Text('Refazer'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () => Navigator.pop(context, true),
+                      icon: const Icon(Icons.check, size: 18),
+                      label: const Text('Usar foto'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   Future<void> _finish() async {
     FocusScope.of(context).unfocus();

@@ -60,9 +60,13 @@ com dados mockados.
 - [x] Resolver com validação de empresa/permissão (QrResolver + testes)
 - [x] Fallback de digitação do código (demo sem câmera) + permissões Android/iOS
 
-### ⏳ Fase 6 — Câmera / fotos
-- [ ] Captura, revisão, compressão
-- [ ] Substituir foto / múltiplas fotos (estrutura)
+### ✅ Fase 6 — Câmera / fotos
+- [x] Captura via câmera ou galeria (image_picker)
+- [x] Revisão antes de usar + "Refazer"
+- [x] Compressão na captura (maxWidth/imageQuality)
+- [x] Exibição da foto real (import condicional io/web) + visualização em tela cheia
+- [x] Múltiplas fotos (a estrutura já suporta lista de fotos)
+- [ ] Upload real para Storage — vem na Fase 10 (hoje guarda o caminho local)
 
 ### ⏳ Fase 7 — Persistência local / offline
 - [ ] Não perder checklist/foto sem conexão
