@@ -1,3 +1,7 @@
+import 'package:uuid/uuid.dart';
+
+import '../../../../core/enums/task_priority.dart';
+import '../../../../core/enums/task_status.dart';
 import '../../../../core/mock/mock_database.dart';
 import '../../domain/entities/task.dart';
 import '../../domain/repositories/task_repository.dart';
@@ -6,6 +10,7 @@ class MockTaskRepository implements TaskRepository {
   MockTaskRepository(this._db);
 
   final MockDatabase _db;
+  static const _uuid = Uuid();
 
   @override
   Future<List<Task>> getForEmployee({
@@ -35,6 +40,42 @@ class MockTaskRepository implements TaskRepository {
       if (t.id == id) return t;
     }
     return null;
+  }
+
+  @override
+  Future<Task> create({
+    required String companyId,
+    required String clientId,
+    required String contractId,
+    required String locationId,
+    required String checklistId,
+    required String assignedTo,
+    required String assignedBy,
+    required DateTime scheduledDate,
+    String? scheduledStartTime,
+    required TaskPriority priority,
+  }) async {
+    await Future<void>.delayed(const Duration(milliseconds: 300));
+    final now = DateTime.now();
+    final task = Task(
+      id: 'task_${_uuid.v4()}',
+      companyId: companyId,
+      clientId: clientId,
+      contractId: contractId,
+      locationId: locationId,
+      checklistId: checklistId,
+      assignedTo: assignedTo,
+      assignedBy: assignedBy,
+      scheduledDate: scheduledDate,
+      scheduledStartTime: scheduledStartTime,
+      priority: priority,
+      status: TaskStatus.pending,
+      progress: 0,
+      createdAt: now,
+      updatedAt: now,
+    );
+    _db.upsertTask(task);
+    return task;
   }
 
   /// Abertas primeiro, depois por data agendada e horário.

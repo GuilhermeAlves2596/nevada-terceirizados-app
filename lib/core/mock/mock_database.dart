@@ -511,4 +511,22 @@ class MockDatabase {
       executions.add(execution);
     }
   }
+
+  void upsertUser(AppUser user) {
+    final i = users.indexWhere((u) => u.id == user.id);
+    if (i >= 0) {
+      users[i] = user;
+    } else {
+      users.add(user);
+    }
+  }
+
+  void upsertClient(Client client) {
+    final i = clients.indexWhere((c) => c.id == client.id);
+    if (i >= 0) {
+      clients[i] = client;
+    } else {
+      clients.add(client);
+    }
+  }
 }
