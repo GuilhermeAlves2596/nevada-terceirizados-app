@@ -1,3 +1,6 @@
+import 'package:uuid/uuid.dart';
+
+import '../../../../core/enums/contract_status.dart';
 import '../../../../core/mock/mock_database.dart';
 import '../../domain/entities/contract.dart';
 import '../../domain/repositories/contract_repository.dart';
@@ -6,6 +9,7 @@ class MockContractRepository implements ContractRepository {
   MockContractRepository(this._db);
 
   final MockDatabase _db;
+  static const _uuid = Uuid();
 
   @override
   Future<List<Contract>> getAll({required String companyId}) async {
@@ -30,5 +34,33 @@ class MockContractRepository implements ContractRepository {
       if (c.id == id) return c;
     }
     return null;
+  }
+
+  @override
+  Future<Contract> create({
+    required String companyId,
+    required String clientId,
+    required String name,
+    String? description,
+    DateTime? startDate,
+    DateTime? endDate,
+    required ContractStatus status,
+  }) async {
+    await Future<void>.delayed(const Duration(milliseconds: 250));
+    final now = DateTime.now();
+    final contract = Contract(
+      id: _uuid.v4(),
+      companyId: companyId,
+      clientId: clientId,
+      name: name.trim(),
+      description: description?.trim(),
+      startDate: startDate,
+      endDate: endDate,
+      status: status,
+      createdAt: now,
+      updatedAt: now,
+    );
+    _db.upsertContract(contract);
+    return contract;
   }
 }

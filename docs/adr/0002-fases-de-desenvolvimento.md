@@ -44,14 +44,14 @@ com dados mockados.
 - [x] Finalizar com validações (itens obrigatórios + foto)
 - [x] Histórico próprio (tela /employee/history com filtro)
 
-### 🔄 Fase 4 — Fluxo do supervisor
+### ✅ Fase 4 — Fluxo do supervisor
 - [x] Hub de Gestão no dashboard do supervisor
 - [x] Cadastro de funcionários (listar + criar + ativar/desativar via repo)
 - [x] Cadastro de clientes (listar + criar)
 - [x] Atribuição de tarefas (Nova Tarefa, com seleções em cascata)
-- [ ] Cadastro de contratos (4B)
-- [ ] Cadastro de locais/ambientes (4B)
-- [ ] Construtor de checklists (itens ordenáveis) (4B)
+- [x] Cadastro de contratos (listar + criar)
+- [x] Cadastro de locais/ambientes (listar + criar, gera qrCodeId)
+- [x] Construtor de checklists (adicionar/remover/reordenar itens + obrigatório)
 - [x] Acompanhamento (dashboard já reflete tarefas atribuídas)
 
 ### ⏳ Fase 5 — QR Code

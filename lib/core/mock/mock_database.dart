@@ -529,4 +529,31 @@ class MockDatabase {
       clients.add(client);
     }
   }
+
+  void upsertContract(Contract contract) {
+    final i = contracts.indexWhere((c) => c.id == contract.id);
+    if (i >= 0) {
+      contracts[i] = contract;
+    } else {
+      contracts.add(contract);
+    }
+  }
+
+  void upsertLocation(Location location) {
+    final i = locations.indexWhere((l) => l.id == location.id);
+    if (i >= 0) {
+      locations[i] = location;
+    } else {
+      locations.add(location);
+    }
+  }
+
+  void upsertChecklist(Checklist checklist) {
+    final i = checklists.indexWhere((c) => c.id == checklist.id);
+    if (i >= 0) {
+      checklists[i] = checklist;
+    } else {
+      checklists.add(checklist);
+    }
+  }
 }

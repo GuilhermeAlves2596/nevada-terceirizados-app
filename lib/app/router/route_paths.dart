@@ -22,8 +22,11 @@ abstract final class RoutePaths {
   static const supervisorClients = '/supervisor/clients';
   static const supervisorClientsCreate = '/supervisor/clients/create';
   static const supervisorContracts = '/supervisor/contracts';
+  static const supervisorContractsCreate = '/supervisor/contracts/create';
   static const supervisorLocations = '/supervisor/locations';
+  static const supervisorLocationsCreate = '/supervisor/locations/create';
   static const supervisorChecklists = '/supervisor/checklists';
+  static const supervisorChecklistsCreate = '/supervisor/checklists/create';
   static const supervisorTasks = '/supervisor/tasks';
   static const supervisorTasksCreate = '/supervisor/tasks/create';
   static const supervisorReports = '/supervisor/reports';
