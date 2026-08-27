@@ -227,13 +227,7 @@ class _ScanQrButton extends StatelessWidget {
       borderRadius: AppRadius.brLg,
       child: InkWell(
         borderRadius: AppRadius.brLg,
-        onTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Leitor de QR Code chega na próxima fase 🚧'),
-            ),
-          );
-        },
+        onTap: () => context.push(RoutePaths.employeeQrScanner),
         child: Ink(
           padding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.lg, vertical: AppSpacing.md),

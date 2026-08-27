@@ -20,6 +20,8 @@ import '../../features/executions/presentation/pages/task_execution_page.dart';
 import '../../features/locations/presentation/pages/location_form_page.dart';
 import '../../features/locations/presentation/pages/locations_list_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
+import '../../features/qr_code/presentation/pages/qr_code_view_page.dart';
+import '../../features/qr_code/presentation/pages/qr_scanner_page.dart';
 import '../../features/tasks/presentation/pages/employee_history_page.dart';
 import '../../features/tasks/presentation/pages/new_task_page.dart';
 import 'route_paths.dart';
@@ -81,6 +83,10 @@ final routerProvider = Provider<GoRouter>((ref) {
             TaskExecutionPage(taskId: state.pathParameters['id']!),
       ),
       GoRoute(
+        path: RoutePaths.employeeQrScanner,
+        builder: (context, state) => const QrScannerPage(),
+      ),
+      GoRoute(
         path: RoutePaths.employeeHistory,
         builder: (context, state) => const EmployeeHistoryPage(),
       ),
@@ -129,6 +135,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RoutePaths.supervisorLocationsCreate,
         builder: (context, state) => const LocationFormPage(),
+      ),
+      GoRoute(
+        path: '${RoutePaths.supervisorLocations}/:id/qr',
+        builder: (context, state) =>
+            QrCodeViewPage(locationId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: RoutePaths.supervisorChecklists,
