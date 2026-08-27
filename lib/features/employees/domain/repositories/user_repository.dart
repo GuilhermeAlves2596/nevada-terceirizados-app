@@ -11,4 +11,16 @@ abstract interface class UserRepository {
 
   /// Apenas os funcionários (role employee) da empresa.
   Future<List<AppUser>> getEmployees({required String companyId});
+
+  /// Cadastra um funcionário associado à empresa (role = employee).
+  Future<AppUser> createEmployee({
+    required String companyId,
+    required String name,
+    required String email,
+    String? phone,
+    String? jobTitle,
+  });
+
+  /// Ativa/desativa um usuário.
+  Future<AppUser> setActive({required String userId, required bool active});
 }

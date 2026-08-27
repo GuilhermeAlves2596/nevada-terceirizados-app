@@ -64,3 +64,72 @@ class AppTextField extends StatelessWidget {
     );
   }
 }
+
+/// Campo de formulário com rótulo e validação (para telas de cadastro).
+class AppTextFormField extends StatelessWidget {
+  const AppTextFormField({
+    super.key,
+    required this.label,
+    this.controller,
+    this.hint,
+    this.prefixIcon,
+    this.keyboardType,
+    this.textInputAction,
+    this.validator,
+    this.required = false,
+    this.maxLines = 1,
+  });
+
+  final String label;
+  final TextEditingController? controller;
+  final String? hint;
+  final IconData? prefixIcon;
+  final TextInputType? keyboardType;
+  final TextInputAction? textInputAction;
+  final String? Function(String?)? validator;
+  final bool required;
+  final int maxLines;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        RichText(
+          text: TextSpan(
+            text: label,
+            style: AppTypography.subtitle,
+            children: required
+                ? const [
+                    TextSpan(
+                      text: ' *',
+                      style: TextStyle(color: AppColors.danger),
+                    ),
+                  ]
+                : null,
+          ),
+        ),
+        AppSpacing.gapXs,
+        TextFormField(
+          controller: controller,
+          keyboardType: keyboardType,
+          textInputAction: textInputAction,
+          maxLines: maxLines,
+          style: AppTypography.body,
+          validator: validator ??
+              (required
+                  ? (v) => (v == null || v.trim().isEmpty)
+                      ? 'Campo obrigatório'
+                      : null
+                  : null),
+          decoration: InputDecoration(
+            hintText: hint,
+            prefixIcon: prefixIcon == null
+                ? null
+                : Icon(prefixIcon, color: AppColors.textMuted, size: 20),
+          ),
+        ),
+      ],
+    );
+  }
+}

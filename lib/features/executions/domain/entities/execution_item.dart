@@ -10,6 +10,13 @@ abstract class ExecutionItem with _$ExecutionItem {
   const factory ExecutionItem({
     required String id,
     required String checklistItemId,
+
+    /// Descrição e obrigatoriedade são denormalizadas do [ChecklistItem] no
+    /// momento da criação da execução — assim a execução é auto-descritiva
+    /// (bom para a tela, o histórico e a auditoria).
+    required String description,
+    required int order,
+    @Default(true) bool required,
     @Default(false) bool completed,
     DateTime? completedAt,
     String? completedBy,

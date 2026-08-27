@@ -12,6 +12,7 @@ class TaskView {
     required this.checklistName,
     required this.serviceType,
     required this.employeeName,
+    required this.supervisorName,
   });
 
   final Task task;
@@ -20,6 +21,7 @@ class TaskView {
   final String checklistName;
   final ServiceType serviceType;
   final String employeeName;
+  final String supervisorName;
 
   factory TaskView.resolve(Task task, CompanyCatalog catalog) {
     final checklist = catalog.checklistsById[task.checklistId];
@@ -31,6 +33,8 @@ class TaskView {
       serviceType: checklist?.serviceType ?? ServiceType.limpeza,
       employeeName:
           catalog.usersById[task.assignedTo]?.name ?? 'Funcionário',
+      supervisorName:
+          catalog.usersById[task.assignedBy]?.name ?? 'Supervisor',
     );
   }
 

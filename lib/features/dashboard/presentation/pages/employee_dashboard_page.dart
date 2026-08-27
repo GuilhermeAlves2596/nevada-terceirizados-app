@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../app/router/route_paths.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_radius.dart';
 import '../../../../app/theme/app_spacing.dart';
@@ -55,9 +57,16 @@ class _DashboardScroll extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.md),
       children: [
-        const DashboardHeader(
+        DashboardHeader(
           subtitle: 'Suas tarefas de hoje',
           profilePath: ProfilePaths.employee,
+          actions: [
+            IconButton(
+              tooltip: 'Histórico',
+              onPressed: () => context.push(RoutePaths.employeeHistory),
+              icon: const Icon(Icons.history),
+            ),
+          ],
         ),
         AppSpacing.gapLg,
         ...children,
@@ -92,9 +101,16 @@ class _Content extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.md),
       children: [
-        const DashboardHeader(
+        DashboardHeader(
           subtitle: 'Suas tarefas de hoje',
           profilePath: ProfilePaths.employee,
+          actions: [
+            IconButton(
+              tooltip: 'Histórico',
+              onPressed: () => context.push(RoutePaths.employeeHistory),
+              icon: const Icon(Icons.history),
+            ),
+          ],
         ),
         AppSpacing.gapLg,
         Row(
@@ -135,7 +151,11 @@ class _Content extends ConsumerWidget {
           AppSpacing.gapSm,
           ...late.map((v) => Padding(
                 padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                child: TaskCard(view: v),
+                child: TaskCard(
+                  view: v,
+                  onTap: () =>
+                      context.push('${RoutePaths.employeeTasks}/${v.task.id}'),
+                ),
               )),
           AppSpacing.gapMd,
         ],
@@ -153,7 +173,11 @@ class _Content extends ConsumerWidget {
         else
           ...today.map((v) => Padding(
                 padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                child: TaskCard(view: v),
+                child: TaskCard(
+                  view: v,
+                  onTap: () =>
+                      context.push('${RoutePaths.employeeTasks}/${v.task.id}'),
+                ),
               )),
       ],
     );

@@ -14,7 +14,10 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ExecutionItem {
 
- String get id; String get checklistItemId; bool get completed; DateTime? get completedAt; String? get completedBy;
+ String get id; String get checklistItemId;/// Descrição e obrigatoriedade são denormalizadas do [ChecklistItem] no
+/// momento da criação da execução — assim a execução é auto-descritiva
+/// (bom para a tela, o histórico e a auditoria).
+ String get description; int get order; bool get required; bool get completed; DateTime? get completedAt; String? get completedBy;
 /// Create a copy of ExecutionItem
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +28,16 @@ $ExecutionItemCopyWith<ExecutionItem> get copyWith => _$ExecutionItemCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ExecutionItem&&(identical(other.id, id) || other.id == id)&&(identical(other.checklistItemId, checklistItemId) || other.checklistItemId == checklistItemId)&&(identical(other.completed, completed) || other.completed == completed)&&(identical(other.completedAt, completedAt) || other.completedAt == completedAt)&&(identical(other.completedBy, completedBy) || other.completedBy == completedBy));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ExecutionItem&&(identical(other.id, id) || other.id == id)&&(identical(other.checklistItemId, checklistItemId) || other.checklistItemId == checklistItemId)&&(identical(other.description, description) || other.description == description)&&(identical(other.order, order) || other.order == order)&&(identical(other.required, required) || other.required == required)&&(identical(other.completed, completed) || other.completed == completed)&&(identical(other.completedAt, completedAt) || other.completedAt == completedAt)&&(identical(other.completedBy, completedBy) || other.completedBy == completedBy));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,checklistItemId,completed,completedAt,completedBy);
+int get hashCode => Object.hash(runtimeType,id,checklistItemId,description,order,required,completed,completedAt,completedBy);
 
 @override
 String toString() {
-  return 'ExecutionItem(id: $id, checklistItemId: $checklistItemId, completed: $completed, completedAt: $completedAt, completedBy: $completedBy)';
+  return 'ExecutionItem(id: $id, checklistItemId: $checklistItemId, description: $description, order: $order, required: $required, completed: $completed, completedAt: $completedAt, completedBy: $completedBy)';
 }
 
 
@@ -45,7 +48,7 @@ abstract mixin class $ExecutionItemCopyWith<$Res>  {
   factory $ExecutionItemCopyWith(ExecutionItem value, $Res Function(ExecutionItem) _then) = _$ExecutionItemCopyWithImpl;
 @useResult
 $Res call({
- String id, String checklistItemId, bool completed, DateTime? completedAt, String? completedBy
+ String id, String checklistItemId, String description, int order, bool required, bool completed, DateTime? completedAt, String? completedBy
 });
 
 
@@ -62,11 +65,14 @@ class _$ExecutionItemCopyWithImpl<$Res>
 
 /// Create a copy of ExecutionItem
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? checklistItemId = null,Object? completed = null,Object? completedAt = freezed,Object? completedBy = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? checklistItemId = null,Object? description = null,Object? order = null,Object? required = null,Object? completed = null,Object? completedAt = freezed,Object? completedBy = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,checklistItemId: null == checklistItemId ? _self.checklistItemId : checklistItemId // ignore: cast_nullable_to_non_nullable
-as String,completed: null == completed ? _self.completed : completed // ignore: cast_nullable_to_non_nullable
+as String,description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
+as String,order: null == order ? _self.order : order // ignore: cast_nullable_to_non_nullable
+as int,required: null == required ? _self.required : required // ignore: cast_nullable_to_non_nullable
+as bool,completed: null == completed ? _self.completed : completed // ignore: cast_nullable_to_non_nullable
 as bool,completedAt: freezed == completedAt ? _self.completedAt : completedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,completedBy: freezed == completedBy ? _self.completedBy : completedBy // ignore: cast_nullable_to_non_nullable
 as String?,
@@ -154,10 +160,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String checklistItemId,  bool completed,  DateTime? completedAt,  String? completedBy)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String checklistItemId,  String description,  int order,  bool required,  bool completed,  DateTime? completedAt,  String? completedBy)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ExecutionItem() when $default != null:
-return $default(_that.id,_that.checklistItemId,_that.completed,_that.completedAt,_that.completedBy);case _:
+return $default(_that.id,_that.checklistItemId,_that.description,_that.order,_that.required,_that.completed,_that.completedAt,_that.completedBy);case _:
   return orElse();
 
 }
@@ -175,10 +181,10 @@ return $default(_that.id,_that.checklistItemId,_that.completed,_that.completedAt
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String checklistItemId,  bool completed,  DateTime? completedAt,  String? completedBy)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String checklistItemId,  String description,  int order,  bool required,  bool completed,  DateTime? completedAt,  String? completedBy)  $default,) {final _that = this;
 switch (_that) {
 case _ExecutionItem():
-return $default(_that.id,_that.checklistItemId,_that.completed,_that.completedAt,_that.completedBy);case _:
+return $default(_that.id,_that.checklistItemId,_that.description,_that.order,_that.required,_that.completed,_that.completedAt,_that.completedBy);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -195,10 +201,10 @@ return $default(_that.id,_that.checklistItemId,_that.completed,_that.completedAt
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String checklistItemId,  bool completed,  DateTime? completedAt,  String? completedBy)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String checklistItemId,  String description,  int order,  bool required,  bool completed,  DateTime? completedAt,  String? completedBy)?  $default,) {final _that = this;
 switch (_that) {
 case _ExecutionItem() when $default != null:
-return $default(_that.id,_that.checklistItemId,_that.completed,_that.completedAt,_that.completedBy);case _:
+return $default(_that.id,_that.checklistItemId,_that.description,_that.order,_that.required,_that.completed,_that.completedAt,_that.completedBy);case _:
   return null;
 
 }
@@ -210,11 +216,17 @@ return $default(_that.id,_that.checklistItemId,_that.completed,_that.completedAt
 
 
 class _ExecutionItem implements ExecutionItem {
-  const _ExecutionItem({required this.id, required this.checklistItemId, this.completed = false, this.completedAt, this.completedBy});
+  const _ExecutionItem({required this.id, required this.checklistItemId, required this.description, required this.order, this.required = true, this.completed = false, this.completedAt, this.completedBy});
   
 
 @override final  String id;
 @override final  String checklistItemId;
+/// Descrição e obrigatoriedade são denormalizadas do [ChecklistItem] no
+/// momento da criação da execução — assim a execução é auto-descritiva
+/// (bom para a tela, o histórico e a auditoria).
+@override final  String description;
+@override final  int order;
+@override@JsonKey() final  bool required;
 @override@JsonKey() final  bool completed;
 @override final  DateTime? completedAt;
 @override final  String? completedBy;
@@ -229,16 +241,16 @@ _$ExecutionItemCopyWith<_ExecutionItem> get copyWith => __$ExecutionItemCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ExecutionItem&&(identical(other.id, id) || other.id == id)&&(identical(other.checklistItemId, checklistItemId) || other.checklistItemId == checklistItemId)&&(identical(other.completed, completed) || other.completed == completed)&&(identical(other.completedAt, completedAt) || other.completedAt == completedAt)&&(identical(other.completedBy, completedBy) || other.completedBy == completedBy));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ExecutionItem&&(identical(other.id, id) || other.id == id)&&(identical(other.checklistItemId, checklistItemId) || other.checklistItemId == checklistItemId)&&(identical(other.description, description) || other.description == description)&&(identical(other.order, order) || other.order == order)&&(identical(other.required, required) || other.required == required)&&(identical(other.completed, completed) || other.completed == completed)&&(identical(other.completedAt, completedAt) || other.completedAt == completedAt)&&(identical(other.completedBy, completedBy) || other.completedBy == completedBy));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,checklistItemId,completed,completedAt,completedBy);
+int get hashCode => Object.hash(runtimeType,id,checklistItemId,description,order,required,completed,completedAt,completedBy);
 
 @override
 String toString() {
-  return 'ExecutionItem(id: $id, checklistItemId: $checklistItemId, completed: $completed, completedAt: $completedAt, completedBy: $completedBy)';
+  return 'ExecutionItem(id: $id, checklistItemId: $checklistItemId, description: $description, order: $order, required: $required, completed: $completed, completedAt: $completedAt, completedBy: $completedBy)';
 }
 
 
@@ -249,7 +261,7 @@ abstract mixin class _$ExecutionItemCopyWith<$Res> implements $ExecutionItemCopy
   factory _$ExecutionItemCopyWith(_ExecutionItem value, $Res Function(_ExecutionItem) _then) = __$ExecutionItemCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String checklistItemId, bool completed, DateTime? completedAt, String? completedBy
+ String id, String checklistItemId, String description, int order, bool required, bool completed, DateTime? completedAt, String? completedBy
 });
 
 
@@ -266,11 +278,14 @@ class __$ExecutionItemCopyWithImpl<$Res>
 
 /// Create a copy of ExecutionItem
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? checklistItemId = null,Object? completed = null,Object? completedAt = freezed,Object? completedBy = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? checklistItemId = null,Object? description = null,Object? order = null,Object? required = null,Object? completed = null,Object? completedAt = freezed,Object? completedBy = freezed,}) {
   return _then(_ExecutionItem(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,checklistItemId: null == checklistItemId ? _self.checklistItemId : checklistItemId // ignore: cast_nullable_to_non_nullable
-as String,completed: null == completed ? _self.completed : completed // ignore: cast_nullable_to_non_nullable
+as String,description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
+as String,order: null == order ? _self.order : order // ignore: cast_nullable_to_non_nullable
+as int,required: null == required ? _self.required : required // ignore: cast_nullable_to_non_nullable
+as bool,completed: null == completed ? _self.completed : completed // ignore: cast_nullable_to_non_nullable
 as bool,completedAt: freezed == completedAt ? _self.completedAt : completedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,completedBy: freezed == completedBy ? _self.completedBy : completedBy // ignore: cast_nullable_to_non_nullable
 as String?,

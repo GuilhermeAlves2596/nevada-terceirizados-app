@@ -4,6 +4,7 @@ import '../../features/checklists/domain/entities/checklist_item.dart';
 import '../../features/clients/domain/entities/client.dart';
 import '../../features/companies/domain/entities/company.dart';
 import '../../features/contracts/domain/entities/contract.dart';
+import '../../features/executions/domain/entities/task_execution.dart';
 import '../../features/locations/domain/entities/location.dart';
 import '../../features/tasks/domain/entities/task.dart';
 import '../enums/contract_status.dart';
@@ -26,6 +27,7 @@ class MockDatabase {
     required this.locations,
     required this.checklists,
     required this.tasks,
+    required this.executions,
   });
 
   final List<Company> companies;
@@ -35,6 +37,9 @@ class MockDatabase {
   final List<Location> locations;
   final List<Checklist> checklists;
   final List<Task> tasks;
+
+  /// Execuções criadas sob demanda quando o funcionário abre uma tarefa.
+  final List<TaskExecution> executions;
 
   // ---- Identificadores fixos (facilitam o cruzamento entre entidades) ----
   static const companyNevada = 'company_nevada';
@@ -482,6 +487,73 @@ class MockDatabase {
       locations: locations,
       checklists: checklists,
       tasks: tasks,
+      executions: [],
     );
+  }
+
+  /// Substitui uma tarefa pela versão atualizada (usado pelos mocks ao refletir
+  /// mudanças de execução no status/progresso da tarefa).
+  void upsertTask(Task task) {
+    final i = tasks.indexWhere((t) => t.id == task.id);
+    if (i >= 0) {
+      tasks[i] = task;
+    } else {
+      tasks.add(task);
+    }
+  }
+
+  /// Insere ou atualiza uma execução.
+  void upsertExecution(TaskExecution execution) {
+    final i = executions.indexWhere((e) => e.id == execution.id);
+    if (i >= 0) {
+      executions[i] = execution;
+    } else {
+      executions.add(execution);
+    }
+  }
+
+  void upsertUser(AppUser user) {
+    final i = users.indexWhere((u) => u.id == user.id);
+    if (i >= 0) {
+      users[i] = user;
+    } else {
+      users.add(user);
+    }
+  }
+
+  void upsertClient(Client client) {
+    final i = clients.indexWhere((c) => c.id == client.id);
+    if (i >= 0) {
+      clients[i] = client;
+    } else {
+      clients.add(client);
+    }
+  }
+
+  void upsertContract(Contract contract) {
+    final i = contracts.indexWhere((c) => c.id == contract.id);
+    if (i >= 0) {
+      contracts[i] = contract;
+    } else {
+      contracts.add(contract);
+    }
+  }
+
+  void upsertLocation(Location location) {
+    final i = locations.indexWhere((l) => l.id == location.id);
+    if (i >= 0) {
+      locations[i] = location;
+    } else {
+      locations.add(location);
+    }
+  }
+
+  void upsertChecklist(Checklist checklist) {
+    final i = checklists.indexWhere((c) => c.id == checklist.id);
+    if (i >= 0) {
+      checklists[i] = checklist;
+    } else {
+      checklists.add(checklist);
+    }
   }
 }

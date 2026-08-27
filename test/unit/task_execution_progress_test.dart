@@ -14,6 +14,8 @@ TaskExecution _exec(List<bool> completed) {
         ExecutionItem(
           id: 'i$i',
           checklistItemId: 'ci$i',
+          description: 'Item $i',
+          order: i,
           completed: completed[i],
         ),
     ],

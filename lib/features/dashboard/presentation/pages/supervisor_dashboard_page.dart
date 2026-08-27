@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../app/router/route_paths.dart';
 import '../../../../app/theme/app_colors.dart';
+import '../../../../app/theme/app_radius.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/widgets/app_state_views.dart';
@@ -138,6 +141,12 @@ class _Content extends StatelessWidget {
           ],
         ),
         AppSpacing.gapLg,
+        const _NewTaskButton(),
+        AppSpacing.gapLg,
+        Text('Gestão', style: AppTypography.title),
+        AppSpacing.gapSm,
+        const _ManagementGrid(),
+        AppSpacing.gapLg,
         Text('Atividades recentes', style: AppTypography.title),
         AppSpacing.gapSm,
         if (recent.isEmpty)
@@ -152,6 +161,120 @@ class _Content extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                 child: TaskCard(view: v, showEmployee: true),
               )),
+      ],
+    );
+  }
+}
+
+class _NewTaskButton extends StatelessWidget {
+  const _NewTaskButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      borderRadius: AppRadius.brLg,
+      child: InkWell(
+        borderRadius: AppRadius.brLg,
+        onTap: () => context.push(RoutePaths.supervisorTasksCreate),
+        child: Ink(
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [AppColors.primary, AppColors.secondary],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
+            borderRadius: AppRadius.brLg,
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.add_task, color: AppColors.white, size: 26),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Nova tarefa',
+                        style: AppTypography.subtitle
+                            .copyWith(color: AppColors.white)),
+                    Text(
+                      'Atribua um serviço a um funcionário',
+                      style: AppTypography.caption.copyWith(
+                        color: AppColors.white.withValues(alpha: 0.85),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.arrow_forward_ios,
+                  color: AppColors.white, size: 16),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ManagementGrid extends StatelessWidget {
+  const _ManagementGrid();
+
+  static const _items = <({String label, IconData icon, String route})>[
+    (label: 'Funcionários', icon: Icons.groups_outlined, route: RoutePaths.supervisorEmployees),
+    (label: 'Clientes', icon: Icons.apartment_outlined, route: RoutePaths.supervisorClients),
+    (label: 'Contratos', icon: Icons.description_outlined, route: RoutePaths.supervisorContracts),
+    (label: 'Locais', icon: Icons.location_on_outlined, route: RoutePaths.supervisorLocations),
+    (label: 'Checklists', icon: Icons.checklist_outlined, route: RoutePaths.supervisorChecklists),
+    (label: 'Relatórios', icon: Icons.bar_chart_outlined, route: RoutePaths.supervisorReports),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.count(
+      crossAxisCount: 2,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      mainAxisSpacing: 10,
+      crossAxisSpacing: 10,
+      childAspectRatio: 2.8,
+      children: [
+        for (final item in _items)
+          Material(
+            color: AppColors.white,
+            borderRadius: AppRadius.brLg,
+            child: InkWell(
+              borderRadius: AppRadius.brLg,
+              onTap: () => context.push(item.route),
+              child: Ink(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: BoxDecoration(
+                  borderRadius: AppRadius.brLg,
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.primarySoft,
+                        borderRadius: AppRadius.brMd,
+                      ),
+                      child: Icon(item.icon,
+                          color: AppColors.primary, size: 20),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(item.label,
+                          style: AppTypography.subtitle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
       ],
     );
   }
