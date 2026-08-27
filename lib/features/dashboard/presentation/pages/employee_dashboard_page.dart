@@ -57,9 +57,16 @@ class _DashboardScroll extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.md),
       children: [
-        const DashboardHeader(
+        DashboardHeader(
           subtitle: 'Suas tarefas de hoje',
           profilePath: ProfilePaths.employee,
+          actions: [
+            IconButton(
+              tooltip: 'Histórico',
+              onPressed: () => context.push(RoutePaths.employeeHistory),
+              icon: const Icon(Icons.history),
+            ),
+          ],
         ),
         AppSpacing.gapLg,
         ...children,
@@ -94,9 +101,16 @@ class _Content extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.md),
       children: [
-        const DashboardHeader(
+        DashboardHeader(
           subtitle: 'Suas tarefas de hoje',
           profilePath: ProfilePaths.employee,
+          actions: [
+            IconButton(
+              tooltip: 'Histórico',
+              onPressed: () => context.push(RoutePaths.employeeHistory),
+              icon: const Icon(Icons.history),
+            ),
+          ],
         ),
         AppSpacing.gapLg,
         Row(

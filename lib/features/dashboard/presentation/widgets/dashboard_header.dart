@@ -14,10 +14,14 @@ class DashboardHeader extends ConsumerWidget {
     super.key,
     required this.subtitle,
     required this.profilePath,
+    this.actions = const [],
   });
 
   final String subtitle;
   final String profilePath;
+
+  /// Ações opcionais exibidas antes do avatar (ex.: atalho para o histórico).
+  final List<Widget> actions;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -36,6 +40,7 @@ class DashboardHeader extends ConsumerWidget {
             ],
           ),
         ),
+        ...actions,
         PopupMenuButton<String>(
           offset: const Offset(0, 48),
           shape: RoundedRectangleBorder(

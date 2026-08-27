@@ -9,6 +9,7 @@ import '../../features/dashboard/presentation/pages/employee_dashboard_page.dart
 import '../../features/dashboard/presentation/pages/supervisor_dashboard_page.dart';
 import '../../features/executions/presentation/pages/task_execution_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
+import '../../features/tasks/presentation/pages/employee_history_page.dart';
 import 'route_paths.dart';
 
 /// Roteador da aplicação com guardas por perfil (seção 46).
@@ -66,6 +67,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '${RoutePaths.employeeTasks}/:id',
         builder: (context, state) =>
             TaskExecutionPage(taskId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: RoutePaths.employeeHistory,
+        builder: (context, state) => const EmployeeHistoryPage(),
       ),
       GoRoute(
         path: RoutePaths.employeeProfile,

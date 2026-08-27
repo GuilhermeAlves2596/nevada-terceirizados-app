@@ -35,14 +35,14 @@ com dados mockados.
 - [x] Diferenciação de perfil (employee/supervisor) e redirecionamento
 - [ ] Recuperação de senha (tela) — pendente
 
-### 🔄 Fase 3 — Fluxo do funcionário
+### ✅ Fase 3 — Fluxo do funcionário
 - [x] Detalhe da tarefa
 - [x] Iniciar tarefa (startedAt, status IN_PROGRESS)
 - [x] Checklist interativo + cálculo de progresso
 - [x] Foto obrigatória (simulada; câmera real na Fase 6)
 - [x] Observação opcional
 - [x] Finalizar com validações (itens obrigatórios + foto)
-- [ ] Histórico próprio
+- [x] Histórico próprio (tela /employee/history com filtro)
 
 ### ⏳ Fase 4 — Fluxo do supervisor
 - [ ] Cadastros: funcionários, clientes, contratos, locais
