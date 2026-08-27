@@ -11,6 +11,7 @@ o projeto é do jeito que é.
 |---|--------|--------|
 | [0001](0001-arquitetura-e-stack.md) | Arquitetura e stack tecnológica | Aceito |
 | [0002](0002-fases-de-desenvolvimento.md) | Fases de desenvolvimento (roadmap) | Em andamento |
+| [0003](0003-backend-e-frontends.md) | Backend compartilhado (Firebase) e frontends (mobile + web React) | Aceito |
 
 ## Convenção
 
