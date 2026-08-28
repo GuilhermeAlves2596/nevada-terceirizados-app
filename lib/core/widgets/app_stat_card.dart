@@ -12,16 +12,18 @@ class AppStatCard extends StatelessWidget {
     required this.label,
     required this.icon,
     required this.color,
+    this.onTap,
   });
 
   final String value;
   final String label;
   final IconData icon;
   final Color color;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final card = Ink(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.white,
@@ -44,6 +46,17 @@ class AppStatCard extends StatelessWidget {
           const SizedBox(height: 2),
           Text(label, style: AppTypography.caption),
         ],
+      ),
+    );
+
+    if (onTap == null) return card;
+    return Material(
+      color: Colors.transparent,
+      borderRadius: AppRadius.brLg,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AppRadius.brLg,
+        child: card,
       ),
     );
   }

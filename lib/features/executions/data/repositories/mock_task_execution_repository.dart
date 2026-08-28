@@ -101,6 +101,18 @@ class MockTaskExecutionRepository implements TaskExecutionRepository {
     return execution;
   }
 
+  @override
+  Future<TaskExecution?> findByTaskId({
+    required String companyId,
+    required String taskId,
+  }) async {
+    await Future<void>.delayed(const Duration(milliseconds: 200));
+    for (final e in _db.executions) {
+      if (e.companyId == companyId && e.taskId == taskId) return e;
+    }
+    return null;
+  }
+
   TaskExecution _require(String executionId) {
     return _db.executions.firstWhere(
       (e) => e.id == executionId,

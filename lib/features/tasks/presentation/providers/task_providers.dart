@@ -3,7 +3,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/di/repository_providers.dart';
 import '../../../../app/providers/company_catalog.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
+import '../../../executions/domain/entities/task_execution.dart';
 import '../models/task_view.dart';
+
+/// Execução existente de uma tarefa (ou null), somente leitura — usada no
+/// acompanhamento do supervisor.
+final taskExecutionReadProvider =
+    FutureProvider.autoDispose.family<TaskExecution?, String>((ref, taskId) async {
+  final companyId = ref.watch(currentUserProvider)?.companyId;
+  if (companyId == null) return null;
+  return ref
+      .watch(taskExecutionRepositoryProvider)
+      .findByTaskId(companyId: companyId, taskId: taskId);
+});
 
 /// Uma tarefa específica já resolvida para exibição (header da execução).
 final taskViewByIdProvider =

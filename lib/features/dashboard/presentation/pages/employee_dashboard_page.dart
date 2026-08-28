@@ -121,6 +121,8 @@ class _Content extends ConsumerWidget {
                 label: 'Pendentes',
                 icon: Icons.pending_actions_outlined,
                 color: AppColors.warning,
+                onTap: () => context
+                    .push('${RoutePaths.employeeTasks}?filter=pending'),
               ),
             ),
             const SizedBox(width: 10),
@@ -130,6 +132,8 @@ class _Content extends ConsumerWidget {
                 label: 'Em andamento',
                 icon: Icons.play_circle_outline,
                 color: AppColors.secondary,
+                onTap: () => context
+                    .push('${RoutePaths.employeeTasks}?filter=inProgress'),
               ),
             ),
             const SizedBox(width: 10),
@@ -139,6 +143,8 @@ class _Content extends ConsumerWidget {
                 label: 'Concluídas',
                 icon: Icons.check_circle_outline,
                 color: AppColors.success,
+                onTap: () => context
+                    .push('${RoutePaths.employeeTasks}?filter=completed'),
               ),
             ),
           ],

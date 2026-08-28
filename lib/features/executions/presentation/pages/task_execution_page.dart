@@ -13,9 +13,9 @@ import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/app_progress_bar.dart';
 import '../../../../core/widgets/app_state_views.dart';
-import '../../../../core/widgets/app_status_badge.dart';
 import '../../../tasks/presentation/models/task_view.dart';
 import '../../../tasks/presentation/providers/task_providers.dart';
+import '../../../tasks/presentation/widgets/task_info_card.dart';
 import '../../domain/entities/task_execution.dart';
 import '../controllers/task_execution_controller.dart';
 import '../utils/photo_capture.dart';
@@ -224,7 +224,7 @@ class _Body extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.md),
       children: [
-        _InfoCard(view: view, execution: execution),
+        if (view != null) TaskInfoCard(view: view!),
         AppSpacing.gapMd,
         _ProgressCard(execution: execution),
         AppSpacing.gapLg,
@@ -276,81 +276,6 @@ class _Body extends StatelessWidget {
         ),
         const SizedBox(height: 90),
       ],
-    );
-  }
-}
-
-class _InfoCard extends StatelessWidget {
-  const _InfoCard({required this.view, required this.execution});
-
-  final TaskView? view;
-  final TaskExecution execution;
-
-  @override
-  Widget build(BuildContext context) {
-    final task = view?.task;
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: AppColors.primarySoft,
-                  borderRadius: AppRadius.brMd,
-                ),
-                child: Icon(view?.serviceType.icon ?? Icons.task_alt,
-                    color: AppColors.primary, size: 22),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  view?.checklistName ?? 'Tarefa',
-                  style: AppTypography.title,
-                ),
-              ),
-              if (task != null)
-                AppStatusBadge(
-                  label: task.status.label,
-                  color: task.status.color,
-                  backgroundColor: task.status.softColor,
-                ),
-            ],
-          ),
-          const Divider(height: 24),
-          _row(Icons.location_on_outlined, 'Local', view?.locationName ?? '—'),
-          _row(Icons.apartment_outlined, 'Cliente', view?.clientName ?? '—'),
-          _row(Icons.event_outlined, 'Data',
-              task != null ? task.scheduledDate.ddMMyyyy : '—'),
-          if (task?.scheduledStartTime != null)
-            _row(Icons.schedule_outlined, 'Horário', task!.scheduledStartTime!),
-          _row(Icons.badge_outlined, 'Supervisor', view?.supervisorName ?? '—'),
-        ],
-      ),
-    );
-  }
-
-  Widget _row(IconData icon, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
-      child: Row(
-        children: [
-          Icon(icon, size: 18, color: AppColors.textMuted),
-          const SizedBox(width: 10),
-          Text(label, style: AppTypography.bodyMuted),
-          const Spacer(),
-          Flexible(
-            child: Text(
-              value,
-              style: AppTypography.subtitle,
-              textAlign: TextAlign.right,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

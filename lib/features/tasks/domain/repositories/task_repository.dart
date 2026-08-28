@@ -1,4 +1,5 @@
 import '../../../../core/enums/task_priority.dart';
+import '../../../../core/enums/task_status.dart';
 import '../entities/task.dart';
 
 /// Acesso a tarefas agendadas, sempre isolado por `companyId`.
@@ -27,4 +28,10 @@ abstract interface class TaskRepository {
     String? scheduledStartTime,
     required TaskPriority priority,
   });
+
+  /// Altera o status da tarefa (ex.: cancelar).
+  Future<Task> setStatus({required String taskId, required TaskStatus status});
+
+  /// Remove a tarefa e a execução associada (se houver).
+  Future<void> delete(String taskId);
 }

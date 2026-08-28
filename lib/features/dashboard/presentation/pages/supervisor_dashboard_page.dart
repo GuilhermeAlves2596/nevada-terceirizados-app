@@ -76,7 +76,7 @@ class _Content extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final stats = TaskStats.from(tasks.map((v) => v.task).toList());
-    final recent = tasks.take(6).toList();
+    final recent = tasks.take(3).toList();
 
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -94,6 +94,8 @@ class _Content extends StatelessWidget {
                 label: 'Total',
                 icon: Icons.assignment_outlined,
                 color: AppColors.primary,
+                onTap: () =>
+                    context.push('${RoutePaths.supervisorTasks}?filter=all'),
               ),
             ),
             const SizedBox(width: 10),
@@ -103,6 +105,8 @@ class _Content extends StatelessWidget {
                 label: 'Em andamento',
                 icon: Icons.play_circle_outline,
                 color: AppColors.secondary,
+                onTap: () => context
+                    .push('${RoutePaths.supervisorTasks}?filter=inProgress'),
               ),
             ),
             const SizedBox(width: 10),
@@ -112,6 +116,8 @@ class _Content extends StatelessWidget {
                 label: 'Pendentes',
                 icon: Icons.pending_actions_outlined,
                 color: AppColors.warning,
+                onTap: () => context
+                    .push('${RoutePaths.supervisorTasks}?filter=pending'),
               ),
             ),
           ],
@@ -125,6 +131,8 @@ class _Content extends StatelessWidget {
                 label: 'Concluídas',
                 icon: Icons.check_circle_outline,
                 color: AppColors.success,
+                onTap: () => context
+                    .push('${RoutePaths.supervisorTasks}?filter=completed'),
               ),
             ),
             const SizedBox(width: 10),
@@ -134,6 +142,8 @@ class _Content extends StatelessWidget {
                 label: 'Atrasadas',
                 icon: Icons.warning_amber_rounded,
                 color: AppColors.danger,
+                onTap: () =>
+                    context.push('${RoutePaths.supervisorTasks}?filter=late'),
               ),
             ),
             const SizedBox(width: 10),
@@ -147,8 +157,18 @@ class _Content extends StatelessWidget {
         AppSpacing.gapSm,
         const _ManagementGrid(),
         AppSpacing.gapLg,
-        Text('Atividades recentes', style: AppTypography.title),
-        AppSpacing.gapSm,
+        Row(
+          children: [
+            Text('Atividades recentes', style: AppTypography.title),
+            const Spacer(),
+            if (tasks.isNotEmpty)
+              TextButton(
+                onPressed: () => context.push(RoutePaths.supervisorTasks),
+                child: const Text('Ver todas'),
+              ),
+          ],
+        ),
+        AppSpacing.gapXs,
         if (recent.isEmpty)
           const Padding(
             padding: EdgeInsets.symmetric(vertical: AppSpacing.xl),
@@ -159,7 +179,12 @@ class _Content extends StatelessWidget {
         else
           ...recent.map((v) => Padding(
                 padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                child: TaskCard(view: v, showEmployee: true),
+                child: TaskCard(
+                  view: v,
+                  showEmployee: true,
+                  onTap: () => context
+                      .push('${RoutePaths.supervisorTasks}/${v.task.id}'),
+                ),
               )),
       ],
     );
