@@ -1,4 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Câmera para leitura de QR Code (Fase 5). Solicitada em tempo de
+         execução apenas quando o funcionário abre o scanner (LGPD). -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+
     <application
         android:label="nevada_terceirizados"
         android:name="${applicationName}"

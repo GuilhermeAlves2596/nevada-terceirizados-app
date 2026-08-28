@@ -52,6 +52,8 @@ class LocationsListPage extends ConsumerWidget {
                 itemBuilder: (context, i) {
                   final l = locations[i];
                   return AppCard(
+                    onTap: () => context
+                        .push('${RoutePaths.supervisorLocations}/${l.id}/qr'),
                     child: Row(
                       children: [
                         Container(

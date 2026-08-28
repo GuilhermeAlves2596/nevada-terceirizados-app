@@ -54,13 +54,19 @@ com dados mockados.
 - [x] Construtor de checklists (adicionar/remover/reordenar itens + obrigatório)
 - [x] Acompanhamento (dashboard já reflete tarefas atribuídas)
 
-### ⏳ Fase 5 — QR Code
-- [ ] Geração de QR por ambiente
-- [ ] Leitura (mobile_scanner) + validação de permissão/empresa
+### ✅ Fase 5 — QR Code
+- [x] Geração/visualização de QR por ambiente (qr_flutter) para o supervisor
+- [x] Leitura com a câmera (mobile_scanner) no fluxo do funcionário
+- [x] Resolver com validação de empresa/permissão (QrResolver + testes)
+- [x] Fallback de digitação do código (demo sem câmera) + permissões Android/iOS
 
-### ⏳ Fase 6 — Câmera / fotos
-- [ ] Captura, revisão, compressão
-- [ ] Substituir foto / múltiplas fotos (estrutura)
+### ✅ Fase 6 — Câmera / fotos
+- [x] Captura via câmera ou galeria (image_picker)
+- [x] Revisão antes de usar + "Refazer"
+- [x] Compressão na captura (maxWidth/imageQuality)
+- [x] Exibição da foto real (import condicional io/web) + visualização em tela cheia
+- [x] Múltiplas fotos (a estrutura já suporta lista de fotos)
+- [ ] Upload real para Storage — vem na Fase 10 (hoje guarda o caminho local)
 
 ### ⏳ Fase 7 — Persistência local / offline
 - [ ] Não perder checklist/foto sem conexão

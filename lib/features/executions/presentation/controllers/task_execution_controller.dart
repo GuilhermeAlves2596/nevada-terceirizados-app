@@ -74,11 +74,12 @@ class TaskExecutionController
     state = AsyncData(updated);
   }
 
-  Future<void> addPhoto() async {
+  Future<void> addPhoto({String? localPath}) async {
     final current = state.valueOrNull;
     if (current == null) return;
-    final updated =
-        await ref.read(taskExecutionRepositoryProvider).addPhoto(current.id);
+    final updated = await ref
+        .read(taskExecutionRepositoryProvider)
+        .addPhoto(current.id, localPath: localPath);
     state = AsyncData(updated);
   }
 

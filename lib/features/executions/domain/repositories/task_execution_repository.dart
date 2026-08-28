@@ -13,6 +13,13 @@ abstract interface class TaskExecutionRepository {
     required String employeeId,
   });
 
+  /// Retorna a execução existente da tarefa, ou `null` (não cria). Usado pela
+  /// visão de acompanhamento do supervisor (somente leitura).
+  Future<TaskExecution?> findByTaskId({
+    required String companyId,
+    required String taskId,
+  });
+
   /// Registra o início (startedAt + status IN_PROGRESS).
   Future<TaskExecution> start(String executionId);
 

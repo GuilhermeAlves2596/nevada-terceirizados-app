@@ -4,6 +4,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_radius.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/extensions/date_extensions.dart';
+import '../../../../core/widgets/local_image/local_image.dart';
 import '../../domain/entities/execution_photo.dart';
 
 /// Faixa de fotos da execução.
@@ -43,7 +44,7 @@ class ExecutionPhotoStrip extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           editable
-              ? 'Registre uma foto do serviço concluído (captura simulada nesta fase).'
+              ? 'Registre uma foto do serviço concluído (câmera ou galeria).'
               : 'Registro fotográfico da execução.',
           style: AppTypography.caption,
         ),
@@ -79,6 +80,26 @@ class _Thumb extends StatelessWidget {
   final bool editable;
   final VoidCallback onRemove;
 
+  bool get _hasImage => photo.localPath != null && photo.localPath != 'mock';
+
+  void _openFullScreen(BuildContext context) {
+    if (!_hasImage) return;
+    showDialog<void>(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(16),
+        child: GestureDetector(
+          onTap: () => Navigator.pop(context),
+          child: ClipRRect(
+            borderRadius: AppRadius.brLg,
+            child: InteractiveViewer(child: localImage(photo.localPath!)),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -86,28 +107,37 @@ class _Thumb extends StatelessWidget {
       height: ExecutionPhotoStrip._size,
       child: Stack(
         children: [
-          Container(
-            width: ExecutionPhotoStrip._size,
-            height: ExecutionPhotoStrip._size,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppColors.secondary, AppColors.primary],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+          GestureDetector(
+            onTap: () => _openFullScreen(context),
+            child: Container(
+              width: ExecutionPhotoStrip._size,
+              height: ExecutionPhotoStrip._size,
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(
+                gradient: _hasImage
+                    ? null
+                    : const LinearGradient(
+                        colors: [AppColors.secondary, AppColors.primary],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                borderRadius: AppRadius.brMd,
               ),
-              borderRadius: AppRadius.brMd,
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.image_outlined,
-                    color: AppColors.white, size: 26),
-                const SizedBox(height: 4),
-                Text(
-                  photo.createdAt.hhmm,
-                  style: AppTypography.caption.copyWith(color: AppColors.white),
-                ),
-              ],
+              child: _hasImage
+                  ? localImage(photo.localPath!)
+                  : Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.image_outlined,
+                            color: AppColors.white, size: 26),
+                        const SizedBox(height: 4),
+                        Text(
+                          photo.createdAt.hhmm,
+                          style: AppTypography.caption
+                              .copyWith(color: AppColors.white),
+                        ),
+                      ],
+                    ),
             ),
           ),
           if (editable)

@@ -13,11 +13,12 @@ import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/app_progress_bar.dart';
 import '../../../../core/widgets/app_state_views.dart';
-import '../../../../core/widgets/app_status_badge.dart';
 import '../../../tasks/presentation/models/task_view.dart';
 import '../../../tasks/presentation/providers/task_providers.dart';
+import '../../../tasks/presentation/widgets/task_info_card.dart';
 import '../../domain/entities/task_execution.dart';
 import '../controllers/task_execution_controller.dart';
+import '../utils/photo_capture.dart';
 import '../widgets/checklist_execution_tile.dart';
 import '../widgets/execution_photo_strip.dart';
 
@@ -55,7 +56,63 @@ class _TaskExecutionPageState extends ConsumerState<TaskExecutionPage> {
 
   Future<void> _start() => _runBusy(_controller.start);
 
-  Future<void> _addPhoto() => _runBusy(_controller.addPhoto);
+  Future<void> _addPhoto() async {
+    final file = await PhotoCapture.pick(context);
+    if (file == null || !mounted) return;
+    final bytes = await file.readAsBytes();
+    if (!mounted) return;
+
+    final confirmed = await _reviewPhoto(bytes);
+    if (!mounted) return;
+    if (confirmed == true) {
+      await _runBusy(() => _controller.addPhoto(localPath: file.path));
+    } else if (confirmed == false) {
+      // "Refazer" — abre a captura novamente.
+      await _addPhoto();
+    }
+  }
+
+  Future<bool?> _reviewPhoto(Uint8List bytes) {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => Dialog(
+        clipBehavior: Clip.antiAlias,
+        shape:
+            const RoundedRectangleBorder(borderRadius: AppRadius.brLg),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 360),
+              child: Image.memory(bytes, fit: BoxFit.cover, width: double.infinity),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => Navigator.pop(context, false),
+                      icon: const Icon(Icons.refresh, size: 18),
+                      label: const Text('Refazer'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () => Navigator.pop(context, true),
+                      icon: const Icon(Icons.check, size: 18),
+                      label: const Text('Usar foto'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   Future<void> _finish() async {
     FocusScope.of(context).unfocus();
@@ -167,7 +224,7 @@ class _Body extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.md),
       children: [
-        _InfoCard(view: view, execution: execution),
+        if (view != null) TaskInfoCard(view: view!),
         AppSpacing.gapMd,
         _ProgressCard(execution: execution),
         AppSpacing.gapLg,
@@ -219,81 +276,6 @@ class _Body extends StatelessWidget {
         ),
         const SizedBox(height: 90),
       ],
-    );
-  }
-}
-
-class _InfoCard extends StatelessWidget {
-  const _InfoCard({required this.view, required this.execution});
-
-  final TaskView? view;
-  final TaskExecution execution;
-
-  @override
-  Widget build(BuildContext context) {
-    final task = view?.task;
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: AppColors.primarySoft,
-                  borderRadius: AppRadius.brMd,
-                ),
-                child: Icon(view?.serviceType.icon ?? Icons.task_alt,
-                    color: AppColors.primary, size: 22),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  view?.checklistName ?? 'Tarefa',
-                  style: AppTypography.title,
-                ),
-              ),
-              if (task != null)
-                AppStatusBadge(
-                  label: task.status.label,
-                  color: task.status.color,
-                  backgroundColor: task.status.softColor,
-                ),
-            ],
-          ),
-          const Divider(height: 24),
-          _row(Icons.location_on_outlined, 'Local', view?.locationName ?? '—'),
-          _row(Icons.apartment_outlined, 'Cliente', view?.clientName ?? '—'),
-          _row(Icons.event_outlined, 'Data',
-              task != null ? task.scheduledDate.ddMMyyyy : '—'),
-          if (task?.scheduledStartTime != null)
-            _row(Icons.schedule_outlined, 'Horário', task!.scheduledStartTime!),
-          _row(Icons.badge_outlined, 'Supervisor', view?.supervisorName ?? '—'),
-        ],
-      ),
-    );
-  }
-
-  Widget _row(IconData icon, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
-      child: Row(
-        children: [
-          Icon(icon, size: 18, color: AppColors.textMuted),
-          const SizedBox(width: 10),
-          Text(label, style: AppTypography.bodyMuted),
-          const Spacer(),
-          Flexible(
-            child: Text(
-              value,
-              style: AppTypography.subtitle,
-              textAlign: TextAlign.right,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
