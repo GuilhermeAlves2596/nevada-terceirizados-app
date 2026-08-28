@@ -72,7 +72,19 @@ com dados mockados.
 - [ ] Não perder checklist/foto sem conexão
 - [ ] Sincronização quando a internet voltar
 
-### ⏳ Fase 8 — Firebase Authentication
+### 🔄 Fase 8 — Firebase Authentication
+- [x] `flutterfire configure` (projeto `nevada-dev`) + init do Firebase no main
+- [x] `FirebaseAuthRepository` (login/logout reais) + perfil no Firestore `/users/{uid}`
+- [x] Troca mock→Firebase no ponto único de DI (auth)
+- [x] Restauração de sessão no início (splash) — mantém logado
+- [x] minSdk Android elevado para 23 (exigência do firebase_auth)
+- [ ] Criar usuário de teste no console e validar no emulador
+
+> **Nota (ambiente):** o preview Flutter Web deixou de compilar após o Firebase
+> (incompatibilidade `firebase_core_web` × Dart SDK — método `isA`). Não afeta
+> Android/iOS. Como o painel web do produto é separado (React, ADR 0003), a
+> validação passa a ser no **emulador Android**.
+
 ### ⏳ Fase 9 — Cloud Firestore
 ### ⏳ Fase 10 — Firebase Storage
 ### ⏳ Fase 11 — Firebase Cloud Messaging (notificações)

@@ -8,7 +8,23 @@ import 'auth_state.dart';
 /// Controla o ciclo de vida da sessão do usuário.
 class AuthController extends Notifier<AuthState> {
   @override
-  AuthState build() => const AuthState.unauthenticated();
+  AuthState build() {
+    // Agenda a restauração para depois do build (não altera estado no build).
+    Future.microtask(_restore);
+    return const AuthState.unknown();
+  }
+
+  /// Restaura a sessão persistida do Firebase (se houver) ao abrir o app.
+  Future<void> _restore() async {
+    try {
+      final user = await ref.read(authRepositoryProvider).currentUser();
+      state = user != null
+          ? AuthState.authenticated(user)
+          : const AuthState.unauthenticated();
+    } catch (_) {
+      state = const AuthState.unauthenticated();
+    }
+  }
 
   Future<void> signIn({required String email, required String password}) async {
     state = const AuthState.authenticating();
