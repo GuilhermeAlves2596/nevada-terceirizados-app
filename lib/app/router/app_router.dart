@@ -6,6 +6,7 @@ import '../../features/auth/presentation/controllers/auth_controller.dart';
 import '../../features/auth/presentation/controllers/auth_state.dart';
 import '../../core/widgets/coming_soon_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
+import '../../features/auth/presentation/pages/splash_page.dart';
 import '../../features/checklists/presentation/pages/checklist_form_page.dart';
 import '../../features/checklists/presentation/pages/checklists_list_page.dart';
 import '../../features/clients/presentation/pages/client_form_page.dart';
@@ -40,13 +41,19 @@ final routerProvider = Provider<GoRouter>((ref) {
   });
 
   return GoRouter(
-    initialLocation: RoutePaths.login,
+    initialLocation: RoutePaths.splash,
     refreshListenable: refresh,
     debugLogDiagnostics: kDebugMode,
     redirect: (context, state) {
       final auth = ref.read(authControllerProvider);
       final loc = state.matchedLocation;
       final isLoginRoute = loc == RoutePaths.login;
+      final isSplashRoute = loc == RoutePaths.splash;
+
+      // Ainda verificando a sessão persistida → mantém na splash.
+      if (auth.status == AuthStatus.unknown) {
+        return isSplashRoute ? null : RoutePaths.splash;
+      }
 
       if (!auth.isAuthenticated) {
         return isLoginRoute ? null : RoutePaths.login;
@@ -57,8 +64,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           ? RoutePaths.supervisorDashboard
           : RoutePaths.employeeDashboard;
 
-      // Já autenticado tentando ver o login → manda pra home do perfil.
-      if (isLoginRoute) return home;
+      // Autenticado na splash ou no login → vai pra home do perfil.
+      if (isLoginRoute || isSplashRoute) return home;
 
       // Guardas: cada perfil só acessa sua própria árvore de rotas.
       if (loc.startsWith(RoutePaths.supervisorPrefix) && !role.isSupervisor) {
@@ -70,6 +77,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
+      GoRoute(
+        path: RoutePaths.splash,
+        builder: (context, state) => const SplashPage(),
+      ),
       GoRoute(
         path: RoutePaths.login,
         builder: (context, state) => const LoginPage(),

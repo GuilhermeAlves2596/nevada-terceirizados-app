@@ -1,7 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/mock/mock_database.dart';
-import '../../features/auth/data/repositories/mock_auth_repository.dart';
+import '../../features/auth/data/repositories/firebase_auth_repository.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../../features/checklists/data/repositories/mock_checklist_repository.dart';
 import '../../features/checklists/domain/repositories/checklist_repository.dart';
@@ -29,8 +31,12 @@ final mockDatabaseProvider = Provider<MockDatabase>((ref) {
   return MockDatabase.seeded();
 });
 
+/// Autenticação: implementação real (Firebase Auth + Firestore).
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  return MockAuthRepository(ref.watch(mockDatabaseProvider));
+  return FirebaseAuthRepository(
+    FirebaseAuth.instance,
+    FirebaseFirestore.instance,
+  );
 });
 
 final userRepositoryProvider = Provider<UserRepository>((ref) {
