@@ -31,6 +31,19 @@ abstract class AppUser with _$AppUser {
     /// Obrigatório para funcionários e supervisores; pode ser nulo para o
     /// admin da plataforma.
     String? companyId,
+
+    /// Contratos aos quais o usuário está vinculado (multi-tenant, nível cliente).
+    ///
+    /// Fonte da verdade do escopo: **supervisor** cobre vários; **funcionário**
+    /// tem exatamente um; **companyAdmin/platformAdmin** ficam vazios (enxergam
+    /// todo o escopo da empresa/plataforma). O gestor define esses vínculos no
+    /// painel web ao cadastrar o supervisor.
+    @Default(<String>[]) List<String> contractIds,
+
+    /// Clientes correspondentes aos [contractIds], **denormalizados** para
+    /// permitir filtros `array-contains` no Firestore (que não faz join).
+    /// Derivável de `Contract.clientId`; mantido em sincronia na escrita.
+    @Default(<String>[]) List<String> clientIds,
     String? phone,
     String? photoUrl,
 
@@ -46,6 +59,7 @@ abstract class AppUser with _$AppUser {
 
   bool get isEmployee => role.isEmployee;
   bool get isSupervisor => role.isSupervisor;
+  bool get isCompanyAdmin => role.isCompanyAdmin;
   bool get isPlatformAdmin => role.isPlatformAdmin;
 
   /// Primeiro nome, para saudações ("Olá, João!").

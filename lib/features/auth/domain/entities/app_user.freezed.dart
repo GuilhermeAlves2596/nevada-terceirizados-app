@@ -19,7 +19,16 @@ mixin _$AppUser {
  String? get email;/// CPF — identificador de login do usuário (só dígitos armazenados aqui).
  String? get cpf;/// Obrigatório para funcionários e supervisores; pode ser nulo para o
 /// admin da plataforma.
- String? get companyId; String? get phone; String? get photoUrl;/// Cargo/função exibido na interface (ex.: "Auxiliar de Limpeza").
+ String? get companyId;/// Contratos aos quais o usuário está vinculado (multi-tenant, nível cliente).
+///
+/// Fonte da verdade do escopo: **supervisor** cobre vários; **funcionário**
+/// tem exatamente um; **companyAdmin/platformAdmin** ficam vazios (enxergam
+/// todo o escopo da empresa/plataforma). O gestor define esses vínculos no
+/// painel web ao cadastrar o supervisor.
+ List<String> get contractIds;/// Clientes correspondentes aos [contractIds], **denormalizados** para
+/// permitir filtros `array-contains` no Firestore (que não faz join).
+/// Derivável de `Contract.clientId`; mantido em sincronia na escrita.
+ List<String> get clientIds; String? get phone; String? get photoUrl;/// Cargo/função exibido na interface (ex.: "Auxiliar de Limpeza").
  String? get jobTitle;/// Exige troca de senha no próximo acesso (1º login com senha temporária).
  bool get mustChangePassword; bool get active; DateTime get createdAt; DateTime get updatedAt;
 /// Create a copy of AppUser
@@ -32,16 +41,16 @@ $AppUserCopyWith<AppUser> get copyWith => _$AppUserCopyWithImpl<AppUser>(this as
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AppUser&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.role, role) || other.role == role)&&(identical(other.email, email) || other.email == email)&&(identical(other.cpf, cpf) || other.cpf == cpf)&&(identical(other.companyId, companyId) || other.companyId == companyId)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.photoUrl, photoUrl) || other.photoUrl == photoUrl)&&(identical(other.jobTitle, jobTitle) || other.jobTitle == jobTitle)&&(identical(other.mustChangePassword, mustChangePassword) || other.mustChangePassword == mustChangePassword)&&(identical(other.active, active) || other.active == active)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AppUser&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.role, role) || other.role == role)&&(identical(other.email, email) || other.email == email)&&(identical(other.cpf, cpf) || other.cpf == cpf)&&(identical(other.companyId, companyId) || other.companyId == companyId)&&const DeepCollectionEquality().equals(other.contractIds, contractIds)&&const DeepCollectionEquality().equals(other.clientIds, clientIds)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.photoUrl, photoUrl) || other.photoUrl == photoUrl)&&(identical(other.jobTitle, jobTitle) || other.jobTitle == jobTitle)&&(identical(other.mustChangePassword, mustChangePassword) || other.mustChangePassword == mustChangePassword)&&(identical(other.active, active) || other.active == active)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,role,email,cpf,companyId,phone,photoUrl,jobTitle,mustChangePassword,active,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,name,role,email,cpf,companyId,const DeepCollectionEquality().hash(contractIds),const DeepCollectionEquality().hash(clientIds),phone,photoUrl,jobTitle,mustChangePassword,active,createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'AppUser(id: $id, name: $name, role: $role, email: $email, cpf: $cpf, companyId: $companyId, phone: $phone, photoUrl: $photoUrl, jobTitle: $jobTitle, mustChangePassword: $mustChangePassword, active: $active, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'AppUser(id: $id, name: $name, role: $role, email: $email, cpf: $cpf, companyId: $companyId, contractIds: $contractIds, clientIds: $clientIds, phone: $phone, photoUrl: $photoUrl, jobTitle: $jobTitle, mustChangePassword: $mustChangePassword, active: $active, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -52,7 +61,7 @@ abstract mixin class $AppUserCopyWith<$Res>  {
   factory $AppUserCopyWith(AppUser value, $Res Function(AppUser) _then) = _$AppUserCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, UserRole role, String? email, String? cpf, String? companyId, String? phone, String? photoUrl, String? jobTitle, bool mustChangePassword, bool active, DateTime createdAt, DateTime updatedAt
+ String id, String name, UserRole role, String? email, String? cpf, String? companyId, List<String> contractIds, List<String> clientIds, String? phone, String? photoUrl, String? jobTitle, bool mustChangePassword, bool active, DateTime createdAt, DateTime updatedAt
 });
 
 
@@ -69,7 +78,7 @@ class _$AppUserCopyWithImpl<$Res>
 
 /// Create a copy of AppUser
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? role = null,Object? email = freezed,Object? cpf = freezed,Object? companyId = freezed,Object? phone = freezed,Object? photoUrl = freezed,Object? jobTitle = freezed,Object? mustChangePassword = null,Object? active = null,Object? createdAt = null,Object? updatedAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? role = null,Object? email = freezed,Object? cpf = freezed,Object? companyId = freezed,Object? contractIds = null,Object? clientIds = null,Object? phone = freezed,Object? photoUrl = freezed,Object? jobTitle = freezed,Object? mustChangePassword = null,Object? active = null,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -77,7 +86,9 @@ as String,role: null == role ? _self.role : role // ignore: cast_nullable_to_non
 as UserRole,email: freezed == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
 as String?,cpf: freezed == cpf ? _self.cpf : cpf // ignore: cast_nullable_to_non_nullable
 as String?,companyId: freezed == companyId ? _self.companyId : companyId // ignore: cast_nullable_to_non_nullable
-as String?,phone: freezed == phone ? _self.phone : phone // ignore: cast_nullable_to_non_nullable
+as String?,contractIds: null == contractIds ? _self.contractIds : contractIds // ignore: cast_nullable_to_non_nullable
+as List<String>,clientIds: null == clientIds ? _self.clientIds : clientIds // ignore: cast_nullable_to_non_nullable
+as List<String>,phone: freezed == phone ? _self.phone : phone // ignore: cast_nullable_to_non_nullable
 as String?,photoUrl: freezed == photoUrl ? _self.photoUrl : photoUrl // ignore: cast_nullable_to_non_nullable
 as String?,jobTitle: freezed == jobTitle ? _self.jobTitle : jobTitle // ignore: cast_nullable_to_non_nullable
 as String?,mustChangePassword: null == mustChangePassword ? _self.mustChangePassword : mustChangePassword // ignore: cast_nullable_to_non_nullable
@@ -169,10 +180,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  UserRole role,  String? email,  String? cpf,  String? companyId,  String? phone,  String? photoUrl,  String? jobTitle,  bool mustChangePassword,  bool active,  DateTime createdAt,  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  UserRole role,  String? email,  String? cpf,  String? companyId,  List<String> contractIds,  List<String> clientIds,  String? phone,  String? photoUrl,  String? jobTitle,  bool mustChangePassword,  bool active,  DateTime createdAt,  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AppUser() when $default != null:
-return $default(_that.id,_that.name,_that.role,_that.email,_that.cpf,_that.companyId,_that.phone,_that.photoUrl,_that.jobTitle,_that.mustChangePassword,_that.active,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.name,_that.role,_that.email,_that.cpf,_that.companyId,_that.contractIds,_that.clientIds,_that.phone,_that.photoUrl,_that.jobTitle,_that.mustChangePassword,_that.active,_that.createdAt,_that.updatedAt);case _:
   return orElse();
 
 }
@@ -190,10 +201,10 @@ return $default(_that.id,_that.name,_that.role,_that.email,_that.cpf,_that.compa
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  UserRole role,  String? email,  String? cpf,  String? companyId,  String? phone,  String? photoUrl,  String? jobTitle,  bool mustChangePassword,  bool active,  DateTime createdAt,  DateTime updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  UserRole role,  String? email,  String? cpf,  String? companyId,  List<String> contractIds,  List<String> clientIds,  String? phone,  String? photoUrl,  String? jobTitle,  bool mustChangePassword,  bool active,  DateTime createdAt,  DateTime updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _AppUser():
-return $default(_that.id,_that.name,_that.role,_that.email,_that.cpf,_that.companyId,_that.phone,_that.photoUrl,_that.jobTitle,_that.mustChangePassword,_that.active,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.name,_that.role,_that.email,_that.cpf,_that.companyId,_that.contractIds,_that.clientIds,_that.phone,_that.photoUrl,_that.jobTitle,_that.mustChangePassword,_that.active,_that.createdAt,_that.updatedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -210,10 +221,10 @@ return $default(_that.id,_that.name,_that.role,_that.email,_that.cpf,_that.compa
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  UserRole role,  String? email,  String? cpf,  String? companyId,  String? phone,  String? photoUrl,  String? jobTitle,  bool mustChangePassword,  bool active,  DateTime createdAt,  DateTime updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  UserRole role,  String? email,  String? cpf,  String? companyId,  List<String> contractIds,  List<String> clientIds,  String? phone,  String? photoUrl,  String? jobTitle,  bool mustChangePassword,  bool active,  DateTime createdAt,  DateTime updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _AppUser() when $default != null:
-return $default(_that.id,_that.name,_that.role,_that.email,_that.cpf,_that.companyId,_that.phone,_that.photoUrl,_that.jobTitle,_that.mustChangePassword,_that.active,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.name,_that.role,_that.email,_that.cpf,_that.companyId,_that.contractIds,_that.clientIds,_that.phone,_that.photoUrl,_that.jobTitle,_that.mustChangePassword,_that.active,_that.createdAt,_that.updatedAt);case _:
   return null;
 
 }
@@ -225,7 +236,7 @@ return $default(_that.id,_that.name,_that.role,_that.email,_that.cpf,_that.compa
 
 
 class _AppUser extends AppUser {
-  const _AppUser({required this.id, required this.name, required this.role, this.email, this.cpf, this.companyId, this.phone, this.photoUrl, this.jobTitle, this.mustChangePassword = false, this.active = true, required this.createdAt, required this.updatedAt}): super._();
+  const _AppUser({required this.id, required this.name, required this.role, this.email, this.cpf, this.companyId, final  List<String> contractIds = const <String>[], final  List<String> clientIds = const <String>[], this.phone, this.photoUrl, this.jobTitle, this.mustChangePassword = false, this.active = true, required this.createdAt, required this.updatedAt}): _contractIds = contractIds,_clientIds = clientIds,super._();
   
 
 @override final  String id;
@@ -239,6 +250,38 @@ class _AppUser extends AppUser {
 /// Obrigatório para funcionários e supervisores; pode ser nulo para o
 /// admin da plataforma.
 @override final  String? companyId;
+/// Contratos aos quais o usuário está vinculado (multi-tenant, nível cliente).
+///
+/// Fonte da verdade do escopo: **supervisor** cobre vários; **funcionário**
+/// tem exatamente um; **companyAdmin/platformAdmin** ficam vazios (enxergam
+/// todo o escopo da empresa/plataforma). O gestor define esses vínculos no
+/// painel web ao cadastrar o supervisor.
+ final  List<String> _contractIds;
+/// Contratos aos quais o usuário está vinculado (multi-tenant, nível cliente).
+///
+/// Fonte da verdade do escopo: **supervisor** cobre vários; **funcionário**
+/// tem exatamente um; **companyAdmin/platformAdmin** ficam vazios (enxergam
+/// todo o escopo da empresa/plataforma). O gestor define esses vínculos no
+/// painel web ao cadastrar o supervisor.
+@override@JsonKey() List<String> get contractIds {
+  if (_contractIds is EqualUnmodifiableListView) return _contractIds;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_contractIds);
+}
+
+/// Clientes correspondentes aos [contractIds], **denormalizados** para
+/// permitir filtros `array-contains` no Firestore (que não faz join).
+/// Derivável de `Contract.clientId`; mantido em sincronia na escrita.
+ final  List<String> _clientIds;
+/// Clientes correspondentes aos [contractIds], **denormalizados** para
+/// permitir filtros `array-contains` no Firestore (que não faz join).
+/// Derivável de `Contract.clientId`; mantido em sincronia na escrita.
+@override@JsonKey() List<String> get clientIds {
+  if (_clientIds is EqualUnmodifiableListView) return _clientIds;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_clientIds);
+}
+
 @override final  String? phone;
 @override final  String? photoUrl;
 /// Cargo/função exibido na interface (ex.: "Auxiliar de Limpeza").
@@ -259,16 +302,16 @@ _$AppUserCopyWith<_AppUser> get copyWith => __$AppUserCopyWithImpl<_AppUser>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AppUser&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.role, role) || other.role == role)&&(identical(other.email, email) || other.email == email)&&(identical(other.cpf, cpf) || other.cpf == cpf)&&(identical(other.companyId, companyId) || other.companyId == companyId)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.photoUrl, photoUrl) || other.photoUrl == photoUrl)&&(identical(other.jobTitle, jobTitle) || other.jobTitle == jobTitle)&&(identical(other.mustChangePassword, mustChangePassword) || other.mustChangePassword == mustChangePassword)&&(identical(other.active, active) || other.active == active)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AppUser&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.role, role) || other.role == role)&&(identical(other.email, email) || other.email == email)&&(identical(other.cpf, cpf) || other.cpf == cpf)&&(identical(other.companyId, companyId) || other.companyId == companyId)&&const DeepCollectionEquality().equals(other._contractIds, _contractIds)&&const DeepCollectionEquality().equals(other._clientIds, _clientIds)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.photoUrl, photoUrl) || other.photoUrl == photoUrl)&&(identical(other.jobTitle, jobTitle) || other.jobTitle == jobTitle)&&(identical(other.mustChangePassword, mustChangePassword) || other.mustChangePassword == mustChangePassword)&&(identical(other.active, active) || other.active == active)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,role,email,cpf,companyId,phone,photoUrl,jobTitle,mustChangePassword,active,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,name,role,email,cpf,companyId,const DeepCollectionEquality().hash(_contractIds),const DeepCollectionEquality().hash(_clientIds),phone,photoUrl,jobTitle,mustChangePassword,active,createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'AppUser(id: $id, name: $name, role: $role, email: $email, cpf: $cpf, companyId: $companyId, phone: $phone, photoUrl: $photoUrl, jobTitle: $jobTitle, mustChangePassword: $mustChangePassword, active: $active, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'AppUser(id: $id, name: $name, role: $role, email: $email, cpf: $cpf, companyId: $companyId, contractIds: $contractIds, clientIds: $clientIds, phone: $phone, photoUrl: $photoUrl, jobTitle: $jobTitle, mustChangePassword: $mustChangePassword, active: $active, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -279,7 +322,7 @@ abstract mixin class _$AppUserCopyWith<$Res> implements $AppUserCopyWith<$Res> {
   factory _$AppUserCopyWith(_AppUser value, $Res Function(_AppUser) _then) = __$AppUserCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, UserRole role, String? email, String? cpf, String? companyId, String? phone, String? photoUrl, String? jobTitle, bool mustChangePassword, bool active, DateTime createdAt, DateTime updatedAt
+ String id, String name, UserRole role, String? email, String? cpf, String? companyId, List<String> contractIds, List<String> clientIds, String? phone, String? photoUrl, String? jobTitle, bool mustChangePassword, bool active, DateTime createdAt, DateTime updatedAt
 });
 
 
@@ -296,7 +339,7 @@ class __$AppUserCopyWithImpl<$Res>
 
 /// Create a copy of AppUser
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? role = null,Object? email = freezed,Object? cpf = freezed,Object? companyId = freezed,Object? phone = freezed,Object? photoUrl = freezed,Object? jobTitle = freezed,Object? mustChangePassword = null,Object? active = null,Object? createdAt = null,Object? updatedAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? role = null,Object? email = freezed,Object? cpf = freezed,Object? companyId = freezed,Object? contractIds = null,Object? clientIds = null,Object? phone = freezed,Object? photoUrl = freezed,Object? jobTitle = freezed,Object? mustChangePassword = null,Object? active = null,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_AppUser(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -304,7 +347,9 @@ as String,role: null == role ? _self.role : role // ignore: cast_nullable_to_non
 as UserRole,email: freezed == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
 as String?,cpf: freezed == cpf ? _self.cpf : cpf // ignore: cast_nullable_to_non_nullable
 as String?,companyId: freezed == companyId ? _self.companyId : companyId // ignore: cast_nullable_to_non_nullable
-as String?,phone: freezed == phone ? _self.phone : phone // ignore: cast_nullable_to_non_nullable
+as String?,contractIds: null == contractIds ? _self._contractIds : contractIds // ignore: cast_nullable_to_non_nullable
+as List<String>,clientIds: null == clientIds ? _self._clientIds : clientIds // ignore: cast_nullable_to_non_nullable
+as List<String>,phone: freezed == phone ? _self.phone : phone // ignore: cast_nullable_to_non_nullable
 as String?,photoUrl: freezed == photoUrl ? _self.photoUrl : photoUrl // ignore: cast_nullable_to_non_nullable
 as String?,jobTitle: freezed == jobTitle ? _self.jobTitle : jobTitle // ignore: cast_nullable_to_non_nullable
 as String?,mustChangePassword: null == mustChangePassword ? _self.mustChangePassword : mustChangePassword // ignore: cast_nullable_to_non_nullable
