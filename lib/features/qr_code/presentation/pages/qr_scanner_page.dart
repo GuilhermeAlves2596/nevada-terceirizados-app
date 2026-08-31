@@ -9,9 +9,13 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_radius.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../app/providers/company_catalog.dart';
 import '../../../../core/utils/snackbars.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
+import '../../../tasks/domain/entities/task.dart';
+import '../../../tasks/presentation/models/task_view.dart';
+import '../../../tasks/presentation/widgets/task_card.dart';
 import '../../domain/qr_resolver.dart';
 import '../providers/qr_providers.dart';
 
@@ -52,12 +56,61 @@ class _QrScannerPageState extends ConsumerState<QrScannerPage> {
     if (!mounted) return;
 
     switch (result) {
-      case QrResolveSuccess(:final taskId):
-        context.pushReplacement('${RoutePaths.employeeTasks}/$taskId');
+      case QrResolveSuccess(:final tasks, :final locationName):
+        if (tasks.length == 1) {
+          context.pushReplacement('${RoutePaths.employeeTasks}/${tasks.first.id}');
+        } else {
+          await _pickTask(tasks, locationName);
+          if (mounted) setState(() => _handling = false);
+        }
       case QrResolveFailure(:final message):
         showErrorSnack(context, message);
         setState(() => _handling = false);
     }
+  }
+
+  /// Quando há mais de uma tarefa aberta do funcionário no ambiente, deixa ele
+  /// escolher qual abrir.
+  Future<void> _pickTask(List<Task> tasks, String locationName) async {
+    final catalog = await ref.read(companyCatalogProvider.future);
+    if (!mounted) return;
+    final views = [for (final t in tasks) TaskView.resolve(t, catalog)];
+
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: Text('Tarefas em $locationName', style: AppTypography.title),
+            ),
+            Flexible(
+              child: ListView.separated(
+                shrinkWrap: true,
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                itemCount: views.length,
+                separatorBuilder: (_, _) => AppSpacing.gapSm,
+                itemBuilder: (context, i) {
+                  final v = views[i];
+                  return TaskCard(
+                    view: v,
+                    onTap: () {
+                      Navigator.pop(sheetContext);
+                      context.pushReplacement(
+                          '${RoutePaths.employeeTasks}/${v.task.id}');
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override

@@ -29,6 +29,20 @@ abstract interface class TaskRepository {
     required TaskPriority priority,
   });
 
+  /// Edita uma tarefa (apenas quando ainda não iniciada). Não altera
+  /// status/progresso.
+  Future<Task> update({
+    required String id,
+    required String clientId,
+    required String contractId,
+    required String locationId,
+    required String checklistId,
+    required String assignedTo,
+    required DateTime scheduledDate,
+    String? scheduledStartTime,
+    required TaskPriority priority,
+  });
+
   /// Altera o status da tarefa (ex.: cancelar).
   Future<Task> setStatus({required String taskId, required TaskStatus status});
 

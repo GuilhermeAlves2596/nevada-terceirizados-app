@@ -12,4 +12,15 @@ abstract interface class ClientRepository {
     String? email,
     String? address,
   });
+
+  Future<Client> update({
+    required String id,
+    required String name,
+    String? document,
+    String? phone,
+    String? email,
+    String? address,
+  });
+
+  Future<void> delete(String id);
 }

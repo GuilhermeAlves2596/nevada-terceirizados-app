@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/route_paths.dart';
 import '../../../../app/theme/app_colors.dart';
+import '../../../../core/utils/credentials.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/widgets/app_avatar.dart';
@@ -51,6 +52,8 @@ class EmployeesListPage extends ConsumerWidget {
                 itemBuilder: (context, i) {
                   final e = employees[i];
                   return AppCard(
+                    onTap: () => context.push(
+                        RoutePaths.supervisorEmployeesCreate, extra: e),
                     child: Row(
                       children: [
                         AppAvatar(initials: e.initials, imageUrl: e.photoUrl),
@@ -62,7 +65,10 @@ class EmployeesListPage extends ConsumerWidget {
                               Text(e.name, style: AppTypography.subtitle),
                               const SizedBox(height: 2),
                               Text(
-                                e.jobTitle ?? e.email,
+                                e.jobTitle ??
+                                    (e.cpf != null
+                                        ? Credentials.formatCpf(e.cpf!)
+                                        : (e.email ?? '—')),
                                 style: AppTypography.caption,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,

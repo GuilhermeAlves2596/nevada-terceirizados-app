@@ -10,7 +10,9 @@ import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/enums/service_type.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/utils/dialogs.dart';
 import '../../../../core/utils/snackbars.dart';
+import '../../domain/entities/checklist.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_form_fields.dart';
 import '../../../../core/widgets/app_text_field.dart';
@@ -25,7 +27,9 @@ class _ItemDraft {
 }
 
 class ChecklistFormPage extends ConsumerStatefulWidget {
-  const ChecklistFormPage({super.key});
+  const ChecklistFormPage({super.key, this.existing});
+
+  final Checklist? existing;
 
   @override
   ConsumerState<ChecklistFormPage> createState() => _ChecklistFormPageState();
@@ -33,13 +37,29 @@ class ChecklistFormPage extends ConsumerStatefulWidget {
 
 class _ChecklistFormPageState extends ConsumerState<ChecklistFormPage> {
   final _formKey = GlobalKey<FormState>();
-  final _name = TextEditingController();
-  final _description = TextEditingController();
+  late final TextEditingController _name;
+  late final TextEditingController _description;
   final _newItem = TextEditingController();
-  ServiceType _serviceType = ServiceType.limpeza;
+  late ServiceType _serviceType;
   final List<_ItemDraft> _items = [];
   int _seq = 0;
   bool _saving = false;
+
+  bool get _isEditing => widget.existing != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final c = widget.existing;
+    _name = TextEditingController(text: c?.name ?? '');
+    _description = TextEditingController(text: c?.description ?? '');
+    _serviceType = c?.serviceType ?? ServiceType.limpeza;
+    if (c != null) {
+      for (final item in c.orderedItems) {
+        _items.add(_ItemDraft(_seq++, item.description)..required = item.required);
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -75,22 +95,33 @@ class _ChecklistFormPageState extends ConsumerState<ChecklistFormPage> {
     final companyId = ref.read(currentUserProvider)?.companyId;
     if (companyId == null) return;
 
+    final items = [
+      for (final d in _items) (description: d.description, required: d.required),
+    ];
+
     setState(() => _saving = true);
     try {
-      await ref.read(checklistRepositoryProvider).create(
-            companyId: companyId,
-            name: _name.text,
-            serviceType: _serviceType,
-            description: _description.text,
-            items: [
-              for (final d in _items)
-                (description: d.description, required: d.required),
-            ],
-          );
-      ref.invalidate(checklistsProvider);
-      ref.invalidate(companyCatalogProvider);
+      final repo = ref.read(checklistRepositoryProvider);
+      if (_isEditing) {
+        await repo.update(
+          id: widget.existing!.id,
+          name: _name.text,
+          serviceType: _serviceType,
+          description: _description.text,
+          items: items,
+        );
+      } else {
+        await repo.create(
+          companyId: companyId,
+          name: _name.text,
+          serviceType: _serviceType,
+          description: _description.text,
+          items: items,
+        );
+      }
+      _invalidate();
       if (!mounted) return;
-      showSuccessSnack(context, 'Checklist criado!');
+      showSuccessSnack(context, _isEditing ? 'Checklist atualizado!' : 'Checklist criado!');
       context.pop();
     } on AppException catch (e) {
       if (mounted) showErrorSnack(context, e.message);
@@ -99,10 +130,41 @@ class _ChecklistFormPageState extends ConsumerState<ChecklistFormPage> {
     }
   }
 
+  void _invalidate() {
+    ref.invalidate(checklistsProvider);
+    ref.invalidate(companyCatalogProvider);
+  }
+
+  Future<void> _delete() async {
+    final ok = await confirmDialog(
+      context,
+      title: 'Excluir checklist',
+      message: 'Excluir "${widget.existing!.name}"?',
+      confirmLabel: 'Excluir',
+      danger: true,
+    );
+    if (!ok) return;
+    await ref.read(checklistRepositoryProvider).delete(widget.existing!.id);
+    _invalidate();
+    if (!mounted) return;
+    showSuccessSnack(context, 'Checklist excluído.');
+    context.pop();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Novo checklist')),
+      appBar: AppBar(
+        title: Text(_isEditing ? 'Editar checklist' : 'Novo checklist'),
+        actions: [
+          if (_isEditing)
+            IconButton(
+              tooltip: 'Excluir',
+              icon: const Icon(Icons.delete_outline, color: AppColors.danger),
+              onPressed: _delete,
+            ),
+        ],
+      ),
       body: Form(
         key: _formKey,
         child: ListView(

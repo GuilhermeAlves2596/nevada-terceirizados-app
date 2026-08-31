@@ -50,6 +50,8 @@ class ChecklistsListPage extends ConsumerWidget {
                 itemBuilder: (context, i) {
                   final c = checklists[i];
                   return AppCard(
+                    onTap: () => context.push(
+                        RoutePaths.supervisorChecklistsCreate, extra: c),
                     child: Row(
                       children: [
                         Container(

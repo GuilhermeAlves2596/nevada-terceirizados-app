@@ -14,6 +14,7 @@ class AppFormScaffold extends StatelessWidget {
     required this.onSubmit,
     this.submitLabel = 'Salvar',
     this.submitting = false,
+    this.actions = const [],
   });
 
   final String title;
@@ -22,11 +23,12 @@ class AppFormScaffold extends StatelessWidget {
   final VoidCallback onSubmit;
   final String submitLabel;
   final bool submitting;
+  final List<Widget> actions;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(title)),
+      appBar: AppBar(title: Text(title), actions: actions),
       body: Form(
         key: formKey,
         child: ListView(
