@@ -11,33 +11,42 @@ import 'package:nevada_terceirizados/features/tasks/data/repositories/mock_task_
 void main() {
   const companyId = MockDatabase.companyNevada;
 
-  test('createEmployee cadastra funcionário ativo com role employee', () async {
+  test('createEmployee cria funcionário com CPF e senha temporária', () async {
     final db = MockDatabase.seeded();
     final repo = MockUserRepository(db);
 
-    final created = await repo.createEmployee(
+    final result = await repo.createEmployee(
       companyId: companyId,
       name: 'Ana Souza',
-      email: 'ana@teste.com',
+      cpf: '111.222.333-44',
     );
 
-    expect(created.role, UserRole.employee);
-    expect(created.active, isTrue);
-    expect(created.companyId, companyId);
+    expect(result.user.role, UserRole.employee);
+    expect(result.user.active, isTrue);
+    expect(result.user.companyId, companyId);
+    expect(result.user.cpf, '11122233344'); // só dígitos
+    expect(result.user.mustChangePassword, isTrue);
+    expect(result.temporaryPassword.length, greaterThanOrEqualTo(6));
 
     final employees = await repo.getEmployees(companyId: companyId);
-    expect(employees.any((e) => e.id == created.id), isTrue);
+    expect(employees.any((e) => e.id == result.user.id), isTrue);
   });
 
-  test('createEmployee rejeita e-mail duplicado', () async {
+  test('createEmployee rejeita CPF duplicado', () async {
     final db = MockDatabase.seeded();
     final repo = MockUserRepository(db);
+
+    await repo.createEmployee(
+      companyId: companyId,
+      name: 'Primeiro',
+      cpf: '55566677788',
+    );
 
     expect(
       () => repo.createEmployee(
         companyId: companyId,
-        name: 'Outro',
-        email: 'supervisor@teste.com', // já existe no seed
+        name: 'Segundo',
+        cpf: '555.666.777-88',
       ),
       throwsA(isA<ValidationException>()),
     );

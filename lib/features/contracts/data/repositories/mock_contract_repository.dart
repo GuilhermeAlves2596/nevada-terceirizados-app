@@ -63,4 +63,33 @@ class MockContractRepository implements ContractRepository {
     _db.upsertContract(contract);
     return contract;
   }
+
+  @override
+  Future<Contract> update({
+    required String id,
+    required String clientId,
+    required String name,
+    String? description,
+    DateTime? startDate,
+    DateTime? endDate,
+    required ContractStatus status,
+  }) async {
+    final current = _db.contracts.firstWhere((c) => c.id == id);
+    final updated = current.copyWith(
+      clientId: clientId,
+      name: name.trim(),
+      description: description?.trim(),
+      startDate: startDate,
+      endDate: endDate,
+      status: status,
+      updatedAt: DateTime.now(),
+    );
+    _db.upsertContract(updated);
+    return updated;
+  }
+
+  @override
+  Future<void> delete(String id) async {
+    _db.contracts.removeWhere((c) => c.id == id);
+  }
 }

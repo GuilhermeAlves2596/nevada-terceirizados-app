@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../../core/enums/user_role.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/utils/credentials.dart';
 import '../../domain/entities/app_user.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../models/app_user_firestore.dart';
@@ -26,16 +27,17 @@ class FirebaseAuthRepository implements AuthRepository {
 
   @override
   Future<AppUser> signIn({
-    required String email,
+    required String identifier,
     required String password,
   }) async {
     try {
+      final email = Credentials.resolveLoginEmail(identifier);
       final cred = await _auth.signInWithEmailAndPassword(
-        email: email.trim(),
+        email: email,
         password: password,
       );
       final user = cred.user!;
-      return _loadOrProvision(user.uid, user.email ?? email.trim());
+      return _loadOrProvision(user.uid, user.email ?? email);
     } on FirebaseAuthException catch (e) {
       throw AuthenticationException(_messageFor(e));
     }
@@ -43,6 +45,25 @@ class FirebaseAuthRepository implements AuthRepository {
 
   @override
   Future<void> signOut() => _auth.signOut();
+
+  @override
+  Future<AppUser> changePassword(String newPassword) async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw const AuthenticationException('Sessão expirada. Entre novamente.');
+    }
+    try {
+      await user.updatePassword(newPassword);
+    } on FirebaseAuthException catch (e) {
+      throw AuthenticationException(_messageFor(e));
+    }
+    await _users.doc(user.uid).update({
+      'mustChangePassword': false,
+      'updatedAt': Timestamp.now(),
+    });
+    final doc = await _users.doc(user.uid).get();
+    return appUserFromFirestore(user.uid, doc.data()!);
+  }
 
   @override
   Future<AppUser?> currentUser() async {
@@ -84,6 +105,9 @@ class FirebaseAuthRepository implements AuthRepository {
           'Muitas tentativas. Aguarde um momento e tente novamente.',
         'network-request-failed' =>
           'Sem conexão. Verifique sua internet e tente novamente.',
+        'weak-password' => 'A senha deve ter pelo menos 6 caracteres.',
+        'requires-recent-login' =>
+          'Por segurança, entre novamente para trocar a senha.',
         _ => 'Não foi possível entrar. Tente novamente.',
       };
 }

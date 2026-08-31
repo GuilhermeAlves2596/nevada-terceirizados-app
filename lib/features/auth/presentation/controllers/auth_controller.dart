@@ -26,12 +26,15 @@ class AuthController extends Notifier<AuthState> {
     }
   }
 
-  Future<void> signIn({required String email, required String password}) async {
+  Future<void> signIn({
+    required String identifier,
+    required String password,
+  }) async {
     state = const AuthState.authenticating();
     try {
       final user = await ref
           .read(authRepositoryProvider)
-          .signIn(email: email, password: password);
+          .signIn(identifier: identifier, password: password);
       state = AuthState.authenticated(user);
     } on AppException catch (e) {
       state = AuthState.unauthenticated(error: e.message);
@@ -39,6 +42,21 @@ class AuthController extends Notifier<AuthState> {
       state = const AuthState.unauthenticated(
         error: 'Não foi possível entrar. Tente novamente.',
       );
+    }
+  }
+
+  /// Troca a senha do usuário logado (fluxo de 1º acesso). Retorna a mensagem
+  /// de erro, ou `null` em caso de sucesso.
+  Future<String?> changePassword(String newPassword) async {
+    try {
+      final user =
+          await ref.read(authRepositoryProvider).changePassword(newPassword);
+      state = AuthState.authenticated(user);
+      return null;
+    } on AppException catch (e) {
+      return e.message;
+    } catch (_) {
+      return 'Não foi possível trocar a senha. Tente novamente.';
     }
   }
 

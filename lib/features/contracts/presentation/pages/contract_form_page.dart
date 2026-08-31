@@ -4,19 +4,24 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../app/di/repository_providers.dart';
 import '../../../../app/providers/company_catalog.dart';
+import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../core/enums/contract_status.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/extensions/date_extensions.dart';
+import '../../../../core/utils/dialogs.dart';
 import '../../../../core/utils/snackbars.dart';
 import '../../../../core/widgets/app_form_fields.dart';
 import '../../../../core/widgets/app_form_scaffold.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
+import '../../domain/entities/contract.dart';
 import '../providers/contracts_providers.dart';
 
 class ContractFormPage extends ConsumerStatefulWidget {
-  const ContractFormPage({super.key});
+  const ContractFormPage({super.key, this.existing});
+
+  final Contract? existing;
 
   @override
   ConsumerState<ContractFormPage> createState() => _ContractFormPageState();
@@ -24,19 +29,38 @@ class ContractFormPage extends ConsumerStatefulWidget {
 
 class _ContractFormPageState extends ConsumerState<ContractFormPage> {
   final _formKey = GlobalKey<FormState>();
-  final _name = TextEditingController();
-  final _description = TextEditingController();
+  late final TextEditingController _name;
+  late final TextEditingController _description;
   String? _clientId;
   DateTime? _startDate;
   DateTime? _endDate;
-  ContractStatus _status = ContractStatus.active;
+  late ContractStatus _status;
   bool _saving = false;
+
+  bool get _isEditing => widget.existing != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final c = widget.existing;
+    _name = TextEditingController(text: c?.name ?? '');
+    _description = TextEditingController(text: c?.description ?? '');
+    _clientId = c?.clientId;
+    _startDate = c?.startDate;
+    _endDate = c?.endDate;
+    _status = c?.status ?? ContractStatus.active;
+  }
 
   @override
   void dispose() {
     _name.dispose();
     _description.dispose();
     super.dispose();
+  }
+
+  void _invalidate() {
+    ref.invalidate(contractsProvider);
+    ref.invalidate(companyCatalogProvider);
   }
 
   Future<void> _pickDate({required bool start}) async {
@@ -59,19 +83,31 @@ class _ContractFormPageState extends ConsumerState<ContractFormPage> {
 
     setState(() => _saving = true);
     try {
-      await ref.read(contractRepositoryProvider).create(
-            companyId: companyId,
-            clientId: _clientId!,
-            name: _name.text,
-            description: _description.text,
-            startDate: _startDate,
-            endDate: _endDate,
-            status: _status,
-          );
-      ref.invalidate(contractsProvider);
-      ref.invalidate(companyCatalogProvider);
+      final repo = ref.read(contractRepositoryProvider);
+      if (_isEditing) {
+        await repo.update(
+          id: widget.existing!.id,
+          clientId: _clientId!,
+          name: _name.text,
+          description: _description.text,
+          startDate: _startDate,
+          endDate: _endDate,
+          status: _status,
+        );
+      } else {
+        await repo.create(
+          companyId: companyId,
+          clientId: _clientId!,
+          name: _name.text,
+          description: _description.text,
+          startDate: _startDate,
+          endDate: _endDate,
+          status: _status,
+        );
+      }
+      _invalidate();
       if (!mounted) return;
-      showSuccessSnack(context, 'Contrato cadastrado!');
+      showSuccessSnack(context, _isEditing ? 'Contrato atualizado!' : 'Contrato cadastrado!');
       context.pop();
     } on AppException catch (e) {
       if (mounted) showErrorSnack(context, e.message);
@@ -80,28 +116,51 @@ class _ContractFormPageState extends ConsumerState<ContractFormPage> {
     }
   }
 
+  Future<void> _delete() async {
+    final ok = await confirmDialog(
+      context,
+      title: 'Excluir contrato',
+      message: 'Excluir "${widget.existing!.name}"?',
+      confirmLabel: 'Excluir',
+      danger: true,
+    );
+    if (!ok) return;
+    await ref.read(contractRepositoryProvider).delete(widget.existing!.id);
+    _invalidate();
+    if (!mounted) return;
+    showSuccessSnack(context, 'Contrato excluído.');
+    context.pop();
+  }
+
   @override
   Widget build(BuildContext context) {
     final clients =
         ref.watch(companyCatalogProvider).valueOrNull?.clientsById ?? const {};
-    final clientItems = [
-      for (final c in clients.values)
-        DropdownMenuItem(value: c.id, child: Text(c.name)),
-    ];
 
     return AppFormScaffold(
-      title: 'Novo contrato',
+      title: _isEditing ? 'Editar contrato' : 'Novo contrato',
       formKey: _formKey,
-      submitLabel: 'Cadastrar',
+      submitLabel: _isEditing ? 'Salvar' : 'Cadastrar',
       submitting: _saving,
       onSubmit: _save,
+      actions: [
+        if (_isEditing)
+          IconButton(
+            tooltip: 'Excluir',
+            icon: const Icon(Icons.delete_outline, color: AppColors.danger),
+            onPressed: _delete,
+          ),
+      ],
       children: [
         AppDropdownField<String>(
           label: 'Cliente',
           required: true,
           value: _clientId,
           icon: Icons.apartment_outlined,
-          items: clientItems,
+          items: [
+            for (final c in clients.values)
+              DropdownMenuItem(value: c.id, child: Text(c.name)),
+          ],
           onChanged: (v) => setState(() => _clientId = v),
         ),
         AppSpacing.gapMd,

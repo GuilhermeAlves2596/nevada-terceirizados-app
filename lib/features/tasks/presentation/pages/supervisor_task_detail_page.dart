@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../app/di/repository_providers.dart';
 import '../../../../app/providers/company_catalog.dart';
+import '../../../../app/router/route_paths.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_typography.dart';
@@ -105,10 +106,28 @@ class SupervisorTaskDetailPage extends ConsumerWidget {
           if (task != null)
             PopupMenuButton<String>(
               onSelected: (v) {
-                if (v == 'cancel') _cancel(context, ref);
-                if (v == 'delete') _delete(context, ref);
+                switch (v) {
+                  case 'edit':
+                    context.push(RoutePaths.supervisorTasksCreate, extra: task);
+                  case 'qr':
+                    context.push(
+                        '${RoutePaths.supervisorLocations}/${task.locationId}/qr');
+                  case 'cancel':
+                    _cancel(context, ref);
+                  case 'delete':
+                    _delete(context, ref);
+                }
               },
               itemBuilder: (context) => [
+                if (task.isPending)
+                  const PopupMenuItem(
+                    value: 'edit',
+                    child: Text('Editar tarefa'),
+                  ),
+                const PopupMenuItem(
+                  value: 'qr',
+                  child: Text('Ver QR do ambiente'),
+                ),
                 if (task.status.isOpen)
                   const PopupMenuItem(
                     value: 'cancel',

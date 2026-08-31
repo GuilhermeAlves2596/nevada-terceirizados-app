@@ -49,4 +49,31 @@ class MockClientRepository implements ClientRepository {
     _db.upsertClient(client);
     return client;
   }
+
+  @override
+  Future<Client> update({
+    required String id,
+    required String name,
+    String? document,
+    String? phone,
+    String? email,
+    String? address,
+  }) async {
+    final current = _db.clients.firstWhere((c) => c.id == id);
+    final updated = current.copyWith(
+      name: name.trim(),
+      document: document?.trim(),
+      phone: phone?.trim(),
+      email: email?.trim(),
+      address: address?.trim(),
+      updatedAt: DateTime.now(),
+    );
+    _db.upsertClient(updated);
+    return updated;
+  }
+
+  @override
+  Future<void> delete(String id) async {
+    _db.clients.removeWhere((c) => c.id == id);
+  }
 }

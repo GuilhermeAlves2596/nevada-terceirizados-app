@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/utils/credentials.dart';
 import '../../../../core/widgets/app_avatar.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_card.dart';
@@ -51,12 +52,22 @@ class ProfilePage extends ConsumerWidget {
                         label: 'Perfil',
                         value: user.role.label,
                       ),
-                      const Divider(height: 1),
-                      _InfoRow(
-                        icon: Icons.mail_outline,
-                        label: 'E-mail',
-                        value: user.email,
-                      ),
+                      if (user.cpf != null) ...[
+                        const Divider(height: 1),
+                        _InfoRow(
+                          icon: Icons.fingerprint,
+                          label: 'CPF',
+                          value: Credentials.formatCpf(user.cpf!),
+                        ),
+                      ],
+                      if (user.email != null && user.email!.isNotEmpty) ...[
+                        const Divider(height: 1),
+                        _InfoRow(
+                          icon: Icons.mail_outline,
+                          label: 'E-mail',
+                          value: user.email!,
+                        ),
+                      ],
                       if (user.phone != null) ...[
                         const Divider(height: 1),
                         _InfoRow(

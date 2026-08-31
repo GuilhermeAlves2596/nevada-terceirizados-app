@@ -1,3 +1,4 @@
+import '../../tasks/domain/entities/task.dart';
 import '../../locations/domain/repositories/location_repository.dart';
 import '../../tasks/domain/repositories/task_repository.dart';
 import 'qr_payload.dart';
@@ -7,10 +8,10 @@ sealed class QrResolveResult {
   const QrResolveResult();
 }
 
-/// Sucesso: há uma tarefa aberta do funcionário neste ambiente.
+/// Sucesso: as tarefas **abertas do funcionário** neste ambiente (1 ou mais).
 class QrResolveSuccess extends QrResolveResult {
-  const QrResolveSuccess({required this.taskId, required this.locationName});
-  final String taskId;
+  const QrResolveSuccess({required this.tasks, required this.locationName});
+  final List<Task> tasks;
   final String locationName;
 }
 
@@ -59,21 +60,21 @@ class QrResolver {
     if (open.isEmpty) {
       if (here.isNotEmpty) {
         return QrResolveFailure(
-          'Não há tarefa pendente para você em ${location.name}.',
+          'Você não tem tarefa pendente em ${location.name} '
+          '(as suas já foram concluídas ou canceladas).',
         );
       }
-      return const QrResolveFailure(
-        'Você não possui permissão para acessar este ambiente.',
+      return QrResolveFailure(
+        'Você não tem tarefa atribuída em ${location.name}.',
       );
     }
 
     // Em andamento primeiro; depois a mais antiga agendada.
     open.sort((a, b) {
-      if (a.status.isOpen != b.status.isOpen) return a.status.isOpen ? -1 : 1;
       if (a.isInProgress != b.isInProgress) return a.isInProgress ? -1 : 1;
       return a.scheduledDate.compareTo(b.scheduledDate);
     });
 
-    return QrResolveSuccess(taskId: open.first.id, locationName: location.name);
+    return QrResolveSuccess(tasks: open, locationName: location.name);
   }
 }

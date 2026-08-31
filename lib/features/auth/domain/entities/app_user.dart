@@ -19,8 +19,14 @@ abstract class AppUser with _$AppUser {
   const factory AppUser({
     required String id,
     required String name,
-    required String email,
     required UserRole role,
+
+    /// E-mail é **opcional** (funcionário de campo costuma não ter). O login é
+    /// feito por [cpf]; o e-mail vira apenas dado de perfil/notificação.
+    String? email,
+
+    /// CPF — identificador de login do usuário (só dígitos armazenados aqui).
+    String? cpf,
 
     /// Obrigatório para funcionários e supervisores; pode ser nulo para o
     /// admin da plataforma.
@@ -30,6 +36,9 @@ abstract class AppUser with _$AppUser {
 
     /// Cargo/função exibido na interface (ex.: "Auxiliar de Limpeza").
     String? jobTitle,
+
+    /// Exige troca de senha no próximo acesso (1º login com senha temporária).
+    @Default(false) bool mustChangePassword,
     @Default(true) bool active,
     required DateTime createdAt,
     required DateTime updatedAt,
