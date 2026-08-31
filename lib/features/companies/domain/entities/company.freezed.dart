@@ -14,7 +14,10 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Company {
 
- String get id; String get name; String? get document; String? get logoUrl; bool get active; DateTime get createdAt; DateTime get updatedAt;
+ String get id; String get name; String? get document; String? get logoUrl;/// Plano contratado (rótulo livre por enquanto, ex.: "basic"/"pro").
+ String? get plan;/// Situação da assinatura — controla o acesso da empresa ao SaaS.
+ SubscriptionStatus get subscriptionStatus;/// Nº de assentos (usuários) contratados; nulo = sem limite definido.
+ int? get seats; bool get active; DateTime get createdAt; DateTime get updatedAt;
 /// Create a copy of Company
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +28,16 @@ $CompanyCopyWith<Company> get copyWith => _$CompanyCopyWithImpl<Company>(this as
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Company&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.document, document) || other.document == document)&&(identical(other.logoUrl, logoUrl) || other.logoUrl == logoUrl)&&(identical(other.active, active) || other.active == active)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Company&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.document, document) || other.document == document)&&(identical(other.logoUrl, logoUrl) || other.logoUrl == logoUrl)&&(identical(other.plan, plan) || other.plan == plan)&&(identical(other.subscriptionStatus, subscriptionStatus) || other.subscriptionStatus == subscriptionStatus)&&(identical(other.seats, seats) || other.seats == seats)&&(identical(other.active, active) || other.active == active)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,document,logoUrl,active,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,name,document,logoUrl,plan,subscriptionStatus,seats,active,createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'Company(id: $id, name: $name, document: $document, logoUrl: $logoUrl, active: $active, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'Company(id: $id, name: $name, document: $document, logoUrl: $logoUrl, plan: $plan, subscriptionStatus: $subscriptionStatus, seats: $seats, active: $active, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -45,7 +48,7 @@ abstract mixin class $CompanyCopyWith<$Res>  {
   factory $CompanyCopyWith(Company value, $Res Function(Company) _then) = _$CompanyCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, String? document, String? logoUrl, bool active, DateTime createdAt, DateTime updatedAt
+ String id, String name, String? document, String? logoUrl, String? plan, SubscriptionStatus subscriptionStatus, int? seats, bool active, DateTime createdAt, DateTime updatedAt
 });
 
 
@@ -62,13 +65,16 @@ class _$CompanyCopyWithImpl<$Res>
 
 /// Create a copy of Company
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? document = freezed,Object? logoUrl = freezed,Object? active = null,Object? createdAt = null,Object? updatedAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? document = freezed,Object? logoUrl = freezed,Object? plan = freezed,Object? subscriptionStatus = null,Object? seats = freezed,Object? active = null,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,document: freezed == document ? _self.document : document // ignore: cast_nullable_to_non_nullable
 as String?,logoUrl: freezed == logoUrl ? _self.logoUrl : logoUrl // ignore: cast_nullable_to_non_nullable
-as String?,active: null == active ? _self.active : active // ignore: cast_nullable_to_non_nullable
+as String?,plan: freezed == plan ? _self.plan : plan // ignore: cast_nullable_to_non_nullable
+as String?,subscriptionStatus: null == subscriptionStatus ? _self.subscriptionStatus : subscriptionStatus // ignore: cast_nullable_to_non_nullable
+as SubscriptionStatus,seats: freezed == seats ? _self.seats : seats // ignore: cast_nullable_to_non_nullable
+as int?,active: null == active ? _self.active : active // ignore: cast_nullable_to_non_nullable
 as bool,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,
@@ -156,10 +162,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String? document,  String? logoUrl,  bool active,  DateTime createdAt,  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String? document,  String? logoUrl,  String? plan,  SubscriptionStatus subscriptionStatus,  int? seats,  bool active,  DateTime createdAt,  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Company() when $default != null:
-return $default(_that.id,_that.name,_that.document,_that.logoUrl,_that.active,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.name,_that.document,_that.logoUrl,_that.plan,_that.subscriptionStatus,_that.seats,_that.active,_that.createdAt,_that.updatedAt);case _:
   return orElse();
 
 }
@@ -177,10 +183,10 @@ return $default(_that.id,_that.name,_that.document,_that.logoUrl,_that.active,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String? document,  String? logoUrl,  bool active,  DateTime createdAt,  DateTime updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String? document,  String? logoUrl,  String? plan,  SubscriptionStatus subscriptionStatus,  int? seats,  bool active,  DateTime createdAt,  DateTime updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _Company():
-return $default(_that.id,_that.name,_that.document,_that.logoUrl,_that.active,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.name,_that.document,_that.logoUrl,_that.plan,_that.subscriptionStatus,_that.seats,_that.active,_that.createdAt,_that.updatedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -197,10 +203,10 @@ return $default(_that.id,_that.name,_that.document,_that.logoUrl,_that.active,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String? document,  String? logoUrl,  bool active,  DateTime createdAt,  DateTime updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String? document,  String? logoUrl,  String? plan,  SubscriptionStatus subscriptionStatus,  int? seats,  bool active,  DateTime createdAt,  DateTime updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _Company() when $default != null:
-return $default(_that.id,_that.name,_that.document,_that.logoUrl,_that.active,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.name,_that.document,_that.logoUrl,_that.plan,_that.subscriptionStatus,_that.seats,_that.active,_that.createdAt,_that.updatedAt);case _:
   return null;
 
 }
@@ -212,13 +218,19 @@ return $default(_that.id,_that.name,_that.document,_that.logoUrl,_that.active,_t
 
 
 class _Company implements Company {
-  const _Company({required this.id, required this.name, this.document, this.logoUrl, this.active = true, required this.createdAt, required this.updatedAt});
+  const _Company({required this.id, required this.name, this.document, this.logoUrl, this.plan, this.subscriptionStatus = SubscriptionStatus.trial, this.seats, this.active = true, required this.createdAt, required this.updatedAt});
   
 
 @override final  String id;
 @override final  String name;
 @override final  String? document;
 @override final  String? logoUrl;
+/// Plano contratado (rótulo livre por enquanto, ex.: "basic"/"pro").
+@override final  String? plan;
+/// Situação da assinatura — controla o acesso da empresa ao SaaS.
+@override@JsonKey() final  SubscriptionStatus subscriptionStatus;
+/// Nº de assentos (usuários) contratados; nulo = sem limite definido.
+@override final  int? seats;
 @override@JsonKey() final  bool active;
 @override final  DateTime createdAt;
 @override final  DateTime updatedAt;
@@ -233,16 +245,16 @@ _$CompanyCopyWith<_Company> get copyWith => __$CompanyCopyWithImpl<_Company>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Company&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.document, document) || other.document == document)&&(identical(other.logoUrl, logoUrl) || other.logoUrl == logoUrl)&&(identical(other.active, active) || other.active == active)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Company&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.document, document) || other.document == document)&&(identical(other.logoUrl, logoUrl) || other.logoUrl == logoUrl)&&(identical(other.plan, plan) || other.plan == plan)&&(identical(other.subscriptionStatus, subscriptionStatus) || other.subscriptionStatus == subscriptionStatus)&&(identical(other.seats, seats) || other.seats == seats)&&(identical(other.active, active) || other.active == active)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,document,logoUrl,active,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,name,document,logoUrl,plan,subscriptionStatus,seats,active,createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'Company(id: $id, name: $name, document: $document, logoUrl: $logoUrl, active: $active, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'Company(id: $id, name: $name, document: $document, logoUrl: $logoUrl, plan: $plan, subscriptionStatus: $subscriptionStatus, seats: $seats, active: $active, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -253,7 +265,7 @@ abstract mixin class _$CompanyCopyWith<$Res> implements $CompanyCopyWith<$Res> {
   factory _$CompanyCopyWith(_Company value, $Res Function(_Company) _then) = __$CompanyCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, String? document, String? logoUrl, bool active, DateTime createdAt, DateTime updatedAt
+ String id, String name, String? document, String? logoUrl, String? plan, SubscriptionStatus subscriptionStatus, int? seats, bool active, DateTime createdAt, DateTime updatedAt
 });
 
 
@@ -270,13 +282,16 @@ class __$CompanyCopyWithImpl<$Res>
 
 /// Create a copy of Company
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? document = freezed,Object? logoUrl = freezed,Object? active = null,Object? createdAt = null,Object? updatedAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? document = freezed,Object? logoUrl = freezed,Object? plan = freezed,Object? subscriptionStatus = null,Object? seats = freezed,Object? active = null,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_Company(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,document: freezed == document ? _self.document : document // ignore: cast_nullable_to_non_nullable
 as String?,logoUrl: freezed == logoUrl ? _self.logoUrl : logoUrl // ignore: cast_nullable_to_non_nullable
-as String?,active: null == active ? _self.active : active // ignore: cast_nullable_to_non_nullable
+as String?,plan: freezed == plan ? _self.plan : plan // ignore: cast_nullable_to_non_nullable
+as String?,subscriptionStatus: null == subscriptionStatus ? _self.subscriptionStatus : subscriptionStatus // ignore: cast_nullable_to_non_nullable
+as SubscriptionStatus,seats: freezed == seats ? _self.seats : seats // ignore: cast_nullable_to_non_nullable
+as int?,active: null == active ? _self.active : active // ignore: cast_nullable_to_non_nullable
 as bool,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,

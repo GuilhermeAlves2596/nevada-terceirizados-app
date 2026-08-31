@@ -66,9 +66,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
 
       final role = auth.user!.role;
-      final home = role.isSupervisor
-          ? RoutePaths.supervisorDashboard
-          : RoutePaths.employeeDashboard;
+      // Só o funcionário tem árvore própria; supervisor, gestor (companyAdmin)
+      // e admin da plataforma compartilham a árvore do supervisor por ora.
+      final home = role.isEmployee
+          ? RoutePaths.employeeDashboard
+          : RoutePaths.supervisorDashboard;
 
       // Troca de senha obrigatória (1º acesso com senha temporária).
       final isChangePw = loc == RoutePaths.changePassword;
@@ -81,7 +83,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (isLoginRoute || isSplashRoute) return home;
 
       // Guardas: cada perfil só acessa sua própria árvore de rotas.
-      if (loc.startsWith(RoutePaths.supervisorPrefix) && !role.isSupervisor) {
+      if (loc.startsWith(RoutePaths.supervisorPrefix) && role.isEmployee) {
         return RoutePaths.employeeDashboard;
       }
       if (loc.startsWith(RoutePaths.employeePrefix) && !role.isEmployee) {
