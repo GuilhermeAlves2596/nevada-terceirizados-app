@@ -80,7 +80,18 @@ class _Thumb extends StatelessWidget {
   final bool editable;
   final VoidCallback onRemove;
 
-  bool get _hasImage => photo.localPath != null && photo.localPath != 'mock';
+  bool get _hasImage =>
+      photo.downloadUrl != null ||
+      (photo.localPath != null && photo.localPath != 'mock');
+
+  /// Prioriza a URL do Storage (persiste entre sessões/dispositivos) e cai para
+  /// o arquivo local (preview imediato/offline) quando ainda não há URL.
+  Widget _image({BoxFit fit = BoxFit.cover}) {
+    if (photo.downloadUrl != null) {
+      return Image.network(photo.downloadUrl!, fit: fit);
+    }
+    return localImage(photo.localPath!, fit: fit);
+  }
 
   void _openFullScreen(BuildContext context) {
     if (!_hasImage) return;
@@ -93,7 +104,7 @@ class _Thumb extends StatelessWidget {
           onTap: () => Navigator.pop(context),
           child: ClipRRect(
             borderRadius: AppRadius.brLg,
-            child: InteractiveViewer(child: localImage(photo.localPath!)),
+            child: InteractiveViewer(child: _image(fit: BoxFit.contain)),
           ),
         ),
       ),
@@ -124,7 +135,7 @@ class _Thumb extends StatelessWidget {
                 borderRadius: AppRadius.brMd,
               ),
               child: _hasImage
-                  ? localImage(photo.localPath!)
+                  ? _image()
                   : Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
