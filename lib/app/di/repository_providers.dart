@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../features/auth/data/repositories/firebase_auth_repository.dart';
@@ -27,6 +28,10 @@ import '../../features/tasks/domain/repositories/task_repository.dart';
 
 final firestoreProvider = Provider<FirebaseFirestore>((ref) {
   return FirebaseFirestore.instance;
+});
+
+final storageProvider = Provider<FirebaseStorage>((ref) {
+  return FirebaseStorage.instance;
 });
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
@@ -62,5 +67,8 @@ final taskRepositoryProvider = Provider<TaskRepository>((ref) {
 
 final taskExecutionRepositoryProvider =
     Provider<TaskExecutionRepository>((ref) {
-  return FirebaseTaskExecutionRepository(ref.watch(firestoreProvider));
+  return FirebaseTaskExecutionRepository(
+    ref.watch(firestoreProvider),
+    ref.watch(storageProvider),
+  );
 });

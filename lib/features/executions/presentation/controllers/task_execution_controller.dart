@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/di/repository_providers.dart';
@@ -74,12 +76,20 @@ class TaskExecutionController
     state = AsyncData(updated);
   }
 
-  Future<void> addPhoto({String? localPath}) async {
+  Future<void> addPhoto({
+    Uint8List? bytes,
+    String? contentType,
+    String? localPath,
+  }) async {
     final current = state.valueOrNull;
     if (current == null) return;
-    final updated = await ref
-        .read(taskExecutionRepositoryProvider)
-        .addPhoto(current.id, localPath: localPath);
+    final updated =
+        await ref.read(taskExecutionRepositoryProvider).addPhoto(
+              current.id,
+              bytes: bytes,
+              contentType: contentType,
+              localPath: localPath,
+            );
     state = AsyncData(updated);
   }
 

@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:uuid/uuid.dart';
 
 import '../../../../core/enums/execution_status.dart';
@@ -185,7 +187,12 @@ class MockTaskExecutionRepository implements TaskExecutionRepository {
   }
 
   @override
-  Future<TaskExecution> addPhoto(String executionId, {String? localPath}) async {
+  Future<TaskExecution> addPhoto(
+    String executionId, {
+    Uint8List? bytes,
+    String? contentType,
+    String? localPath,
+  }) async {
     await Future<void>.delayed(const Duration(milliseconds: 400));
     final e = _require(executionId);
     final photo = ExecutionPhoto(

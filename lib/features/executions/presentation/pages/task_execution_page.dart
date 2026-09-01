@@ -13,6 +13,7 @@ import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/app_progress_bar.dart';
 import '../../../../core/widgets/app_state_views.dart';
+import '../../../../core/utils/snackbars.dart';
 import '../../../tasks/presentation/models/task_view.dart';
 import '../../../tasks/presentation/providers/task_providers.dart';
 import '../../../tasks/presentation/widgets/task_info_card.dart';
@@ -65,7 +66,18 @@ class _TaskExecutionPageState extends ConsumerState<TaskExecutionPage> {
     final confirmed = await _reviewPhoto(bytes);
     if (!mounted) return;
     if (confirmed == true) {
-      await _runBusy(() => _controller.addPhoto(localPath: file.path));
+      try {
+        await _runBusy(() => _controller.addPhoto(
+              bytes: bytes,
+              contentType: 'image/jpeg',
+              localPath: file.path,
+            ));
+      } catch (_) {
+        if (mounted) {
+          showErrorSnack(context,
+              'Falha ao enviar a foto. Verifique a conexão e tente de novo.');
+        }
+      }
     } else if (confirmed == false) {
       // "Refazer" — abre a captura novamente.
       await _addPhoto();

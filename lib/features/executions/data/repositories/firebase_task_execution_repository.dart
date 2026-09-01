@@ -1,4 +1,7 @@
+import 'dart:typed_data';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../../core/enums/execution_status.dart';
@@ -96,9 +99,10 @@ Map<String, dynamic> executionToMap(TaskExecution e) => {
     };
 
 class FirebaseTaskExecutionRepository implements TaskExecutionRepository {
-  FirebaseTaskExecutionRepository(this._firestore);
+  FirebaseTaskExecutionRepository(this._firestore, this._storage);
 
   final FirebaseFirestore _firestore;
+  final FirebaseStorage _storage;
   static const _uuid = Uuid();
 
   CollectionReference<Map<String, dynamic>> get _col =>
@@ -261,15 +265,35 @@ class FirebaseTaskExecutionRepository implements TaskExecutionRepository {
   }
 
   @override
-  Future<TaskExecution> addPhoto(String executionId, {String? localPath}) async {
+  Future<TaskExecution> addPhoto(
+    String executionId, {
+    Uint8List? bytes,
+    String? contentType,
+    String? localPath,
+  }) async {
     final e = await _load(executionId);
+    final photoId = _uuid.v4();
+    final storagePath =
+        'companies/${e.companyId}/executions/${e.id}/$photoId.jpg';
+
+    // Upload real para o Firebase Storage quando há bytes (Fase 10).
+    String? downloadUrl;
+    if (bytes != null) {
+      final ref = _storage.ref(storagePath);
+      await ref.putData(
+        bytes,
+        SettableMetadata(contentType: contentType ?? 'image/jpeg'),
+      );
+      downloadUrl = await ref.getDownloadURL();
+    }
+
     final photo = ExecutionPhoto(
-      id: _uuid.v4(),
+      id: photoId,
       companyId: e.companyId,
       taskExecutionId: e.id,
-      storagePath:
-          'mock://companies/${e.companyId}/executions/${e.id}/${_uuid.v4()}.jpg',
-      localPath: localPath ?? 'mock',
+      storagePath: storagePath,
+      downloadUrl: downloadUrl,
+      localPath: localPath,
       createdAt: DateTime.now(),
       createdBy: e.employeeId,
     );
@@ -279,6 +303,19 @@ class FirebaseTaskExecutionRepository implements TaskExecutionRepository {
   @override
   Future<TaskExecution> removePhoto(String executionId, String photoId) async {
     final e = await _load(executionId);
+    final photo = e.photos
+        .cast<ExecutionPhoto?>()
+        .firstWhere((p) => p?.id == photoId, orElse: () => null);
+
+    // Apaga o arquivo no Storage (best-effort); segue removendo a referência
+    // mesmo que já não exista ou seja um caminho legado ("mock://...").
+    if (photo != null &&
+        photo.storagePath.isNotEmpty &&
+        !photo.storagePath.startsWith('mock')) {
+      try {
+        await _storage.ref(photo.storagePath).delete();
+      } catch (_) {}
+    }
     return _save(
       e.copyWith(photos: e.photos.where((p) => p.id != photoId).toList()),
     );
