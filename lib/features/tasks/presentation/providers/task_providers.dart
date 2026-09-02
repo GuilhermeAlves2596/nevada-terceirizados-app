@@ -53,3 +53,16 @@ final supervisorTaskViewsProvider =
       await ref.watch(taskRepositoryProvider).getForCompany(companyId: companyId);
   return TaskView.resolveAll(tasks, catalog);
 });
+
+/// Pull-to-refresh: recarrega também o [companyCatalogProvider] (nomes de
+/// local/cliente/checklist), senão uma tarefa nova criada por outro usuário
+/// aparece com o título de fallback ("Checklist"/"Ambiente") até reabrir o app.
+Future<List<TaskView>> refreshEmployeeTasks(WidgetRef ref) {
+  ref.invalidate(companyCatalogProvider);
+  return ref.refresh(employeeTaskViewsProvider.future);
+}
+
+Future<List<TaskView>> refreshSupervisorTasks(WidgetRef ref) {
+  ref.invalidate(companyCatalogProvider);
+  return ref.refresh(supervisorTaskViewsProvider.future);
+}
