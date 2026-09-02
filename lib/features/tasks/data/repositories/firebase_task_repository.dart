@@ -167,9 +167,15 @@ class FirebaseTaskRepository implements TaskRepository {
 
   @override
   Future<void> delete(String taskId) async {
-    // Remove a tarefa e as execuções vinculadas.
+    // Remove a tarefa e as execuções vinculadas. A query de execuções filtra
+    // por companyId (derivado da própria tarefa) para satisfazer as Security
+    // Rules — uma query sem companyId é negada por inteiro.
+    final taskDoc = await _col.doc(taskId).get();
+    if (!taskDoc.exists) throw const NotFoundException('Tarefa não encontrada.');
+    final companyId = (taskDoc.data()!['companyId'] as String?) ?? '';
     final execs = await _firestore
         .collection('taskExecutions')
+        .where('companyId', isEqualTo: companyId)
         .where('taskId', isEqualTo: taskId)
         .get();
     final batch = _firestore.batch();
