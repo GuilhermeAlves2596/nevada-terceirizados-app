@@ -47,7 +47,7 @@ class SupervisorTasksPage extends ConsumerWidget {
               );
             }
             return RefreshIndicator(
-              onRefresh: () => ref.refresh(supervisorTaskViewsProvider.future),
+              onRefresh: () => refreshSupervisorTasks(ref),
               child: ListView.separated(
                 padding: const EdgeInsets.all(AppSpacing.md),
                 itemCount: items.length,

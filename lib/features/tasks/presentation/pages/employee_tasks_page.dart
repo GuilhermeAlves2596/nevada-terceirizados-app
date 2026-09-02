@@ -54,7 +54,7 @@ class EmployeeTasksPage extends ConsumerWidget {
               );
             }
             return RefreshIndicator(
-              onRefresh: () => ref.refresh(employeeTaskViewsProvider.future),
+              onRefresh: () => refreshEmployeeTasks(ref),
               child: ListView.separated(
                 padding: const EdgeInsets.all(AppSpacing.md),
                 itemCount: items.length,

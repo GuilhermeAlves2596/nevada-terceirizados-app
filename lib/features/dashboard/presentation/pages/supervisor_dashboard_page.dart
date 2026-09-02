@@ -25,7 +25,7 @@ class SupervisorDashboardPage extends ConsumerWidget {
     return Scaffold(
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: () => ref.refresh(supervisorTaskViewsProvider.future),
+          onRefresh: () => refreshSupervisorTasks(ref),
           child: tasksAsync.when(
             loading: () => const _Scroll(
               children: [SizedBox(height: 240, child: AppLoading())],

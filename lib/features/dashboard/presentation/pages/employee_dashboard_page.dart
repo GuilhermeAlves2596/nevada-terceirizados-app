@@ -24,7 +24,7 @@ class EmployeeDashboardPage extends ConsumerWidget {
     return Scaffold(
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: () async => ref.refresh(employeeTaskViewsProvider.future),
+          onRefresh: () => refreshEmployeeTasks(ref),
           child: tasksAsync.when(
             loading: () => const _DashboardScroll(
               children: [SizedBox(height: 240, child: AppLoading())],
