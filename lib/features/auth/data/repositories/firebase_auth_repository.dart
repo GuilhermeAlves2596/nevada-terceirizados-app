@@ -61,6 +61,36 @@ class FirebaseAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<AppUser> updateProfile({
+    required String name,
+    String? phone,
+  }) async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw const AuthenticationException('Sessão expirada. Entre novamente.');
+    }
+    final trimmedPhone = phone?.trim();
+    await _users.doc(user.uid).update({
+      'name': name.trim(),
+      'phone': (trimmedPhone == null || trimmedPhone.isEmpty) ? null : trimmedPhone,
+      'updatedAt': Timestamp.now(),
+    });
+    final doc = await _users.doc(user.uid).get();
+    return appUserFromFirestore(user.uid, doc.data()!);
+  }
+
+  @override
+  Future<void> sendPasswordReset(String email) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+    } on FirebaseAuthException catch (e) {
+      // Não revela se a conta existe (privacidade).
+      if (e.code == 'user-not-found') return;
+      throw AuthenticationException(_messageFor(e));
+    }
+  }
+
+  @override
   Future<AppUser?> currentUser() async {
     final user = _auth.currentUser;
     if (user == null) return null;

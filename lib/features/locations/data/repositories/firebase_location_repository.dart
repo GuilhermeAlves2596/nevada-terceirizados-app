@@ -60,11 +60,15 @@ class FirebaseLocationRepository implements LocationRepository {
     required String companyId,
     required String qrCodeId,
   }) async {
-    final snap = await _col.where('qrCodeId', isEqualTo: qrCodeId).limit(1).get();
+    // Filtra por companyId + qrCodeId: além do isolamento multi-tenant, é o que
+    // as Security Rules exigem — uma query sem companyId é negada por inteiro.
+    final snap = await _col
+        .where('companyId', isEqualTo: companyId)
+        .where('qrCodeId', isEqualTo: qrCodeId)
+        .limit(1)
+        .get();
     if (snap.docs.isEmpty) return null;
-    final loc = locationFromDoc(snap.docs.first.id, snap.docs.first.data());
-    // Isolamento multi-tenant: só resolve se pertencer à empresa do usuário.
-    return loc.companyId == companyId ? loc : null;
+    return locationFromDoc(snap.docs.first.id, snap.docs.first.data());
   }
 
   @override

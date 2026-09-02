@@ -47,6 +47,12 @@ Console ignora as regras):
 > base nova, semear em modo de teste **antes** de publicar as regras, ou mover a
 > semeadura para um caminho autenticado/admin.
 
+## Testes automatizados (emulador)
+Os casos de **negação** (cross-tenant, escalonamento, gate de assinatura) têm
+testes automatizados em `firebase-tests/` (Firebase Emulator +
+`@firebase/rules-unit-testing`). Rodar: `cd firebase-tests && npm install &&
+npm run emulate`. Ver `firebase-tests/README.md`.
+
 ## Checklist de teste manual (emulador ou projeto de teste)
 Rodar com dois usuários de empresas diferentes (A e B).
 

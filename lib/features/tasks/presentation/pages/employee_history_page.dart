@@ -50,8 +50,7 @@ class EmployeeHistoryPage extends ConsumerWidget {
                           message: 'Suas tarefas finalizadas aparecerão aqui.',
                         )
                       : RefreshIndicator(
-                          onRefresh: () =>
-                              ref.refresh(employeeTaskViewsProvider.future),
+                          onRefresh: () => refreshEmployeeTasks(ref),
                           child: ListView.separated(
                             padding: const EdgeInsets.all(AppSpacing.md),
                             itemCount: items.length,

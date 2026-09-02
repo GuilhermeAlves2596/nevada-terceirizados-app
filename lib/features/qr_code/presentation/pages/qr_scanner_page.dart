@@ -48,11 +48,22 @@ class _QrScannerPageState extends ConsumerState<QrScannerPage> {
       return;
     }
 
-    final result = await ref.read(qrResolverProvider).resolve(
-          companyId: companyId,
-          employeeId: user.id,
-          rawPayload: raw,
-        );
+    final QrResolveResult result;
+    try {
+      result = await ref.read(qrResolverProvider).resolve(
+            companyId: companyId,
+            employeeId: user.id,
+            rawPayload: raw,
+          );
+    } catch (_) {
+      if (!mounted) return;
+      showErrorSnack(
+        context,
+        'Não foi possível abrir o ambiente. Verifique a conexão e tente de novo.',
+      );
+      setState(() => _handling = false);
+      return;
+    }
     if (!mounted) return;
 
     switch (result) {

@@ -7,6 +7,7 @@ import '../../features/auth/presentation/controllers/auth_state.dart';
 import '../../core/widgets/coming_soon_page.dart';
 import '../../features/auth/domain/entities/app_user.dart';
 import '../../features/auth/presentation/pages/change_password_page.dart';
+import '../../features/auth/presentation/pages/forgot_password_page.dart';
 import '../../features/checklists/domain/entities/checklist.dart';
 import '../../features/clients/domain/entities/client.dart';
 import '../../features/contracts/domain/entities/contract.dart';
@@ -26,6 +27,7 @@ import '../../features/employees/presentation/pages/employees_list_page.dart';
 import '../../features/executions/presentation/pages/task_execution_page.dart';
 import '../../features/locations/presentation/pages/location_form_page.dart';
 import '../../features/locations/presentation/pages/locations_list_page.dart';
+import '../../features/profile/presentation/pages/profile_edit_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/qr_code/presentation/pages/qr_code_view_page.dart';
 import '../../features/qr_code/presentation/pages/qr_scanner_page.dart';
@@ -62,7 +64,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
 
       if (!auth.isAuthenticated) {
-        return isLoginRoute ? null : RoutePaths.login;
+        final isPublic = isLoginRoute || loc == RoutePaths.forgotPassword;
+        return isPublic ? null : RoutePaths.login;
       }
 
       final role = auth.user!.role;
@@ -101,6 +104,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const LoginPage(),
       ),
       GoRoute(
+        path: RoutePaths.forgotPassword,
+        builder: (context, state) => const ForgotPasswordPage(),
+      ),
+      GoRoute(
         path: RoutePaths.changePassword,
         builder: (context, state) => const ChangePasswordPage(),
       ),
@@ -131,6 +138,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RoutePaths.employeeProfile,
         builder: (context, state) => const ProfilePage(),
+      ),
+      GoRoute(
+        path: RoutePaths.employeeProfileEdit,
+        builder: (context, state) => const ProfileEditPage(),
       ),
 
       // ---- Supervisor ----
@@ -210,6 +221,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RoutePaths.supervisorProfile,
         builder: (context, state) => const ProfilePage(),
+      ),
+      GoRoute(
+        path: RoutePaths.supervisorProfileEdit,
+        builder: (context, state) => const ProfileEditPage(),
       ),
     ],
   );
