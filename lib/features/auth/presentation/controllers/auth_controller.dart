@@ -60,6 +60,38 @@ class AuthController extends Notifier<AuthState> {
     }
   }
 
+  /// Atualiza o perfil do usuário logado (nome/telefone). Retorna a mensagem de
+  /// erro, ou `null` em caso de sucesso.
+  Future<String?> updateProfile({
+    required String name,
+    String? phone,
+  }) async {
+    try {
+      final user = await ref
+          .read(authRepositoryProvider)
+          .updateProfile(name: name, phone: phone);
+      state = AuthState.authenticated(user);
+      return null;
+    } on AppException catch (e) {
+      return e.message;
+    } catch (_) {
+      return 'Não foi possível salvar o perfil. Tente novamente.';
+    }
+  }
+
+  /// Envia o e-mail de redefinição de senha. Retorna a mensagem de erro, ou
+  /// `null` em caso de sucesso. Não altera o estado da sessão.
+  Future<String?> sendPasswordReset(String email) async {
+    try {
+      await ref.read(authRepositoryProvider).sendPasswordReset(email);
+      return null;
+    } on AppException catch (e) {
+      return e.message;
+    } catch (_) {
+      return 'Não foi possível enviar o e-mail. Tente novamente.';
+    }
+  }
+
   Future<void> signOut() async {
     await ref.read(authRepositoryProvider).signOut();
     state = const AuthState.unauthenticated();

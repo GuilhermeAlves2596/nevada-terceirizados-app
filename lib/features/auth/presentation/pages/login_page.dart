@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../app/router/route_paths.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_radius.dart';
 import '../../../../app/theme/app_spacing.dart';
@@ -86,11 +88,18 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       onPressed: () => setState(() => _obscure = !_obscure),
                     ),
                   ),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () => context.push(RoutePaths.forgotPassword),
+                      child: const Text('Esqueci minha senha'),
+                    ),
+                  ),
                   if (auth.errorMessage != null) ...[
-                    AppSpacing.gapMd,
+                    AppSpacing.gapXs,
                     _ErrorBanner(message: auth.errorMessage!),
                   ],
-                  AppSpacing.gapLg,
+                  AppSpacing.gapMd,
                   AppButton(
                     label: 'Entrar',
                     loading: auth.isBusy,

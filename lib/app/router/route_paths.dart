@@ -16,6 +16,7 @@ abstract final class RoutePaths {
   static const employeeQrScanner = '/employee/qr-scanner';
   static const employeeHistory = '/employee/history';
   static const employeeProfile = '/employee/profile';
+  static const employeeProfileEdit = '/employee/profile/edit';
 
   // Supervisor
   static const supervisorDashboard = '/supervisor/dashboard';
@@ -33,6 +34,7 @@ abstract final class RoutePaths {
   static const supervisorTasksCreate = '/supervisor/tasks/create';
   static const supervisorReports = '/supervisor/reports';
   static const supervisorProfile = '/supervisor/profile';
+  static const supervisorProfileEdit = '/supervisor/profile/edit';
 
   static const employeePrefix = '/employee';
   static const supervisorPrefix = '/supervisor';

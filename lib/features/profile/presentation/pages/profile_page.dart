@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../app/router/route_paths.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_typography.dart';
@@ -73,13 +75,23 @@ class ProfilePage extends ConsumerWidget {
                         _InfoRow(
                           icon: Icons.phone_outlined,
                           label: 'Telefone',
-                          value: user.phone!,
+                          value: Credentials.formatPhone(user.phone!),
                         ),
                       ],
                     ],
                   ),
                 ),
                 AppSpacing.gapXl,
+                AppButton(
+                  label: 'Editar perfil',
+                  icon: Icons.edit_outlined,
+                  onPressed: () => context.push(
+                    user.isEmployee
+                        ? RoutePaths.employeeProfileEdit
+                        : RoutePaths.supervisorProfileEdit,
+                  ),
+                ),
+                AppSpacing.gapMd,
                 AppButton(
                   label: 'Sair da conta',
                   icon: Icons.logout,
@@ -109,18 +121,16 @@ class _InfoRow extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.md),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(icon, size: 20, color: AppColors.textMuted),
           const SizedBox(width: 14),
-          Text(label, style: AppTypography.bodyMuted),
-          const Spacer(),
-          Flexible(
-            child: Text(
-              value,
-              style: AppTypography.subtitle,
-              textAlign: TextAlign.right,
-              overflow: TextOverflow.ellipsis,
-            ),
+          SizedBox(
+            width: 92,
+            child: Text(label, style: AppTypography.bodyMuted),
+          ),
+          Expanded(
+            child: Text(value, style: AppTypography.subtitle),
           ),
         ],
       ),
