@@ -62,4 +62,38 @@ class MockChecklistRepository implements ChecklistRepository {
     _db.upsertChecklist(checklist);
     return checklist;
   }
+
+  @override
+  Future<Checklist> update({
+    required String id,
+    required String name,
+    required ServiceType serviceType,
+    String? description,
+    required List<ChecklistItemInput> items,
+  }) async {
+    final current = _db.checklists.firstWhere((c) => c.id == id);
+    final builtItems = <ChecklistItem>[
+      for (var i = 0; i < items.length; i++)
+        ChecklistItem(
+          id: _uuid.v4(),
+          description: items[i].description.trim(),
+          order: i + 1,
+          required: items[i].required,
+        ),
+    ];
+    final updated = current.copyWith(
+      name: name.trim(),
+      serviceType: serviceType,
+      description: description?.trim(),
+      items: builtItems,
+      updatedAt: DateTime.now(),
+    );
+    _db.upsertChecklist(updated);
+    return updated;
+  }
+
+  @override
+  Future<void> delete(String id) async {
+    _db.checklists.removeWhere((c) => c.id == id);
+  }
 }

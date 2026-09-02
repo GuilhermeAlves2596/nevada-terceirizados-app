@@ -14,10 +14,13 @@ import '../../../../core/utils/snackbars.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_state_views.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
+import '../../domain/entities/task.dart';
 import '../providers/task_providers.dart';
 
 class NewTaskPage extends ConsumerStatefulWidget {
-  const NewTaskPage({super.key});
+  const NewTaskPage({super.key, this.existing});
+
+  final Task? existing;
 
   @override
   ConsumerState<NewTaskPage> createState() => _NewTaskPageState();
@@ -35,6 +38,29 @@ class _NewTaskPageState extends ConsumerState<NewTaskPage> {
   TimeOfDay? _time;
   TaskPriority _priority = TaskPriority.normal;
   bool _saving = false;
+
+  bool get _isEditing => widget.existing != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final t = widget.existing;
+    if (t == null) return;
+    _employeeId = t.assignedTo;
+    _clientId = t.clientId;
+    _contractId = t.contractId;
+    _locationId = t.locationId;
+    _checklistId = t.checklistId;
+    _date = t.scheduledDate;
+    _priority = t.priority;
+    final st = t.scheduledStartTime;
+    if (st != null && st.contains(':')) {
+      final parts = st.split(':');
+      final h = int.tryParse(parts[0]);
+      final m = int.tryParse(parts[1]);
+      if (h != null && m != null) _time = TimeOfDay(hour: h, minute: m);
+    }
+  }
 
   Future<void> _pickDate() async {
     final now = DateTime.now();
@@ -66,22 +92,40 @@ class _NewTaskPageState extends ConsumerState<NewTaskPage> {
       final time = _time == null
           ? null
           : '${_time!.hour.toString().padLeft(2, '0')}:${_time!.minute.toString().padLeft(2, '0')}';
-      await ref.read(taskRepositoryProvider).create(
-            companyId: companyId,
-            clientId: _clientId!,
-            contractId: _contractId!,
-            locationId: _locationId!,
-            checklistId: _checklistId!,
-            assignedTo: _employeeId!,
-            assignedBy: user.id,
-            scheduledDate: DateTime(_date.year, _date.month, _date.day),
-            scheduledStartTime: time,
-            priority: _priority,
-          );
+      final scheduledDate = DateTime(_date.year, _date.month, _date.day);
+      final repo = ref.read(taskRepositoryProvider);
+      if (_isEditing) {
+        await repo.update(
+          id: widget.existing!.id,
+          clientId: _clientId!,
+          contractId: _contractId!,
+          locationId: _locationId!,
+          checklistId: _checklistId!,
+          assignedTo: _employeeId!,
+          scheduledDate: scheduledDate,
+          scheduledStartTime: time,
+          priority: _priority,
+        );
+        ref.invalidate(taskViewByIdProvider(widget.existing!.id));
+      } else {
+        await repo.create(
+          companyId: companyId,
+          clientId: _clientId!,
+          contractId: _contractId!,
+          locationId: _locationId!,
+          checklistId: _checklistId!,
+          assignedTo: _employeeId!,
+          assignedBy: user.id,
+          scheduledDate: scheduledDate,
+          scheduledStartTime: time,
+          priority: _priority,
+        );
+      }
       ref.invalidate(supervisorTaskViewsProvider);
       ref.invalidate(employeeTaskViewsProvider);
       if (!mounted) return;
-      showSuccessSnack(context, 'Tarefa atribuída com sucesso!');
+      showSuccessSnack(context,
+          _isEditing ? 'Tarefa atualizada!' : 'Tarefa atribuída com sucesso!');
       context.pop();
     } on AppException catch (e) {
       if (mounted) showErrorSnack(context, e.message);
@@ -95,7 +139,7 @@ class _NewTaskPageState extends ConsumerState<NewTaskPage> {
     final catalogAsync = ref.watch(companyCatalogProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Nova tarefa')),
+      appBar: AppBar(title: Text(_isEditing ? 'Editar tarefa' : 'Nova tarefa')),
       body: catalogAsync.when(
         loading: () => const AppLoading(),
         error: (e, _) =>
@@ -230,7 +274,7 @@ class _NewTaskPageState extends ConsumerState<NewTaskPage> {
       bottomNavigationBar: SafeArea(
         minimum: const EdgeInsets.all(AppSpacing.md),
         child: AppButton(
-          label: 'Atribuir tarefa',
+          label: _isEditing ? 'Salvar alterações' : 'Atribuir tarefa',
           icon: Icons.assignment_turned_in_outlined,
           loading: _saving,
           onPressed: _save,

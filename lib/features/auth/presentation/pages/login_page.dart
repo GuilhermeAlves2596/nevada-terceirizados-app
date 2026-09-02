@@ -17,13 +17,13 @@ class LoginPage extends ConsumerStatefulWidget {
 }
 
 class _LoginPageState extends ConsumerState<LoginPage> {
-  final _email = TextEditingController();
-  final _password = TextEditingController(text: '123456');
+  final _identifier = TextEditingController();
+  final _password = TextEditingController();
   bool _obscure = true;
 
   @override
   void dispose() {
-    _email.dispose();
+    _identifier.dispose();
     _password.dispose();
     super.dispose();
   }
@@ -31,15 +31,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   void _submit() {
     FocusScope.of(context).unfocus();
     ref.read(authControllerProvider.notifier).signIn(
-          email: _email.text,
+          identifier: _identifier.text,
           password: _password.text,
         );
-  }
-
-  void _fill(String email) {
-    _email.text = email;
-    _password.text = '123456';
-    ref.read(authControllerProvider.notifier).clearError();
   }
 
   @override
@@ -66,11 +60,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   ),
                   AppSpacing.gapLg,
                   AppTextField(
-                    label: 'E-mail',
-                    controller: _email,
-                    hint: 'seu@email.com',
-                    prefixIcon: Icons.mail_outline,
-                    keyboardType: TextInputType.emailAddress,
+                    label: 'CPF ou e-mail',
+                    controller: _identifier,
+                    hint: 'Digite seu CPF',
+                    prefixIcon: Icons.person_outline,
                     textInputAction: TextInputAction.next,
                     onChanged: (_) =>
                         ref.read(authControllerProvider.notifier).clearError(),
@@ -104,7 +97,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     onPressed: _submit,
                   ),
                   AppSpacing.gapLg,
-                  _DemoCredentials(onFill: _fill),
+                  const _DemoCredentials(),
                 ],
               ),
             ),
@@ -177,9 +170,7 @@ class _ErrorBanner extends StatelessWidget {
 }
 
 class _DemoCredentials extends StatelessWidget {
-  const _DemoCredentials({required this.onFill});
-
-  final ValueChanged<String> onFill;
+  const _DemoCredentials();
 
   @override
   Widget build(BuildContext context) {
@@ -195,36 +186,16 @@ class _DemoCredentials extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.science_outlined,
-                  size: 16, color: AppColors.textMuted),
+              const Icon(Icons.info_outline, size: 16, color: AppColors.textMuted),
               const SizedBox(width: 6),
-              Text('Acesso de demonstração', style: AppTypography.subtitle),
+              Text('Como acessar', style: AppTypography.subtitle),
             ],
           ),
           AppSpacing.gapXs,
           Text(
-            'Toque para preencher (senha: 123456)',
+            'Supervisor entra com e-mail e senha. Funcionário entra com o CPF '
+            'e a senha temporária que o supervisor informar.',
             style: AppTypography.caption,
-          ),
-          AppSpacing.gapSm,
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () => onFill('supervisor@teste.com'),
-                  icon: const Icon(Icons.badge_outlined, size: 18),
-                  label: const Text('Supervisor'),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () => onFill('funcionario@teste.com'),
-                  icon: const Icon(Icons.person_outline, size: 18),
-                  label: const Text('Funcionário'),
-                ),
-              ),
-            ],
           ),
         ],
       ),

@@ -53,6 +53,8 @@ class ContractsListPage extends ConsumerWidget {
                 itemBuilder: (context, i) {
                   final c = contracts[i];
                   return AppCard(
+                    onTap: () => context.push(
+                        RoutePaths.supervisorContractsCreate, extra: c),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [

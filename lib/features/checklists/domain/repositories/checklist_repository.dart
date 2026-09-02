@@ -17,4 +17,14 @@ abstract interface class ChecklistRepository {
     String? contractId,
     required List<ChecklistItemInput> items,
   });
+
+  Future<Checklist> update({
+    required String id,
+    required String name,
+    required ServiceType serviceType,
+    String? description,
+    required List<ChecklistItemInput> items,
+  });
+
+  Future<void> delete(String id);
 }

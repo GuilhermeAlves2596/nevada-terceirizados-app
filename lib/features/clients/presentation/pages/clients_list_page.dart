@@ -50,6 +50,8 @@ class ClientsListPage extends ConsumerWidget {
                 itemBuilder: (context, i) {
                   final c = clients[i];
                   return AppCard(
+                    onTap: () => context.push(
+                        RoutePaths.supervisorClientsCreate, extra: c),
                     child: Row(
                       children: [
                         Container(

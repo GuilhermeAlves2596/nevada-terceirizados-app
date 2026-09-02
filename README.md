@@ -167,6 +167,12 @@ app deve continuar executável.
 
 ## 🔒 Segurança (planejado)
 
+> ⚠️ **CRÍTICO — isolamento multi-tenant ainda NÃO garantido.** Hoje o filtro por
+> `companyId` existe só no app e o Firestore está em modo de teste; **um usuário
+> conseguiria, burlando o app, acessar dados de outra empresa.** A garantia real
+> depende das **Firestore Security Rules (Fase 12)**, obrigatórias antes de
+> qualquer uso real. Adiado apenas para a apresentação (dados de teste).
+
 - Regras do Firestore/Storage impedindo acesso entre empresas (`companyId`).
 - Funcionário não altera `role`, `companyId` nem execuções de terceiros.
 - Timestamps de início/fim usam o horário do **servidor**.

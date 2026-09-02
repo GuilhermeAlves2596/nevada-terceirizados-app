@@ -5,8 +5,10 @@
 abstract final class RoutePaths {
   const RoutePaths._();
 
+  static const splash = '/splash';
   static const login = '/login';
   static const forgotPassword = '/forgot-password';
+  static const changePassword = '/change-password';
 
   // Funcionário
   static const employeeDashboard = '/employee/dashboard';

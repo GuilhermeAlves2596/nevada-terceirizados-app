@@ -79,6 +79,35 @@ class MockTaskRepository implements TaskRepository {
   }
 
   @override
+  Future<Task> update({
+    required String id,
+    required String clientId,
+    required String contractId,
+    required String locationId,
+    required String checklistId,
+    required String assignedTo,
+    required DateTime scheduledDate,
+    String? scheduledStartTime,
+    required TaskPriority priority,
+  }) async {
+    await Future<void>.delayed(const Duration(milliseconds: 200));
+    final current = _db.tasks.firstWhere((t) => t.id == id);
+    final updated = current.copyWith(
+      clientId: clientId,
+      contractId: contractId,
+      locationId: locationId,
+      checklistId: checklistId,
+      assignedTo: assignedTo,
+      scheduledDate: scheduledDate,
+      scheduledStartTime: scheduledStartTime,
+      priority: priority,
+      updatedAt: DateTime.now(),
+    );
+    _db.upsertTask(updated);
+    return updated;
+  }
+
+  @override
   Future<Task> setStatus({
     required String taskId,
     required TaskStatus status,

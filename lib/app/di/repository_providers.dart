@@ -1,63 +1,74 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/mock/mock_database.dart';
-import '../../features/auth/data/repositories/mock_auth_repository.dart';
+import '../../features/auth/data/repositories/firebase_auth_repository.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
-import '../../features/checklists/data/repositories/mock_checklist_repository.dart';
+import '../../features/checklists/data/repositories/firebase_checklist_repository.dart';
 import '../../features/checklists/domain/repositories/checklist_repository.dart';
-import '../../features/clients/data/repositories/mock_client_repository.dart';
+import '../../features/clients/data/repositories/firebase_client_repository.dart';
 import '../../features/clients/domain/repositories/client_repository.dart';
-import '../../features/contracts/data/repositories/mock_contract_repository.dart';
+import '../../features/contracts/data/repositories/firebase_contract_repository.dart';
 import '../../features/contracts/domain/repositories/contract_repository.dart';
-import '../../features/employees/data/repositories/mock_user_repository.dart';
+import '../../features/employees/data/repositories/firebase_user_repository.dart';
 import '../../features/employees/domain/repositories/user_repository.dart';
-import '../../features/executions/data/repositories/mock_task_execution_repository.dart';
+import '../../features/executions/data/repositories/firebase_task_execution_repository.dart';
 import '../../features/executions/domain/repositories/task_execution_repository.dart';
-import '../../features/locations/data/repositories/mock_location_repository.dart';
+import '../../features/locations/data/repositories/firebase_location_repository.dart';
 import '../../features/locations/domain/repositories/location_repository.dart';
-import '../../features/tasks/data/repositories/mock_task_repository.dart';
+import '../../features/tasks/data/repositories/firebase_task_repository.dart';
 import '../../features/tasks/domain/repositories/task_repository.dart';
 
 /// Ponto único de composição das dependências (Dependency Injection).
 ///
-/// Hoje tudo aponta para implementações *mock*. Ao chegar nas fases de
-/// Firebase, basta trocar cada `Mock…Repository` pela versão `Firebase…` aqui —
-/// domínio e apresentação permanecem intactos.
+/// A partir da Fase 9, todos os repositórios apontam para o **Firebase**
+/// (Firestore). O domínio e a apresentação permanecem intactos — a troca
+/// aconteceu apenas aqui.
 
-/// Base de dados em memória (fonte única durante a fase mock).
-final mockDatabaseProvider = Provider<MockDatabase>((ref) {
-  return MockDatabase.seeded();
+final firestoreProvider = Provider<FirebaseFirestore>((ref) {
+  return FirebaseFirestore.instance;
+});
+
+final storageProvider = Provider<FirebaseStorage>((ref) {
+  return FirebaseStorage.instance;
 });
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  return MockAuthRepository(ref.watch(mockDatabaseProvider));
+  return FirebaseAuthRepository(
+    FirebaseAuth.instance,
+    ref.watch(firestoreProvider),
+  );
 });
 
 final userRepositoryProvider = Provider<UserRepository>((ref) {
-  return MockUserRepository(ref.watch(mockDatabaseProvider));
+  return FirebaseUserRepository(ref.watch(firestoreProvider));
 });
 
 final clientRepositoryProvider = Provider<ClientRepository>((ref) {
-  return MockClientRepository(ref.watch(mockDatabaseProvider));
+  return FirebaseClientRepository(ref.watch(firestoreProvider));
 });
 
 final contractRepositoryProvider = Provider<ContractRepository>((ref) {
-  return MockContractRepository(ref.watch(mockDatabaseProvider));
+  return FirebaseContractRepository(ref.watch(firestoreProvider));
 });
 
 final locationRepositoryProvider = Provider<LocationRepository>((ref) {
-  return MockLocationRepository(ref.watch(mockDatabaseProvider));
+  return FirebaseLocationRepository(ref.watch(firestoreProvider));
 });
 
 final checklistRepositoryProvider = Provider<ChecklistRepository>((ref) {
-  return MockChecklistRepository(ref.watch(mockDatabaseProvider));
+  return FirebaseChecklistRepository(ref.watch(firestoreProvider));
 });
 
 final taskRepositoryProvider = Provider<TaskRepository>((ref) {
-  return MockTaskRepository(ref.watch(mockDatabaseProvider));
+  return FirebaseTaskRepository(ref.watch(firestoreProvider));
 });
 
 final taskExecutionRepositoryProvider =
     Provider<TaskExecutionRepository>((ref) {
-  return MockTaskExecutionRepository(ref.watch(mockDatabaseProvider));
+  return FirebaseTaskExecutionRepository(
+    ref.watch(firestoreProvider),
+    ref.watch(storageProvider),
+  );
 });

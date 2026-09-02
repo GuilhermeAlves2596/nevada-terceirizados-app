@@ -1,4 +1,5 @@
 import '../../../auth/domain/entities/app_user.dart';
+import '../entities/new_employee_result.dart';
 
 /// Acesso a usuários da empresa (funcionários e supervisores).
 ///
@@ -12,14 +13,30 @@ abstract interface class UserRepository {
   /// Apenas os funcionários (role employee) da empresa.
   Future<List<AppUser>> getEmployees({required String companyId});
 
-  /// Cadastra um funcionário associado à empresa (role = employee).
-  Future<AppUser> createEmployee({
+  /// Cadastra um funcionário (role = employee): cria a conta de acesso com uma
+  /// senha temporária e o perfil. O login é feito por [cpf]; o e-mail é
+  /// opcional. Retorna o usuário e a senha temporária a exibir ao supervisor.
+  Future<NewEmployeeResult> createEmployee({
     required String companyId,
     required String name,
-    required String email,
+    required String cpf,
+    String? email,
     String? phone,
     String? jobTitle,
   });
+
+  /// Edita os dados de perfil (não altera CPF/role/senha).
+  Future<AppUser> update({
+    required String userId,
+    required String name,
+    String? email,
+    String? phone,
+    String? jobTitle,
+  });
+
+  /// Remove o perfil do usuário. Obs.: a conta de acesso (Firebase Auth) não é
+  /// removida pelo cliente — isso exige Admin SDK/Cloud Function.
+  Future<void> delete(String userId);
 
   /// Ativa/desativa um usuário.
   Future<AppUser> setActive({required String userId, required bool active});

@@ -9,6 +9,7 @@ import '../../features/locations/domain/entities/location.dart';
 import '../../features/tasks/domain/entities/task.dart';
 import '../enums/contract_status.dart';
 import '../enums/service_type.dart';
+import '../enums/subscription_status.dart';
 import '../enums/task_priority.dart';
 import '../enums/task_status.dart';
 import '../enums/user_role.dart';
@@ -44,6 +45,7 @@ class MockDatabase {
   // ---- Identificadores fixos (facilitam o cruzamento entre entidades) ----
   static const companyNevada = 'company_nevada';
 
+  static const userGestora = 'user_gestora'; // companyAdmin (gestor da empresa)
   static const userCarlos = 'user_carlos'; // supervisor
   static const userJoao = 'user_joao';
   static const userMaria = 'user_maria';
@@ -80,17 +82,40 @@ class MockDatabase {
       id: companyNevada,
       name: 'Nevada Serviços Terceirizados',
       document: '12.345.678/0001-90',
+      plan: 'pro',
+      subscriptionStatus: SubscriptionStatus.active,
+      seats: 20,
       createdAt: createdBase,
       updatedAt: createdBase,
     );
 
+    // Vínculos provisórios (definidos via seed até o painel web do gestor
+    // existir): supervisor e funcionários operam no mesmo cliente/contrato.
+    const seedContractIds = <String>[contractLimpeza2026];
+    const seedClientIds = <String>[clientPrefeitura];
+
     final users = <AppUser>[
+      // Gestor da empresa (companyAdmin) — provisionado por seed. Sem vínculo
+      // a cliente/contrato: enxerga todo o escopo da Nevada.
+      AppUser(
+        id: userGestora,
+        companyId: companyNevada,
+        name: 'Renata Gestora',
+        email: 'gestor@teste.com',
+        role: UserRole.companyAdmin,
+        phone: '(11) 98888-0001',
+        jobTitle: 'Gestora de Contratos',
+        createdAt: createdBase,
+        updatedAt: createdBase,
+      ),
       AppUser(
         id: userCarlos,
         companyId: companyNevada,
         name: 'Carlos Oliveira',
         email: 'supervisor@teste.com',
         role: UserRole.supervisor,
+        contractIds: seedContractIds,
+        clientIds: seedClientIds,
         phone: '(11) 98888-1000',
         jobTitle: 'Supervisor de Operações',
         createdAt: createdBase,
@@ -102,6 +127,8 @@ class MockDatabase {
         name: 'João Silva',
         email: 'funcionario@teste.com',
         role: UserRole.employee,
+        contractIds: seedContractIds,
+        clientIds: seedClientIds,
         phone: '(11) 97777-2001',
         jobTitle: 'Auxiliar de Limpeza',
         createdAt: createdBase,
@@ -113,6 +140,8 @@ class MockDatabase {
         name: 'Maria Santos',
         email: 'maria@teste.com',
         role: UserRole.employee,
+        contractIds: seedContractIds,
+        clientIds: seedClientIds,
         phone: '(11) 97777-2002',
         jobTitle: 'Auxiliar de Limpeza',
         createdAt: createdBase,
@@ -124,6 +153,8 @@ class MockDatabase {
         name: 'Pedro Almeida',
         email: 'pedro@teste.com',
         role: UserRole.employee,
+        contractIds: seedContractIds,
+        clientIds: seedClientIds,
         phone: '(11) 97777-2003',
         jobTitle: 'Jardineiro',
         createdAt: createdBase,

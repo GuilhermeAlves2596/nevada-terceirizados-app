@@ -5,7 +5,14 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/controllers/auth_controller.dart';
 import '../../features/auth/presentation/controllers/auth_state.dart';
 import '../../core/widgets/coming_soon_page.dart';
+import '../../features/auth/domain/entities/app_user.dart';
+import '../../features/auth/presentation/pages/change_password_page.dart';
+import '../../features/checklists/domain/entities/checklist.dart';
+import '../../features/clients/domain/entities/client.dart';
+import '../../features/contracts/domain/entities/contract.dart';
+import '../../features/tasks/domain/entities/task.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
+import '../../features/auth/presentation/pages/splash_page.dart';
 import '../../features/checklists/presentation/pages/checklist_form_page.dart';
 import '../../features/checklists/presentation/pages/checklists_list_page.dart';
 import '../../features/clients/presentation/pages/client_form_page.dart';
@@ -40,28 +47,43 @@ final routerProvider = Provider<GoRouter>((ref) {
   });
 
   return GoRouter(
-    initialLocation: RoutePaths.login,
+    initialLocation: RoutePaths.splash,
     refreshListenable: refresh,
     debugLogDiagnostics: kDebugMode,
     redirect: (context, state) {
       final auth = ref.read(authControllerProvider);
       final loc = state.matchedLocation;
       final isLoginRoute = loc == RoutePaths.login;
+      final isSplashRoute = loc == RoutePaths.splash;
+
+      // Ainda verificando a sessão persistida → mantém na splash.
+      if (auth.status == AuthStatus.unknown) {
+        return isSplashRoute ? null : RoutePaths.splash;
+      }
 
       if (!auth.isAuthenticated) {
         return isLoginRoute ? null : RoutePaths.login;
       }
 
       final role = auth.user!.role;
-      final home = role.isSupervisor
-          ? RoutePaths.supervisorDashboard
-          : RoutePaths.employeeDashboard;
+      // Só o funcionário tem árvore própria; supervisor, gestor (companyAdmin)
+      // e admin da plataforma compartilham a árvore do supervisor por ora.
+      final home = role.isEmployee
+          ? RoutePaths.employeeDashboard
+          : RoutePaths.supervisorDashboard;
 
-      // Já autenticado tentando ver o login → manda pra home do perfil.
-      if (isLoginRoute) return home;
+      // Troca de senha obrigatória (1º acesso com senha temporária).
+      final isChangePw = loc == RoutePaths.changePassword;
+      if (auth.user!.mustChangePassword) {
+        return isChangePw ? null : RoutePaths.changePassword;
+      }
+      if (isChangePw) return home;
+
+      // Autenticado na splash ou no login → vai pra home do perfil.
+      if (isLoginRoute || isSplashRoute) return home;
 
       // Guardas: cada perfil só acessa sua própria árvore de rotas.
-      if (loc.startsWith(RoutePaths.supervisorPrefix) && !role.isSupervisor) {
+      if (loc.startsWith(RoutePaths.supervisorPrefix) && role.isEmployee) {
         return RoutePaths.employeeDashboard;
       }
       if (loc.startsWith(RoutePaths.employeePrefix) && !role.isEmployee) {
@@ -71,8 +93,16 @@ final routerProvider = Provider<GoRouter>((ref) {
     },
     routes: [
       GoRoute(
+        path: RoutePaths.splash,
+        builder: (context, state) => const SplashPage(),
+      ),
+      GoRoute(
         path: RoutePaths.login,
         builder: (context, state) => const LoginPage(),
+      ),
+      GoRoute(
+        path: RoutePaths.changePassword,
+        builder: (context, state) => const ChangePasswordPage(),
       ),
 
       // ---- Funcionário ----
@@ -114,7 +144,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: RoutePaths.supervisorEmployeesCreate,
-        builder: (context, state) => const EmployeeFormPage(),
+        builder: (context, state) =>
+            EmployeeFormPage(existing: state.extra as AppUser?),
       ),
       GoRoute(
         path: RoutePaths.supervisorClients,
@@ -122,7 +153,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: RoutePaths.supervisorClientsCreate,
-        builder: (context, state) => const ClientFormPage(),
+        builder: (context, state) =>
+            ClientFormPage(existing: state.extra as Client?),
       ),
       GoRoute(
         path: RoutePaths.supervisorTasks,
@@ -131,7 +163,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: RoutePaths.supervisorTasksCreate,
-        builder: (context, state) => const NewTaskPage(),
+        builder: (context, state) =>
+            NewTaskPage(existing: state.extra as Task?),
       ),
       GoRoute(
         path: '${RoutePaths.supervisorTasks}/:id',
@@ -144,7 +177,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: RoutePaths.supervisorContractsCreate,
-        builder: (context, state) => const ContractFormPage(),
+        builder: (context, state) =>
+            ContractFormPage(existing: state.extra as Contract?),
       ),
       GoRoute(
         path: RoutePaths.supervisorLocations,
@@ -165,7 +199,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: RoutePaths.supervisorChecklistsCreate,
-        builder: (context, state) => const ChecklistFormPage(),
+        builder: (context, state) =>
+            ChecklistFormPage(existing: state.extra as Checklist?),
       ),
       GoRoute(
         path: RoutePaths.supervisorReports,

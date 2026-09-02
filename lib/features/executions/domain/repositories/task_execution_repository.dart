@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import '../entities/task_execution.dart';
 
 /// Contrato da execução de tarefas (seções 16–18, 20, 24, 25).
@@ -35,8 +37,17 @@ abstract interface class TaskExecutionRepository {
     String? observation,
   });
 
-  /// Adiciona uma foto (na Fase 3 é simulada; câmera real na Fase 6).
-  Future<TaskExecution> addPhoto(String executionId, {String? localPath});
+  /// Adiciona uma foto à execução.
+  ///
+  /// Quando [bytes] é informado, a implementação Firebase faz o upload real
+  /// para o Storage e persiste `storagePath` + `downloadUrl` (Fase 10).
+  /// [localPath] é mantido para pré-visualização imediata/offline.
+  Future<TaskExecution> addPhoto(
+    String executionId, {
+    Uint8List? bytes,
+    String? contentType,
+    String? localPath,
+  });
 
   Future<TaskExecution> removePhoto(String executionId, String photoId);
 

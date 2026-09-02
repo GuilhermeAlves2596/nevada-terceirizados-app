@@ -1,0 +1,167 @@
+rules_version = '2';
+
+// Security Rules do Firestore (Fase 12) — isolamento multi-tenant server-side.
+//
+// Princípios:
+// - O papel e o companyId do solicitante vêm SEMPRE do doc /users/{uid} lido no
+//   servidor, nunca do que o app envia (não confiar no cliente).
+// - Fronteira dura: companyId + papel. O escopo por contrato (supervisor só vê
+//   seus contratos) fica no app por ora — endurecimento futuro.
+// - Gate de assinatura: bloqueia ESCRITAS quando a empresa não está
+//   active/trial; leitura segue liberada para o app poder exibir o aviso.
+// - Tudo que não casar com um match explícito é negado por padrão.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- Helpers ----------
+    function signedIn() {
+      return request.auth != null;
+    }
+    function hasProfile() {
+      return signedIn() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+    function userData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    function myRole() {
+      return userData().role;
+    }
+    function myCompany() {
+      return userData().companyId;
+    }
+    function isPlatformAdmin() {
+      return hasProfile() && myRole() == 'platformAdmin';
+    }
+    function isCompanyAdmin() {
+      return hasProfile() && myRole() == 'companyAdmin';
+    }
+    function isSupervisor() {
+      return hasProfile() && myRole() == 'supervisor';
+    }
+
+    // Leitura no tenant cid (platformAdmin enxerga todos).
+    function canReadCompany(cid) {
+      return isPlatformAdmin() || (hasProfile() && cid == myCompany());
+    }
+    // Assinatura da empresa cid libera escrita?
+    function companyActive(cid) {
+      return isPlatformAdmin() ||
+        (exists(/databases/$(database)/documents/companies/$(cid)) &&
+         get(/databases/$(database)/documents/companies/$(cid)).data
+           .subscriptionStatus in ['active', 'trial']);
+    }
+    // Escrita no tenant cid = mesmo tenant + assinatura ativa.
+    function canWriteCompany(cid) {
+      return canReadCompany(cid) && companyActive(cid);
+    }
+
+    // ---------- companies ----------
+    match /companies/{companyId} {
+      allow read: if canReadCompany(companyId);
+      // Assinatura/tenant só a plataforma controla.
+      allow write: if isPlatformAdmin();
+    }
+
+    // ---------- users ----------
+    match /users/{userId} {
+      function isSelf() {
+        return signedIn() && request.auth.uid == userId;
+      }
+
+      allow read: if isSelf() || canReadCompany(resource.data.companyId);
+
+      // Sem auto-provisionamento: ninguém se cria sozinho.
+      // companyAdmin cria companyAdmin/supervisor/funcionário no seu tenant;
+      // supervisor cria SÓ funcionário no seu tenant; plataforma cria qualquer.
+      allow create: if isPlatformAdmin()
+        || (isCompanyAdmin()
+            && request.resource.data.companyId == myCompany()
+            && request.resource.data.role in ['companyAdmin', 'supervisor', 'employee']
+            && companyActive(myCompany()))
+        || (isSupervisor()
+            && request.resource.data.companyId == myCompany()
+            && request.resource.data.role == 'employee'
+            && companyActive(myCompany()));
+
+      // Update: self não pode mexer em role/companyId (anti-escalonamento);
+      // gestor do tenant e plataforma podem; supervisor gerencia SÓ funcionários
+      // do seu tenant (sem promover — role continua employee).
+      allow update: if
+        (isSelf()
+          && request.resource.data.role == resource.data.role
+          && request.resource.data.companyId == resource.data.companyId)
+        || isPlatformAdmin()
+        || (isCompanyAdmin()
+            && resource.data.companyId == myCompany()
+            && request.resource.data.companyId == myCompany()
+            && companyActive(myCompany()))
+        || (isSupervisor()
+            && resource.data.companyId == myCompany()
+            && resource.data.role == 'employee'
+            && request.resource.data.role == 'employee'
+            && request.resource.data.companyId == myCompany()
+            && companyActive(myCompany()));
+
+      allow delete: if isPlatformAdmin()
+        || (isCompanyAdmin() && resource.data.companyId == myCompany())
+        || (isSupervisor()
+            && resource.data.companyId == myCompany()
+            && resource.data.role == 'employee');
+    }
+
+    // ---------- Coleções com escopo de empresa ----------
+    // (todas carregam companyId; a listagem no app filtra por companyId, o que
+    //  satisfaz a avaliação por-documento das regras de leitura.)
+    function scopedRead() {
+      return canReadCompany(resource.data.companyId);
+    }
+    function scopedCreate() {
+      return canWriteCompany(request.resource.data.companyId);
+    }
+    function scopedUpdate() {
+      return canWriteCompany(resource.data.companyId)
+        && request.resource.data.companyId == resource.data.companyId;
+    }
+    function scopedDelete() {
+      return canWriteCompany(resource.data.companyId);
+    }
+
+    match /clients/{id} {
+      allow read: if scopedRead();
+      allow create: if scopedCreate();
+      allow update: if scopedUpdate();
+      allow delete: if scopedDelete();
+    }
+    match /contracts/{id} {
+      allow read: if scopedRead();
+      allow create: if scopedCreate();
+      allow update: if scopedUpdate();
+      allow delete: if scopedDelete();
+    }
+    match /locations/{id} {
+      allow read: if scopedRead();
+      allow create: if scopedCreate();
+      allow update: if scopedUpdate();
+      allow delete: if scopedDelete();
+    }
+    match /checklists/{id} {
+      allow read: if scopedRead();
+      allow create: if scopedCreate();
+      allow update: if scopedUpdate();
+      allow delete: if scopedDelete();
+    }
+    match /tasks/{id} {
+      allow read: if scopedRead();
+      allow create: if scopedCreate();
+      allow update: if scopedUpdate();
+      allow delete: if scopedDelete();
+    }
+    match /taskExecutions/{id} {
+      allow read: if scopedRead();
+      allow create: if scopedCreate();
+      allow update: if scopedUpdate();
+      allow delete: if scopedDelete();
+    }
+  }
+}

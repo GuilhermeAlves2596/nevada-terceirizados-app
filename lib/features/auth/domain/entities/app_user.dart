@@ -19,17 +19,39 @@ abstract class AppUser with _$AppUser {
   const factory AppUser({
     required String id,
     required String name,
-    required String email,
     required UserRole role,
+
+    /// E-mail é **opcional** (funcionário de campo costuma não ter). O login é
+    /// feito por [cpf]; o e-mail vira apenas dado de perfil/notificação.
+    String? email,
+
+    /// CPF — identificador de login do usuário (só dígitos armazenados aqui).
+    String? cpf,
 
     /// Obrigatório para funcionários e supervisores; pode ser nulo para o
     /// admin da plataforma.
     String? companyId,
+
+    /// Contratos aos quais o usuário está vinculado (multi-tenant, nível cliente).
+    ///
+    /// Fonte da verdade do escopo: **supervisor** cobre vários; **funcionário**
+    /// tem exatamente um; **companyAdmin/platformAdmin** ficam vazios (enxergam
+    /// todo o escopo da empresa/plataforma). O gestor define esses vínculos no
+    /// painel web ao cadastrar o supervisor.
+    @Default(<String>[]) List<String> contractIds,
+
+    /// Clientes correspondentes aos [contractIds], **denormalizados** para
+    /// permitir filtros `array-contains` no Firestore (que não faz join).
+    /// Derivável de `Contract.clientId`; mantido em sincronia na escrita.
+    @Default(<String>[]) List<String> clientIds,
     String? phone,
     String? photoUrl,
 
     /// Cargo/função exibido na interface (ex.: "Auxiliar de Limpeza").
     String? jobTitle,
+
+    /// Exige troca de senha no próximo acesso (1º login com senha temporária).
+    @Default(false) bool mustChangePassword,
     @Default(true) bool active,
     required DateTime createdAt,
     required DateTime updatedAt,
@@ -37,6 +59,7 @@ abstract class AppUser with _$AppUser {
 
   bool get isEmployee => role.isEmployee;
   bool get isSupervisor => role.isSupervisor;
+  bool get isCompanyAdmin => role.isCompanyAdmin;
   bool get isPlatformAdmin => role.isPlatformAdmin;
 
   /// Primeiro nome, para saudações ("Olá, João!").

@@ -3,7 +3,9 @@ import 'package:uuid/uuid.dart';
 import '../../../../core/enums/user_role.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/mock/mock_database.dart';
+import '../../../../core/utils/credentials.dart';
 import '../../../auth/domain/entities/app_user.dart';
+import '../../domain/entities/new_employee_result.dart';
 import '../../domain/repositories/user_repository.dart';
 
 class MockUserRepository implements UserRepository {
@@ -36,33 +38,70 @@ class MockUserRepository implements UserRepository {
   }
 
   @override
-  Future<AppUser> createEmployee({
+  Future<NewEmployeeResult> createEmployee({
     required String companyId,
     required String name,
-    required String email,
+    required String cpf,
+    String? email,
     String? phone,
     String? jobTitle,
   }) async {
     await _tick();
-    final normalized = email.trim().toLowerCase();
-    final exists = _db.users.any((u) => u.email.toLowerCase() == normalized);
-    if (exists) {
-      throw const ValidationException('Já existe um usuário com este e-mail.');
+    final digits = Credentials.cpfDigits(cpf);
+    if (digits.length != 11) {
+      throw const ValidationException('CPF inválido (11 dígitos).');
     }
+    if (_db.users.any((u) => u.cpf == digits)) {
+      throw const ValidationException('Já existe um funcionário com este CPF.');
+    }
+    final trimmedEmail = email?.trim();
     final now = DateTime.now();
     final user = AppUser(
       id: _uuid.v4(),
       companyId: companyId,
       name: name.trim(),
-      email: normalized,
+      email: (trimmedEmail == null || trimmedEmail.isEmpty) ? null : trimmedEmail,
+      cpf: digits,
       role: UserRole.employee,
       phone: phone?.trim(),
       jobTitle: jobTitle?.trim(),
+      mustChangePassword: true,
       createdAt: now,
       updatedAt: now,
     );
     _db.upsertUser(user);
-    return user;
+    return NewEmployeeResult(
+      user: user,
+      temporaryPassword: Credentials.generateTempPassword(),
+    );
+  }
+
+  @override
+  Future<AppUser> update({
+    required String userId,
+    required String name,
+    String? email,
+    String? phone,
+    String? jobTitle,
+  }) async {
+    await _tick();
+    final current = _db.users.firstWhere((u) => u.id == userId);
+    final trimmedEmail = email?.trim();
+    final updated = current.copyWith(
+      name: name.trim(),
+      email: (trimmedEmail == null || trimmedEmail.isEmpty) ? null : trimmedEmail,
+      phone: phone?.trim(),
+      jobTitle: jobTitle?.trim(),
+      updatedAt: DateTime.now(),
+    );
+    _db.upsertUser(updated);
+    return updated;
+  }
+
+  @override
+  Future<void> delete(String userId) async {
+    await _tick();
+    _db.users.removeWhere((u) => u.id == userId);
   }
 
   @override

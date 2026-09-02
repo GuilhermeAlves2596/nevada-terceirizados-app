@@ -18,4 +18,16 @@ abstract interface class ContractRepository {
     DateTime? endDate,
     required ContractStatus status,
   });
+
+  Future<Contract> update({
+    required String id,
+    required String clientId,
+    required String name,
+    String? description,
+    DateTime? startDate,
+    DateTime? endDate,
+    required ContractStatus status,
+  });
+
+  Future<void> delete(String id);
 }

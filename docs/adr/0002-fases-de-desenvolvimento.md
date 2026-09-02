@@ -72,11 +72,45 @@ com dados mockados.
 - [ ] Não perder checklist/foto sem conexão
 - [ ] Sincronização quando a internet voltar
 
-### ⏳ Fase 8 — Firebase Authentication
-### ⏳ Fase 9 — Cloud Firestore
+### 🔄 Fase 8 — Firebase Authentication
+- [x] `flutterfire configure` (projeto `nevada-dev`) + init do Firebase no main
+- [x] `FirebaseAuthRepository` (login/logout reais) + perfil no Firestore `/users/{uid}`
+- [x] Troca mock→Firebase no ponto único de DI (auth)
+- [x] Restauração de sessão no início (splash) — mantém logado
+- [x] minSdk Android elevado para 23 (exigência do firebase_auth)
+- [ ] Criar usuário de teste no console e validar no emulador
+
+> **Nota (ambiente):** o preview Flutter Web deixou de compilar após o Firebase
+> (incompatibilidade `firebase_core_web` × Dart SDK — método `isA`). Não afeta
+> Android/iOS. Como o painel web do produto é separado (React, ADR 0003), a
+> validação passa a ser no **emulador Android**.
+
+### 🔄 Fase 9 — Cloud Firestore
+- [x] `Firebase*Repository` para users, clients, contracts, locations,
+      checklists, tasks, executions (com mapeamento to/from Firestore)
+- [x] Troca mock→Firebase de TODOS os repositórios no ponto único de DI
+- [x] Seeder idempotente popula os dados demo no 1º start
+- [x] Queries com filtro único por `companyId` (sem índices compostos por ora)
+- [ ] Validar no emulador (cadastros persistindo no Firestore)
+- Obs.: fotos ainda gravam caminho local (`storagePath` mock) — Storage real na Fase 10
+
 ### ⏳ Fase 10 — Firebase Storage
 ### ⏳ Fase 11 — Firebase Cloud Messaging (notificações)
-### ⏳ Fase 12 — Security Rules (isolamento por companyId)
+### ⏳ Fase 12 — Security Rules (isolamento por companyId) — ⚠️ CRÍTICO
+> **BLOQUEADOR DE PRODUÇÃO — NÃO PODE IR AO AR SEM ISSO.** Hoje o isolamento
+> multi-tenant existe **apenas no cliente** (filtro por `companyId` no app) e o
+> Firestore está em **modo de teste** → qualquer um consegue, burlando o app,
+> ler/escrever dados de **qualquer empresa**. Um usuário da empresa X **jamais**
+> pode ver dados da empresa Y (supervisor ou funcionário). A garantia real só
+> vem das **Firestore Security Rules** (servidor, impossível de burlar):
+> ler/escrever apenas onde `resource.data.companyId ==` o `companyId` do usuário
+> (lido de `/users/{uid}` no servidor), e impedir troca de `role`/`companyId`.
+> Adiado conscientemente **só até a apresentação à Nevada** (dados de teste);
+> obrigatório antes de qualquer uso real. Ver [[0003-backend-e-frontends]].
+- [ ] `firestore.rules` com isolamento por `companyId` + proteção de role
+- [ ] `storage.rules` idem para as fotos
+- [ ] Endurecer `getById` no app (defesa em profundidade)
+- [ ] Ajustar/mover o seeding (deixa de rodar pré-login com regras travadas)
 ### ⏳ Fase 13 — Tempo real (listeners/streams)
 ### ⏳ Fase 14 — Relatórios
 ### ⏳ Fase 15 — Exportação PDF / Excel
