@@ -19,4 +19,16 @@ abstract interface class AuthRepository {
 
   /// Troca a senha do usuário logado e limpa a flag de troca obrigatória.
   Future<AppUser> changePassword(String newPassword);
+
+  /// Envia o e-mail de redefinição de senha (fluxo "esqueci minha senha").
+  /// Só faz sentido para contas com e-mail real (supervisor/gestor); o e-mail
+  /// sintético do funcionário não recebe mensagens.
+  Future<void> sendPasswordReset(String email);
+
+  /// Atualiza os dados de perfil do **próprio** usuário logado (nome/telefone).
+  /// Não altera role/companyId — também barrado pelas Security Rules.
+  Future<AppUser> updateProfile({
+    required String name,
+    String? phone,
+  });
 }

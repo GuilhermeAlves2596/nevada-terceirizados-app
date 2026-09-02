@@ -26,6 +26,22 @@ abstract final class Credentials {
     return '${d.substring(0, 3)}.${d.substring(3, 6)}.${d.substring(6, 9)}-${d.substring(9)}';
   }
 
+  /// Mantém apenas os dígitos de um telefone.
+  static String phoneDigits(String phone) => phone.replaceAll(RegExp(r'\D'), '');
+
+  /// Formata um telefone brasileiro: (DD) 9XXXX-XXXX (11 dígitos) ou
+  /// (DD) XXXX-XXXX (10 dígitos). Fora disso, retorna o valor original.
+  static String formatPhone(String phone) {
+    final d = phoneDigits(phone);
+    if (d.length == 11) {
+      return '(${d.substring(0, 2)}) ${d.substring(2, 7)}-${d.substring(7)}';
+    }
+    if (d.length == 10) {
+      return '(${d.substring(0, 2)}) ${d.substring(2, 6)}-${d.substring(6)}';
+    }
+    return phone;
+  }
+
   /// Um identificador é tratado como e-mail quando contém "@"; caso contrário
   /// é interpretado como CPF.
   static bool looksLikeEmail(String identifier) => identifier.contains('@');
