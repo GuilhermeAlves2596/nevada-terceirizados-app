@@ -1,1 +1,30 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"nevada-dev","appId":"1:689985021305:android:d0135900236d99943e7ba8","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"nevada-dev","configurations":{"android":"1:689985021305:android:d0135900236d99943e7ba8","ios":"1:689985021305:ios:6a7dc9e1ff5b082e3e7ba8","web":"1:689985021305:web:f8db086e1cbbedd43e7ba8"}}}}}}
+{
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "storage": {
+    "rules": "storage.rules"
+  },
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "nevada-dev",
+          "appId": "1:689985021305:android:d0135900236d99943e7ba8",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "nevada-dev",
+          "configurations": {
+            "android": "1:689985021305:android:d0135900236d99943e7ba8",
+            "ios": "1:689985021305:ios:6a7dc9e1ff5b082e3e7ba8",
+            "web": "1:689985021305:web:f8db086e1cbbedd43e7ba8"
+          }
+        }
+      }
+    }
+  }
+}

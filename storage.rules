@@ -1,0 +1,47 @@
+rules_version = '2';
+
+// Security Rules do Storage (Fase 12).
+//
+// Fotos de execução vivem em companies/{companyId}/executions/{execId}/{arquivo}.
+// O acesso é isolado por tenant (papel/companyId lidos do Firestore /users/{uid}),
+// escrita exige assinatura ativa e o arquivo tem que ser imagem dentro do limite.
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+    function userData() {
+      return firestore.get(
+        /databases/(default)/documents/users/$(request.auth.uid)).data;
+    }
+    function isPlatformAdmin() {
+      return signedIn() && userData().role == 'platformAdmin';
+    }
+    function sameCompany(cid) {
+      return isPlatformAdmin() || (signedIn() && cid == userData().companyId);
+    }
+    function companyActive(cid) {
+      return isPlatformAdmin() ||
+        firestore.get(/databases/(default)/documents/companies/$(cid)).data
+          .subscriptionStatus in ['active', 'trial'];
+    }
+
+    match /companies/{companyId}/{allPaths=**} {
+      allow read: if sameCompany(companyId);
+
+      // create/update exigem imagem e tamanho; delete não tem request.resource.
+      allow create, update: if sameCompany(companyId)
+        && companyActive(companyId)
+        && request.resource.size < 10 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+
+      allow delete: if sameCompany(companyId) && companyActive(companyId);
+    }
+
+    // Qualquer outro caminho é negado.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-import '../../../../core/enums/user_role.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/utils/credentials.dart';
 import '../../domain/entities/app_user.dart';
@@ -18,10 +17,6 @@ class FirebaseAuthRepository implements AuthRepository {
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
 
-  /// DEV: empresa padrão usada ao provisionar o primeiro acesso, para o app
-  /// continuar demonstrável com os dados mock (mesmo `companyId`).
-  static const _devCompanyId = 'company_nevada';
-
   CollectionReference<Map<String, dynamic>> get _users =>
       _firestore.collection('users');
 
@@ -37,7 +32,7 @@ class FirebaseAuthRepository implements AuthRepository {
         password: password,
       );
       final user = cred.user!;
-      return _loadOrProvision(user.uid, user.email ?? email);
+      return _loadProfile(user.uid);
     } on FirebaseAuthException catch (e) {
       throw AuthenticationException(_messageFor(e));
     }
@@ -74,24 +69,19 @@ class FirebaseAuthRepository implements AuthRepository {
     return appUserFromFirestore(user.uid, doc.data()!);
   }
 
-  /// Carrega o perfil do Firestore; se ainda não existir, cria um perfil de
-  /// desenvolvimento (supervisor da empresa mock) para o primeiro acesso.
-  Future<AppUser> _loadOrProvision(String uid, String email) async {
+  /// Carrega o perfil do Firestore após a autenticação.
+  ///
+  /// A partir da Fase 12 (Security Rules) **não** há auto-provisionamento: o
+  /// usuário não pode se criar sozinho (seria escalonamento de privilégio). O
+  /// perfil é provisionado pelo gestor/plataforma. Sem perfil → desloga e erra.
+  Future<AppUser> _loadProfile(String uid) async {
     final doc = await _users.doc(uid).get();
     if (doc.exists) return appUserFromFirestore(uid, doc.data()!);
 
-    final now = DateTime.now();
-    final provisioned = AppUser(
-      id: uid,
-      name: email.split('@').first,
-      email: email,
-      role: UserRole.supervisor,
-      companyId: _devCompanyId,
-      createdAt: now,
-      updatedAt: now,
+    await _auth.signOut();
+    throw const AuthenticationException(
+      'Seu acesso ainda não foi liberado. Contate o administrador.',
     );
-    await _users.doc(uid).set(appUserToFirestore(provisioned));
-    return provisioned;
   }
 
   String _messageFor(FirebaseAuthException e) => switch (e.code) {

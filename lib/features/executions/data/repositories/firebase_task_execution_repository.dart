@@ -195,10 +195,15 @@ class FirebaseTaskExecutionRepository implements TaskExecutionRepository {
     required String companyId,
     required String taskId,
   }) async {
-    final snap = await _col.where('taskId', isEqualTo: taskId).limit(1).get();
+    // Filtra por companyId + taskId: além de correto para multi-tenant, é o que
+    // as Security Rules exigem (uma query sem companyId é negada por inteiro).
+    final snap = await _col
+        .where('companyId', isEqualTo: companyId)
+        .where('taskId', isEqualTo: taskId)
+        .limit(1)
+        .get();
     if (snap.docs.isEmpty) return null;
-    final exec = executionFromDoc(snap.docs.first.id, snap.docs.first.data());
-    return exec.companyId == companyId ? exec : null;
+    return executionFromDoc(snap.docs.first.id, snap.docs.first.data());
   }
 
   Future<TaskExecution> _load(String executionId) async {
