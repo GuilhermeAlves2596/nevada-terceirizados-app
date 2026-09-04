@@ -40,6 +40,8 @@ class MockUserRepository implements UserRepository {
   @override
   Future<NewEmployeeResult> createEmployee({
     required String companyId,
+    required String contractId,
+    required String clientId,
     required String name,
     required String cpf,
     String? email,
@@ -59,6 +61,8 @@ class MockUserRepository implements UserRepository {
     final user = AppUser(
       id: _uuid.v4(),
       companyId: companyId,
+      contractIds: [contractId],
+      clientIds: [clientId],
       name: name.trim(),
       email: (trimmedEmail == null || trimmedEmail.isEmpty) ? null : trimmedEmail,
       cpf: digits,
@@ -115,6 +119,38 @@ class MockUserRepository implements UserRepository {
       orElse: () => throw const NotFoundException('Usuário não encontrado.'),
     );
     final updated = user.copyWith(active: active, updatedAt: DateTime.now());
+    _db.upsertUser(updated);
+    return updated;
+  }
+
+  @override
+  Future<String> resetEmployeePassword(String employeeId) async {
+    await _tick();
+    final user = _db.users.firstWhere(
+      (u) => u.id == employeeId,
+      orElse: () => throw const NotFoundException('Funcionário não encontrado.'),
+    );
+    _db.upsertUser(
+        user.copyWith(mustChangePassword: true, updatedAt: DateTime.now()));
+    return Credentials.generateTempPassword();
+  }
+
+  @override
+  Future<AppUser> setContracts({
+    required String userId,
+    required List<String> contractIds,
+    required List<String> clientIds,
+  }) async {
+    await _tick();
+    final user = _db.users.firstWhere(
+      (u) => u.id == userId,
+      orElse: () => throw const NotFoundException('Usuário não encontrado.'),
+    );
+    final updated = user.copyWith(
+      contractIds: contractIds,
+      clientIds: clientIds,
+      updatedAt: DateTime.now(),
+    );
     _db.upsertUser(updated);
     return updated;
   }

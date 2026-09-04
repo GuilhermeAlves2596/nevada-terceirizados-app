@@ -13,6 +13,7 @@ import '../../../tasks/presentation/models/task_stats.dart';
 import '../../../tasks/presentation/models/task_view.dart';
 import '../../../tasks/presentation/providers/task_providers.dart';
 import '../../../tasks/presentation/widgets/task_card.dart';
+import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../widgets/dashboard_header.dart';
 
 class SupervisorDashboardPage extends ConsumerWidget {
@@ -242,20 +243,28 @@ class _NewTaskButton extends StatelessWidget {
   }
 }
 
-class _ManagementGrid extends StatelessWidget {
+class _ManagementGrid extends ConsumerWidget {
   const _ManagementGrid();
 
-  static const _items = <({String label, IconData icon, String route})>[
-    (label: 'Funcionários', icon: Icons.groups_outlined, route: RoutePaths.supervisorEmployees),
-    (label: 'Clientes', icon: Icons.apartment_outlined, route: RoutePaths.supervisorClients),
-    (label: 'Contratos', icon: Icons.description_outlined, route: RoutePaths.supervisorContracts),
-    (label: 'Locais', icon: Icons.location_on_outlined, route: RoutePaths.supervisorLocations),
-    (label: 'Checklists', icon: Icons.checklist_outlined, route: RoutePaths.supervisorChecklists),
-    (label: 'Relatórios', icon: Icons.bar_chart_outlined, route: RoutePaths.supervisorReports),
-  ];
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(currentUserProvider);
+    // O card "Supervisores" (vínculo de contratos) é só do gestor da empresa.
+    final isManager =
+        user != null && (user.isCompanyAdmin || user.isPlatformAdmin);
+    final items = <({String label, IconData icon, String route})>[
+      if (isManager)
+        (label: 'Supervisores', icon: Icons.supervisor_account_outlined, route: RoutePaths.supervisorSupervisors),
+      (label: 'Funcionários', icon: Icons.groups_outlined, route: RoutePaths.supervisorEmployees),
+      // Clientes e contratos são do gestor (o supervisor só opera dentro deles).
+      if (isManager)
+        (label: 'Clientes', icon: Icons.apartment_outlined, route: RoutePaths.supervisorClients),
+      if (isManager)
+        (label: 'Contratos', icon: Icons.description_outlined, route: RoutePaths.supervisorContracts),
+      (label: 'Locais', icon: Icons.location_on_outlined, route: RoutePaths.supervisorLocations),
+      (label: 'Checklists', icon: Icons.checklist_outlined, route: RoutePaths.supervisorChecklists),
+      (label: 'Relatórios', icon: Icons.bar_chart_outlined, route: RoutePaths.supervisorReports),
+    ];
     return GridView.count(
       crossAxisCount: 2,
       shrinkWrap: true,
@@ -264,7 +273,7 @@ class _ManagementGrid extends StatelessWidget {
       crossAxisSpacing: 10,
       childAspectRatio: 2.8,
       children: [
-        for (final item in _items)
+        for (final item in items)
           Material(
             color: AppColors.white,
             borderRadius: AppRadius.brLg,

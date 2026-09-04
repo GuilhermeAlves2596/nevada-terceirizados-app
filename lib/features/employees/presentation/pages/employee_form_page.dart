@@ -17,6 +17,7 @@ import '../../../../core/widgets/app_form_scaffold.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../../../auth/domain/entities/app_user.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
+import '../../../contracts/presentation/providers/contracts_providers.dart';
 import '../providers/employees_providers.dart';
 
 class EmployeeFormPage extends ConsumerStatefulWidget {
@@ -36,6 +37,11 @@ class _EmployeeFormPageState extends ConsumerState<EmployeeFormPage> {
   late final TextEditingController _phone;
   late final TextEditingController _jobTitle;
   bool _saving = false;
+
+  /// Contrato/cliente herdados pelo funcionário (passo 4). Preenchidos a partir
+  /// do escopo do supervisor; auto-selecionados quando há apenas 1 contrato.
+  String? _contractId;
+  String? _clientId;
 
   bool get _isEditing => widget.existing != null;
 
@@ -85,8 +91,16 @@ class _EmployeeFormPageState extends ConsumerState<EmployeeFormPage> {
         showSuccessSnack(context, 'Funcionário atualizado!');
         context.pop();
       } else {
+        if (_contractId == null || _clientId == null) {
+          if (mounted) {
+            showErrorSnack(context, 'Selecione um contrato para o funcionário.');
+          }
+          return;
+        }
         final result = await repo.createEmployee(
           companyId: companyId,
+          contractId: _contractId!,
+          clientId: _clientId!,
           name: _name.text,
           cpf: _cpf.text,
           email: _email.text,
@@ -123,13 +137,41 @@ class _EmployeeFormPageState extends ConsumerState<EmployeeFormPage> {
     context.pop();
   }
 
-  Future<void> _showCredentials(AppUser user, String tempPassword) {
+  Future<void> _resetPassword() async {
+    final ok = await confirmDialog(
+      context,
+      title: 'Redefinir senha',
+      message:
+          'Gerar uma nova senha temporária para "${widget.existing!.name}"? '
+          'A senha atual dele deixará de funcionar.',
+      confirmLabel: 'Redefinir',
+    );
+    if (!ok) return;
+    setState(() => _saving = true);
+    try {
+      final pwd = await ref
+          .read(userRepositoryProvider)
+          .resetEmployeePassword(widget.existing!.id);
+      if (!mounted) return;
+      await _showCredentials(widget.existing!, pwd, title: 'Senha redefinida!');
+    } on AppException catch (e) {
+      if (mounted) showErrorSnack(context, e.message);
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  Future<void> _showCredentials(
+    AppUser user,
+    String tempPassword, {
+    String title = 'Funcionário cadastrado!',
+  }) {
     final login = Credentials.formatCpf(user.cpf ?? '');
     return showDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: const Text('Funcionário cadastrado!'),
+        title: Text(title),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -165,6 +207,88 @@ class _EmployeeFormPageState extends ConsumerState<EmployeeFormPage> {
     );
   }
 
+  /// Campo de contrato (só no cadastro). Auto-seleciona quando o supervisor tem
+  /// apenas 1 contrato; vira dropdown quando há vários; avisa quando não há.
+  Widget _buildContractField() {
+    final async = ref.watch(contractsProvider);
+    return async.when(
+      loading: () => const Padding(
+        padding: EdgeInsets.symmetric(vertical: 8),
+        child: LinearProgressIndicator(),
+      ),
+      error: (e, _) => Text(
+        'Não foi possível carregar os contratos.',
+        style: AppTypography.bodyMuted,
+      ),
+      data: (contracts) {
+        if (contracts.isEmpty) {
+          return Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.warningSoft,
+              borderRadius: AppRadius.brMd,
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.info_outline,
+                    size: 20, color: AppColors.warning),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Você não tem contratos vinculados. Peça ao gestor para '
+                    'vinculá-lo antes de cadastrar funcionários.',
+                    style: AppTypography.caption,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+        if (contracts.length == 1) {
+          final only = contracts.first;
+          if (_contractId != only.id) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                setState(() {
+                  _contractId = only.id;
+                  _clientId = only.clientId;
+                });
+              }
+            });
+          }
+          return _ReadOnlyRow(label: 'Contrato', value: only.name);
+        }
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Contrato', style: AppTypography.subtitle),
+            AppSpacing.gapXs,
+            DropdownButtonFormField<String>(
+              initialValue: _contractId,
+              isExpanded: true,
+              items: [
+                for (final c in contracts)
+                  DropdownMenuItem(value: c.id, child: Text(c.name)),
+              ],
+              onChanged: (v) => setState(() {
+                _contractId = v;
+                _clientId = v == null
+                    ? null
+                    : contracts.firstWhere((c) => c.id == v).clientId;
+              }),
+              validator: (v) => v == null ? 'Selecione um contrato' : null,
+              decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.description_outlined,
+                    color: AppColors.textMuted, size: 20),
+                hintText: 'Selecione',
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return AppFormScaffold(
@@ -174,6 +298,12 @@ class _EmployeeFormPageState extends ConsumerState<EmployeeFormPage> {
       submitting: _saving,
       onSubmit: _save,
       actions: [
+        if (_isEditing)
+          IconButton(
+            tooltip: 'Redefinir senha',
+            icon: const Icon(Icons.lock_reset),
+            onPressed: _saving ? null : _resetPassword,
+          ),
         if (_isEditing)
           IconButton(
             tooltip: 'Excluir',
@@ -212,6 +342,10 @@ class _EmployeeFormPageState extends ConsumerState<EmployeeFormPage> {
             },
           ),
         AppSpacing.gapMd,
+        if (!_isEditing) ...[
+          _buildContractField(),
+          AppSpacing.gapMd,
+        ],
         AppTextFormField(
           label: 'E-mail (opcional)',
           controller: _email,

@@ -1,20 +1,19 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 
 import '../../../../core/enums/user_role.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/utils/credentials.dart';
-import '../../../../firebase_options.dart';
 import '../../../auth/data/models/app_user_firestore.dart';
 import '../../../auth/domain/entities/app_user.dart';
 import '../../domain/entities/new_employee_result.dart';
 import '../../domain/repositories/user_repository.dart';
 
 class FirebaseUserRepository implements UserRepository {
-  FirebaseUserRepository(this._firestore);
+  FirebaseUserRepository(this._firestore, this._functions);
 
   final FirebaseFirestore _firestore;
+  final FirebaseFunctions _functions;
 
   CollectionReference<Map<String, dynamic>> get _col =>
       _firestore.collection('users');
@@ -41,6 +40,8 @@ class FirebaseUserRepository implements UserRepository {
   @override
   Future<NewEmployeeResult> createEmployee({
     required String companyId,
+    required String contractId,
+    required String clientId,
     required String name,
     required String cpf,
     String? email,
@@ -51,67 +52,43 @@ class FirebaseUserRepository implements UserRepository {
     if (digits.length != 11) {
       throw const ValidationException('CPF inválido (11 dígitos).');
     }
-
-    final syntheticEmail = Credentials.syntheticEmailForCpf(digits);
-    final tempPassword = Credentials.generateTempPassword();
-
-    // Cria a conta de acesso sem deslogar o supervisor (app secundário).
-    final String uid;
-    try {
-      uid = await _createAuthAccount(
-        email: syntheticEmail,
-        password: tempPassword,
-      );
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'email-already-in-use') {
-        throw const ValidationException('Já existe um funcionário com este CPF.');
-      }
-      throw ValidationException('Não foi possível criar o acesso (${e.code}).');
-    }
-
     final trimmedEmail = email?.trim();
-    final now = DateTime.now();
-    final user = AppUser(
-      id: uid,
-      companyId: companyId,
-      name: name.trim(),
-      email: (trimmedEmail == null || trimmedEmail.isEmpty) ? null : trimmedEmail,
-      cpf: digits,
-      role: UserRole.employee,
-      phone: phone?.trim(),
-      jobTitle: jobTitle?.trim(),
-      mustChangePassword: true,
-      createdAt: now,
-      updatedAt: now,
-    );
-    await _col.doc(uid).set(appUserToFirestore(user));
-    return NewEmployeeResult(user: user, temporaryPassword: tempPassword);
-  }
 
-  /// Cria o usuário no Firebase Auth usando uma instância **secundária**, para
-  /// que a sessão do supervisor (instância padrão) não seja afetada.
-  Future<String> _createAuthAccount({
-    required String email,
-    required String password,
-  }) async {
-    FirebaseApp secondary;
+    // Cria a conta Auth + o perfil server-side (Cloud Function / Admin SDK),
+    // sem afetar a sessão do supervisor.
     try {
-      secondary = Firebase.app('employeeCreator');
-    } catch (_) {
-      secondary = await Firebase.initializeApp(
-        name: 'employeeCreator',
-        options: DefaultFirebaseOptions.currentPlatform,
+      final result = await _functions.httpsCallable('createEmployee').call({
+        'contractId': contractId,
+        'clientId': clientId,
+        'name': name,
+        'cpf': cpf,
+        'email': email,
+        'phone': phone,
+        'jobTitle': jobTitle,
+      });
+      final data = (result.data as Map).cast<String, dynamic>();
+      final uid = data['uid'] as String;
+      final tempPassword = data['temporaryPassword'] as String;
+      final now = DateTime.now();
+      final user = AppUser(
+        id: uid,
+        companyId: companyId,
+        contractIds: [contractId],
+        clientIds: [clientId],
+        name: name.trim(),
+        email: (trimmedEmail == null || trimmedEmail.isEmpty) ? null : trimmedEmail,
+        cpf: digits,
+        role: UserRole.employee,
+        phone: phone?.trim(),
+        jobTitle: jobTitle?.trim(),
+        mustChangePassword: true,
+        createdAt: now,
+        updatedAt: now,
       );
-    }
-    final secondaryAuth = FirebaseAuth.instanceFor(app: secondary);
-    try {
-      final cred = await secondaryAuth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      return cred.user!.uid;
-    } finally {
-      await secondaryAuth.signOut();
+      return NewEmployeeResult(user: user, temporaryPassword: tempPassword);
+    } on FirebaseFunctionsException catch (e) {
+      throw ValidationException(
+          e.message ?? 'Não foi possível cadastrar o funcionário.');
     }
   }
 
@@ -140,7 +117,16 @@ class FirebaseUserRepository implements UserRepository {
 
   @override
   Future<void> delete(String userId) async {
-    await _col.doc(userId).delete();
+    // Remove a conta Auth + o perfil server-side (Admin SDK). O cliente não
+    // pode apagar a conta de acesso de outro usuário — daí a Cloud Function.
+    try {
+      await _functions
+          .httpsCallable('deleteUserAccount')
+          .call({'userId': userId});
+    } on FirebaseFunctionsException catch (e) {
+      throw ValidationException(
+          e.message ?? 'Não foi possível excluir o usuário.');
+    }
   }
 
   @override
@@ -150,6 +136,40 @@ class FirebaseUserRepository implements UserRepository {
   }) async {
     final ref = _col.doc(userId);
     await ref.update({'active': active, 'updatedAt': Timestamp.now()});
+    final doc = await ref.get();
+    return appUserFromFirestore(doc.id, doc.data()!);
+  }
+
+  @override
+  Future<String> resetEmployeePassword(String employeeId) async {
+    try {
+      final result = await _functions
+          .httpsCallable('resetEmployeePassword')
+          .call({'employeeId': employeeId});
+      final data = (result.data as Map).cast<String, dynamic>();
+      final pwd = data['temporaryPassword'] as String?;
+      if (pwd == null || pwd.isEmpty) {
+        throw const ValidationException('Resposta inválida do servidor.');
+      }
+      return pwd;
+    } on FirebaseFunctionsException catch (e) {
+      throw ValidationException(
+          e.message ?? 'Não foi possível redefinir a senha.');
+    }
+  }
+
+  @override
+  Future<AppUser> setContracts({
+    required String userId,
+    required List<String> contractIds,
+    required List<String> clientIds,
+  }) async {
+    final ref = _col.doc(userId);
+    await ref.update({
+      'contractIds': contractIds,
+      'clientIds': clientIds,
+      'updatedAt': Timestamp.now(),
+    });
     final doc = await ref.get();
     return appUserFromFirestore(doc.id, doc.data()!);
   }
