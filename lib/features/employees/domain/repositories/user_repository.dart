@@ -45,6 +45,11 @@ abstract interface class UserRepository {
   /// Ativa/desativa um usuário.
   Future<AppUser> setActive({required String userId, required bool active});
 
+  /// Redefine a senha de um funcionário (via Cloud Function / Admin SDK, pois o
+  /// cliente não pode alterar a senha de outro usuário) e retorna a nova senha
+  /// temporária a exibir. O funcionário troca no 1º acesso.
+  Future<String> resetEmployeePassword(String employeeId);
+
   /// Define os contratos/clientes que um **supervisor** atende (vínculo feito
   /// pelo gestor). O supervisor passa a ver apenas esse escopo; funcionários
   /// criados por ele herdam um desses contratos.

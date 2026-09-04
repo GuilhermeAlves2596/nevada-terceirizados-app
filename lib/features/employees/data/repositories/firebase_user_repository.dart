@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 
@@ -12,9 +13,10 @@ import '../../domain/entities/new_employee_result.dart';
 import '../../domain/repositories/user_repository.dart';
 
 class FirebaseUserRepository implements UserRepository {
-  FirebaseUserRepository(this._firestore);
+  FirebaseUserRepository(this._firestore, this._functions);
 
   final FirebaseFirestore _firestore;
+  final FirebaseFunctions _functions;
 
   CollectionReference<Map<String, dynamic>> get _col =>
       _firestore.collection('users');
@@ -156,6 +158,24 @@ class FirebaseUserRepository implements UserRepository {
     await ref.update({'active': active, 'updatedAt': Timestamp.now()});
     final doc = await ref.get();
     return appUserFromFirestore(doc.id, doc.data()!);
+  }
+
+  @override
+  Future<String> resetEmployeePassword(String employeeId) async {
+    try {
+      final result = await _functions
+          .httpsCallable('resetEmployeePassword')
+          .call({'employeeId': employeeId});
+      final data = (result.data as Map).cast<String, dynamic>();
+      final pwd = data['temporaryPassword'] as String?;
+      if (pwd == null || pwd.isEmpty) {
+        throw const ValidationException('Resposta inválida do servidor.');
+      }
+      return pwd;
+    } on FirebaseFunctionsException catch (e) {
+      throw ValidationException(
+          e.message ?? 'Não foi possível redefinir a senha.');
+    }
   }
 
   @override

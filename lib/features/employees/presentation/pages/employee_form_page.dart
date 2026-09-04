@@ -137,13 +137,41 @@ class _EmployeeFormPageState extends ConsumerState<EmployeeFormPage> {
     context.pop();
   }
 
-  Future<void> _showCredentials(AppUser user, String tempPassword) {
+  Future<void> _resetPassword() async {
+    final ok = await confirmDialog(
+      context,
+      title: 'Redefinir senha',
+      message:
+          'Gerar uma nova senha temporária para "${widget.existing!.name}"? '
+          'A senha atual dele deixará de funcionar.',
+      confirmLabel: 'Redefinir',
+    );
+    if (!ok) return;
+    setState(() => _saving = true);
+    try {
+      final pwd = await ref
+          .read(userRepositoryProvider)
+          .resetEmployeePassword(widget.existing!.id);
+      if (!mounted) return;
+      await _showCredentials(widget.existing!, pwd, title: 'Senha redefinida!');
+    } on AppException catch (e) {
+      if (mounted) showErrorSnack(context, e.message);
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  Future<void> _showCredentials(
+    AppUser user,
+    String tempPassword, {
+    String title = 'Funcionário cadastrado!',
+  }) {
     final login = Credentials.formatCpf(user.cpf ?? '');
     return showDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: const Text('Funcionário cadastrado!'),
+        title: Text(title),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -270,6 +298,12 @@ class _EmployeeFormPageState extends ConsumerState<EmployeeFormPage> {
       submitting: _saving,
       onSubmit: _save,
       actions: [
+        if (_isEditing)
+          IconButton(
+            tooltip: 'Redefinir senha',
+            icon: const Icon(Icons.lock_reset),
+            onPressed: _saving ? null : _resetPassword,
+          ),
         if (_isEditing)
           IconButton(
             tooltip: 'Excluir',

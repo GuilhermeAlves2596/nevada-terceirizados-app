@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -34,6 +35,11 @@ final storageProvider = Provider<FirebaseStorage>((ref) {
   return FirebaseStorage.instance;
 });
 
+/// Cloud Functions na região das functions (southamerica-east1).
+final functionsProvider = Provider<FirebaseFunctions>((ref) {
+  return FirebaseFunctions.instanceFor(region: 'southamerica-east1');
+});
+
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return FirebaseAuthRepository(
     FirebaseAuth.instance,
@@ -42,7 +48,10 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
 });
 
 final userRepositoryProvider = Provider<UserRepository>((ref) {
-  return FirebaseUserRepository(ref.watch(firestoreProvider));
+  return FirebaseUserRepository(
+    ref.watch(firestoreProvider),
+    ref.watch(functionsProvider),
+  );
 });
 
 final clientRepositoryProvider = Provider<ClientRepository>((ref) {
