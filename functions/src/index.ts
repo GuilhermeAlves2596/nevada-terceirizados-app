@@ -87,3 +87,167 @@ export const resetEmployeePassword = onCall(async (request) => {
 
   return {temporaryPassword: tempPassword};
 });
+
+/**
+ * Cria a conta de acesso (Firebase Auth) + o perfil `/users` de um funcionário,
+ * server-side (substitui o workaround client-side de instância secundária).
+ * Login por CPF (e-mail sintético). Autorização: supervisor/companyAdmin/
+ * platformAdmin da mesma empresa; supervisor só no seu escopo de contrato.
+ */
+export const createEmployee = onCall(async (request) => {
+  const callerUid = request.auth?.uid;
+  if (!callerUid) {
+    throw new HttpsError("unauthenticated", "Faça login novamente.");
+  }
+  const d = request.data ?? {};
+  const contractId = d.contractId as string | undefined;
+  const clientId = d.clientId as string | undefined;
+  const name = (d.name as string | undefined)?.trim();
+  const rawCpf = d.cpf as string | undefined;
+  if (!contractId || !clientId || !name || !rawCpf) {
+    throw new HttpsError("invalid-argument", "Dados obrigatórios ausentes.");
+  }
+  const cpf = rawCpf.replace(/\D/g, "");
+  if (cpf.length !== 11) {
+    throw new HttpsError("invalid-argument", "CPF inválido (11 dígitos).");
+  }
+
+  const caller = (await db.doc(`users/${callerUid}`).get()).data();
+  if (!caller) {
+    throw new HttpsError("permission-denied", "Perfil não encontrado.");
+  }
+  const callerRole = caller.role as string;
+  if (!["supervisor", "companyAdmin", "platformAdmin"].includes(callerRole)) {
+    throw new HttpsError("permission-denied", "Sem permissão para cadastrar.");
+  }
+  if (callerRole === "supervisor") {
+    const callerContracts: string[] =
+      Array.isArray(caller.contractIds) ? caller.contractIds : [];
+    if (!callerContracts.includes(contractId)) {
+      throw new HttpsError("permission-denied", "Contrato fora do seu escopo.");
+    }
+  }
+
+  const contract = (await db.doc(`contracts/${contractId}`).get()).data();
+  if (!contract) {
+    throw new HttpsError("not-found", "Contrato não encontrado.");
+  }
+  const companyId = callerRole === "platformAdmin" ?
+    (contract.companyId as string) :
+    (caller.companyId as string);
+  if (contract.companyId !== companyId) {
+    throw new HttpsError("permission-denied", "Contrato de outra empresa.");
+  }
+  if (contract.clientId !== clientId) {
+    throw new HttpsError("invalid-argument", "Cliente não corresponde ao contrato.");
+  }
+
+  const dup = await db.collection("users")
+    .where("companyId", "==", companyId)
+    .where("cpf", "==", cpf)
+    .limit(1)
+    .get();
+  if (!dup.empty) {
+    throw new HttpsError("already-exists", "Já existe um funcionário com este CPF.");
+  }
+
+  const syntheticEmail = `${cpf}@func.nevada.app`;
+  const tempPassword = generateTempPassword();
+  let uid: string;
+  try {
+    const rec = await auth.createUser({email: syntheticEmail, password: tempPassword});
+    uid = rec.uid;
+  } catch (e) {
+    const code = (e as {code?: string}).code;
+    if (code === "auth/email-already-exists") {
+      throw new HttpsError("already-exists", "Já existe um funcionário com este CPF.");
+    }
+    throw new HttpsError("internal", "Não foi possível criar o acesso.");
+  }
+
+  const email = (d.email as string | undefined)?.trim();
+  const phone = (d.phone as string | undefined)?.trim();
+  const jobTitle = (d.jobTitle as string | undefined)?.trim();
+  const now = FieldValue.serverTimestamp();
+  await db.doc(`users/${uid}`).set({
+    name,
+    role: "employee",
+    companyId,
+    contractIds: [contractId],
+    clientIds: [clientId],
+    cpf,
+    email: email && email.length ? email : null,
+    phone: phone && phone.length ? phone : null,
+    jobTitle: jobTitle && jobTitle.length ? jobTitle : null,
+    mustChangePassword: true,
+    active: true,
+    createdAt: now,
+    updatedAt: now,
+  });
+
+  return {uid, temporaryPassword: tempPassword};
+});
+
+/**
+ * Exclui a conta de acesso (Auth) + o perfil `/users` de um usuário.
+ * Autorização: platformAdmin/companyAdmin da empresa; supervisor só funcionário
+ * do seu escopo. Não permite excluir a si mesmo nem um platformAdmin.
+ */
+export const deleteUserAccount = onCall(async (request) => {
+  const callerUid = request.auth?.uid;
+  if (!callerUid) {
+    throw new HttpsError("unauthenticated", "Faça login novamente.");
+  }
+  const userId = request.data?.userId as string | undefined;
+  if (!userId) {
+    throw new HttpsError("invalid-argument", "userId é obrigatório.");
+  }
+  if (userId === callerUid) {
+    throw new HttpsError("failed-precondition", "Você não pode excluir a si mesmo.");
+  }
+
+  const caller = (await db.doc(`users/${callerUid}`).get()).data();
+  if (!caller) {
+    throw new HttpsError("permission-denied", "Perfil não encontrado.");
+  }
+  const callerRole = caller.role as string;
+  const target = (await db.doc(`users/${userId}`).get()).data();
+  if (!target) {
+    throw new HttpsError("not-found", "Usuário não encontrado.");
+  }
+  if (target.role === "platformAdmin") {
+    throw new HttpsError("permission-denied", "Não é possível excluir esse usuário.");
+  }
+
+  const sameCompany = callerRole === "platformAdmin" ||
+    target.companyId === caller.companyId;
+  if (!sameCompany) {
+    throw new HttpsError("permission-denied", "Usuário de outra empresa.");
+  }
+
+  if (callerRole === "supervisor") {
+    if (target.role !== "employee") {
+      throw new HttpsError("permission-denied", "Sem permissão.");
+    }
+    const callerContracts: string[] =
+      Array.isArray(caller.contractIds) ? caller.contractIds : [];
+    const targetContracts: string[] =
+      Array.isArray(target.contractIds) ? target.contractIds : [];
+    if (!targetContracts.some((c) => callerContracts.includes(c))) {
+      throw new HttpsError("permission-denied", "Funcionário fora do seu escopo.");
+    }
+  } else if (!["companyAdmin", "platformAdmin"].includes(callerRole)) {
+    throw new HttpsError("permission-denied", "Sem permissão.");
+  }
+
+  try {
+    await auth.deleteUser(userId);
+  } catch (e) {
+    const code = (e as {code?: string}).code;
+    if (code !== "auth/user-not-found") {
+      throw new HttpsError("internal", "Falha ao remover o acesso.");
+    }
+  }
+  await db.doc(`users/${userId}`).delete();
+  return {ok: true};
+});
