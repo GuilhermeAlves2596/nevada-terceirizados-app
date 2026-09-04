@@ -33,6 +33,7 @@ abstract final class RoutePaths {
   static const supervisorTasks = '/supervisor/tasks';
   static const supervisorTasksCreate = '/supervisor/tasks/create';
   static const supervisorReports = '/supervisor/reports';
+  static const supervisorSupervisors = '/supervisor/supervisors';
   static const supervisorProfile = '/supervisor/profile';
   static const supervisorProfileEdit = '/supervisor/profile/edit';
 

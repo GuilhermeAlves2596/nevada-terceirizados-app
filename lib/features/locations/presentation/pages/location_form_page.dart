@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../app/di/repository_providers.dart';
 import '../../../../app/providers/company_catalog.dart';
+import '../../../../app/providers/data_scope.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/utils/snackbars.dart';
@@ -69,12 +70,16 @@ class _LocationFormPageState extends ConsumerState<LocationFormPage> {
   @override
   Widget build(BuildContext context) {
     final catalog = ref.watch(companyCatalogProvider).valueOrNull;
-    final clients = catalog?.clientsById.values ?? const [];
+    final scope = ref.watch(dataScopeProvider);
+    final clients = (catalog?.clientsById.values ?? const [])
+        .where((c) => scope.allowsClient(c.id))
+        .toList();
     final contracts = (catalog?.contractsById.values ?? const [])
-        .where((c) => c.clientId == _clientId)
+        .where((c) => c.clientId == _clientId && scope.allowsContract(c.id))
         .toList();
     final parents = (catalog?.locationsById.values ?? const [])
-        .where((l) => l.contractId == _contractId)
+        .where((l) =>
+            l.contractId == _contractId && scope.allowsContract(l.contractId))
         .toList();
 
     return AppFormScaffold(

@@ -15,9 +15,13 @@ abstract interface class UserRepository {
 
   /// Cadastra um funcionário (role = employee): cria a conta de acesso com uma
   /// senha temporária e o perfil. O login é feito por [cpf]; o e-mail é
-  /// opcional. Retorna o usuário e a senha temporária a exibir ao supervisor.
+  /// opcional. O funcionário **herda** o contrato/cliente informado ([contractId]
+  /// dentro do escopo do supervisor — seção do realinhamento). Retorna o usuário
+  /// e a senha temporária a exibir ao supervisor.
   Future<NewEmployeeResult> createEmployee({
     required String companyId,
+    required String contractId,
+    required String clientId,
     required String name,
     required String cpf,
     String? email,
@@ -40,4 +44,13 @@ abstract interface class UserRepository {
 
   /// Ativa/desativa um usuário.
   Future<AppUser> setActive({required String userId, required bool active});
+
+  /// Define os contratos/clientes que um **supervisor** atende (vínculo feito
+  /// pelo gestor). O supervisor passa a ver apenas esse escopo; funcionários
+  /// criados por ele herdam um desses contratos.
+  Future<AppUser> setContracts({
+    required String userId,
+    required List<String> contractIds,
+    required List<String> clientIds,
+  });
 }

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../app/di/repository_providers.dart';
 import '../../../../app/providers/company_catalog.dart';
+import '../../../../app/providers/data_scope.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_typography.dart';
@@ -137,6 +138,7 @@ class _NewTaskPageState extends ConsumerState<NewTaskPage> {
   @override
   Widget build(BuildContext context) {
     final catalogAsync = ref.watch(companyCatalogProvider);
+    final scope = ref.watch(dataScopeProvider);
 
     return Scaffold(
       appBar: AppBar(title: Text(_isEditing ? 'Editar tarefa' : 'Nova tarefa')),
@@ -146,15 +148,23 @@ class _NewTaskPageState extends ConsumerState<NewTaskPage> {
             AppErrorState(onRetry: () => ref.invalidate(companyCatalogProvider)),
         data: (catalog) {
           final employees = catalog.usersById.values
-              .where((u) => u.role.isEmployee && u.active)
+              .where((u) =>
+                  u.role.isEmployee &&
+                  u.active &&
+                  scope.allowsEmployee(u.contractIds))
               .toList();
-          final clients = catalog.clientsById.values.toList();
+          final clients = catalog.clientsById.values
+              .where((c) => scope.allowsClient(c.id))
+              .toList();
           final contracts = catalog.contractsById.values
-              .where((c) => c.clientId == _clientId)
+              .where((c) => c.clientId == _clientId && scope.allowsContract(c.id))
               .toList();
           final locations = catalog.locationsById.values
-              .where((l) => l.contractId == _contractId)
+              .where((l) =>
+                  l.contractId == _contractId &&
+                  scope.allowsContract(l.contractId))
               .toList();
+          // Checklists são templates da empresa (não escopados por contrato).
           final checklists =
               catalog.checklistsById.values.where((c) => c.active).toList();
 
