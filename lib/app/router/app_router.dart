@@ -30,6 +30,8 @@ import '../../features/locations/presentation/pages/locations_list_page.dart';
 import '../../features/profile/presentation/pages/profile_edit_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/qr_code/presentation/pages/qr_code_view_page.dart';
+import '../../features/supervisors/presentation/pages/supervisor_contracts_page.dart';
+import '../../features/supervisors/presentation/pages/supervisors_page.dart';
 import '../../features/qr_code/presentation/pages/qr_scanner_page.dart';
 import '../../features/tasks/presentation/pages/employee_history_page.dart';
 import '../../features/tasks/presentation/pages/employee_tasks_page.dart';
@@ -217,6 +219,15 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: RoutePaths.supervisorReports,
         builder: (context, state) =>
             const ComingSoonPage(title: 'Relatórios'),
+      ),
+      GoRoute(
+        path: RoutePaths.supervisorSupervisors,
+        builder: (context, state) => const SupervisorsPage(),
+      ),
+      GoRoute(
+        path: '${RoutePaths.supervisorSupervisors}/:id',
+        builder: (context, state) =>
+            SupervisorContractsPage(supervisor: state.extra as AppUser),
       ),
       GoRoute(
         path: RoutePaths.supervisorProfile,

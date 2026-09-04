@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/di/repository_providers.dart';
 import '../../../../app/providers/company_catalog.dart';
+import '../../../../app/providers/data_scope.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../../executions/domain/entities/task_execution.dart';
 import '../models/task_view.dart';
@@ -48,10 +49,12 @@ final supervisorTaskViewsProvider =
   final companyId = ref.watch(currentUserProvider)?.companyId;
   if (companyId == null) return const [];
 
+  final scope = ref.watch(dataScopeProvider);
   final catalog = await ref.watch(companyCatalogProvider.future);
   final tasks =
       await ref.watch(taskRepositoryProvider).getForCompany(companyId: companyId);
-  return TaskView.resolveAll(tasks, catalog);
+  final scoped = tasks.where((t) => scope.allowsContract(t.contractId)).toList();
+  return TaskView.resolveAll(scoped, catalog);
 });
 
 /// Pull-to-refresh: recarrega também o [companyCatalogProvider] (nomes de

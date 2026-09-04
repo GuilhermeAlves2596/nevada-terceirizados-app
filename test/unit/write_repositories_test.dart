@@ -17,6 +17,8 @@ void main() {
 
     final result = await repo.createEmployee(
       companyId: companyId,
+      contractId: MockDatabase.contractLimpeza2026,
+      clientId: MockDatabase.clientPrefeitura,
       name: 'Ana Souza',
       cpf: '111.222.333-44',
     );
@@ -25,6 +27,9 @@ void main() {
     expect(result.user.active, isTrue);
     expect(result.user.companyId, companyId);
     expect(result.user.cpf, '11122233344'); // só dígitos
+    // Passo 4: herda o contrato/cliente informado.
+    expect(result.user.contractIds, [MockDatabase.contractLimpeza2026]);
+    expect(result.user.clientIds, [MockDatabase.clientPrefeitura]);
     expect(result.user.mustChangePassword, isTrue);
     expect(result.temporaryPassword.length, greaterThanOrEqualTo(6));
 
@@ -38,6 +43,8 @@ void main() {
 
     await repo.createEmployee(
       companyId: companyId,
+      contractId: MockDatabase.contractLimpeza2026,
+      clientId: MockDatabase.clientPrefeitura,
       name: 'Primeiro',
       cpf: '55566677788',
     );
@@ -45,6 +52,8 @@ void main() {
     expect(
       () => repo.createEmployee(
         companyId: companyId,
+        contractId: MockDatabase.contractLimpeza2026,
+        clientId: MockDatabase.clientPrefeitura,
         name: 'Segundo',
         cpf: '555.666.777-88',
       ),

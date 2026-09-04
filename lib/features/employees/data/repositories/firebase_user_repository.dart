@@ -41,6 +41,8 @@ class FirebaseUserRepository implements UserRepository {
   @override
   Future<NewEmployeeResult> createEmployee({
     required String companyId,
+    required String contractId,
+    required String clientId,
     required String name,
     required String cpf,
     String? email,
@@ -74,6 +76,8 @@ class FirebaseUserRepository implements UserRepository {
     final user = AppUser(
       id: uid,
       companyId: companyId,
+      contractIds: [contractId],
+      clientIds: [clientId],
       name: name.trim(),
       email: (trimmedEmail == null || trimmedEmail.isEmpty) ? null : trimmedEmail,
       cpf: digits,
@@ -150,6 +154,22 @@ class FirebaseUserRepository implements UserRepository {
   }) async {
     final ref = _col.doc(userId);
     await ref.update({'active': active, 'updatedAt': Timestamp.now()});
+    final doc = await ref.get();
+    return appUserFromFirestore(doc.id, doc.data()!);
+  }
+
+  @override
+  Future<AppUser> setContracts({
+    required String userId,
+    required List<String> contractIds,
+    required List<String> clientIds,
+  }) async {
+    final ref = _col.doc(userId);
+    await ref.update({
+      'contractIds': contractIds,
+      'clientIds': clientIds,
+      'updatedAt': Timestamp.now(),
+    });
     final doc = await ref.get();
     return appUserFromFirestore(doc.id, doc.data()!);
   }
