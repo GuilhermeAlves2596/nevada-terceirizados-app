@@ -124,6 +124,18 @@ class MockUserRepository implements UserRepository {
   }
 
   @override
+  Future<String> resetEmployeePassword(String employeeId) async {
+    await _tick();
+    final user = _db.users.firstWhere(
+      (u) => u.id == employeeId,
+      orElse: () => throw const NotFoundException('Funcionário não encontrado.'),
+    );
+    _db.upsertUser(
+        user.copyWith(mustChangePassword: true, updatedAt: DateTime.now()));
+    return Credentials.generateTempPassword();
+  }
+
+  @override
   Future<AppUser> setContracts({
     required String userId,
     required List<String> contractIds,
