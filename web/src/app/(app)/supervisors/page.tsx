@@ -10,8 +10,10 @@ type Supervisor = {
   id: string;
   name?: string;
   email?: string | null;
+  phone?: string | null;
   contractIds?: string[];
   active?: boolean;
+  createdAt?: { toDate?: () => Date } | null;
 };
 
 type CreatedCreds = { email: string; temporaryPassword: string };
@@ -20,6 +22,20 @@ const createSupervisor = httpsCallable<
   { name: string; email: string; phone?: string },
   { uid: string; temporaryPassword: string }
 >(functions, "createSupervisor");
+
+const deleteUserAccount = httpsCallable<{ userId: string }, { ok: boolean }>(
+  functions,
+  "deleteUserAccount",
+);
+
+function formatDate(ts?: { toDate?: () => Date } | null): string {
+  if (!ts?.toDate) return "—";
+  try {
+    return ts.toDate().toLocaleDateString("pt-BR");
+  } catch {
+    return "—";
+  }
+}
 
 export default function SupervisorsPage() {
   const { profile } = useAuth();
@@ -36,6 +52,11 @@ export default function SupervisorsPage() {
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [created, setCreated] = useState<CreatedCreds | null>(null);
+
+  const [viewing, setViewing] = useState<Supervisor | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<Supervisor | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!companyId) {
@@ -96,6 +117,22 @@ export default function SupervisorsPage() {
       setFormError(fe?.message ?? "Falha ao cadastrar o supervisor.");
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function onDelete(s: Supervisor) {
+    setActionError(null);
+    setDeleting(true);
+    try {
+      await deleteUserAccount({ userId: s.id });
+      setConfirmDelete(null);
+      setViewing(null);
+      await load();
+    } catch (err) {
+      const fe = err as FunctionsError;
+      setActionError(fe?.message ?? "Falha ao excluir o supervisor.");
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -233,20 +270,133 @@ export default function SupervisorsPage() {
           <ul className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200 bg-white">
             {list.map((s) => (
               <li key={s.id} className="flex items-center justify-between px-5 py-4">
-                <div>
-                  <p className="font-medium">{s.name ?? "(sem nome)"}</p>
-                  <p className="text-sm text-slate-500">{s.email}</p>
+                <div className="min-w-0">
+                  <p className="truncate font-medium">{s.name ?? "(sem nome)"}</p>
+                  <p className="truncate text-sm text-slate-500">{s.email}</p>
                 </div>
-                <span className="text-xs text-slate-400">
-                  {(s.contractIds?.length ?? 0) === 0
-                    ? "sem contratos"
-                    : `${s.contractIds?.length} contrato(s)`}
-                </span>
+                <div className="flex shrink-0 items-center gap-2">
+                  <span className="hidden text-xs text-slate-400 sm:inline">
+                    {(s.contractIds?.length ?? 0) === 0
+                      ? "sem contratos"
+                      : `${s.contractIds?.length} contrato(s)`}
+                  </span>
+                  <button
+                    onClick={() => setViewing(s)}
+                    className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium hover:bg-slate-50"
+                  >
+                    Ver
+                  </button>
+                  <button
+                    onClick={() => {
+                      setActionError(null);
+                      setConfirmDelete(s);
+                    }}
+                    className="rounded-lg border border-red-200 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50"
+                  >
+                    Excluir
+                  </button>
+                </div>
               </li>
             ))}
           </ul>
         )}
       </div>
+
+      {/* Detalhes do supervisor */}
+      {viewing && (
+        <div
+          className="fixed inset-0 z-20 flex items-center justify-center bg-slate-900/40 p-4"
+          onClick={() => setViewing(null)}
+        >
+          <div
+            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-lg"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-lg font-semibold">{viewing.name ?? "Supervisor"}</h2>
+            <dl className="mt-4 space-y-2 text-sm">
+              <div className="flex gap-3">
+                <dt className="w-32 shrink-0 text-slate-500">E-mail</dt>
+                <dd className="break-all">{viewing.email ?? "—"}</dd>
+              </div>
+              <div className="flex gap-3">
+                <dt className="w-32 shrink-0 text-slate-500">Telefone</dt>
+                <dd>{viewing.phone ?? "—"}</dd>
+              </div>
+              <div className="flex gap-3">
+                <dt className="w-32 shrink-0 text-slate-500">Status</dt>
+                <dd>{viewing.active === false ? "Inativo" : "Ativo"}</dd>
+              </div>
+              <div className="flex gap-3">
+                <dt className="w-32 shrink-0 text-slate-500">Contratos</dt>
+                <dd>
+                  {(viewing.contractIds?.length ?? 0) === 0
+                    ? "nenhum vinculado"
+                    : `${viewing.contractIds?.length} vinculado(s)`}
+                </dd>
+              </div>
+              <div className="flex gap-3">
+                <dt className="w-32 shrink-0 text-slate-500">Criado em</dt>
+                <dd>{formatDate(viewing.createdAt)}</dd>
+              </div>
+            </dl>
+            <div className="mt-6 flex justify-between">
+              <button
+                onClick={() => {
+                  const s = viewing;
+                  setViewing(null);
+                  setActionError(null);
+                  setConfirmDelete(s);
+                }}
+                className="rounded-lg border border-red-200 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50"
+              >
+                Excluir
+              </button>
+              <button
+                onClick={() => setViewing(null)}
+                className="rounded-lg border border-slate-300 px-4 py-1.5 text-sm font-medium hover:bg-slate-50"
+              >
+                Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmar exclusão */}
+      {confirmDelete && (
+        <div
+          className="fixed inset-0 z-20 flex items-center justify-center bg-slate-900/40 p-4"
+          onClick={() => !deleting && setConfirmDelete(null)}
+        >
+          <div
+            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-lg"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-lg font-semibold">Excluir supervisor</h2>
+            <p className="mt-2 text-sm text-slate-600">
+              Excluir <span className="font-medium">{confirmDelete.name ?? confirmDelete.email}</span>?
+              Isso remove a conta de acesso e o perfil — não pode ser desfeito.
+            </p>
+            {actionError && <p className="mt-3 text-sm text-red-600">{actionError}</p>}
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => setConfirmDelete(null)}
+                disabled={deleting}
+                className="rounded-lg border border-slate-300 px-4 py-1.5 text-sm font-medium hover:bg-slate-50 disabled:opacity-60"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => onDelete(confirmDelete)}
+                disabled={deleting}
+                className="rounded-lg bg-red-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-60"
+              >
+                {deleting ? "Excluindo…" : "Excluir"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
