@@ -5,3 +5,22 @@
 :root {
   color-scheme: light;
 }
+
+/* Impressão / Exportar PDF: só o #print-root aparece. Ele é montado como filho
+   direto do <body> (via portal), então escondemos os demais irmãos com
+   display:none — assim não sobra altura fantasma gerando páginas em branco. */
+#print-root {
+  display: none;
+}
+
+@media print {
+  body > *:not(#print-root) {
+    display: none !important;
+  }
+  #print-root {
+    display: block !important;
+  }
+  .print-task {
+    break-inside: avoid;
+  }
+}

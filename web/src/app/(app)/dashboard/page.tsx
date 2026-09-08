@@ -45,6 +45,16 @@ export default function DashboardPage() {
             Cadastrar e gerenciar contratos por cliente.
           </p>
         </Link>
+
+        <Link
+          href="/reports"
+          className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-brand"
+        >
+          <h2 className="font-medium">Relatórios</h2>
+          <p className="mt-1 text-sm text-slate-500">
+            Tarefas executadas por período, contrato e funcionário.
+          </p>
+        </Link>
       </div>
     </div>
   );

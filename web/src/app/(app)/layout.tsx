@@ -12,6 +12,7 @@ const NAV = [
   { href: "/supervisors", label: "Supervisores" },
   { href: "/clients", label: "Clientes" },
   { href: "/contracts", label: "Contratos" },
+  { href: "/reports", label: "Relatórios" },
 ];
 
 export default function AppLayout({

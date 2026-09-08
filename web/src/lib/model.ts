@@ -92,3 +92,152 @@ export async function fetchContracts(companyId: string): Promise<Contract[]> {
     .map((d) => ({ id: d.id, ...(d.data() as Omit<Contract, "id">) }))
     .sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""));
 }
+
+// ---------- Relatórios ----------
+
+export type NamedLite = { id: string; name: string };
+export type UserLite = {
+  id: string;
+  name?: string;
+  role?: string;
+  email?: string | null;
+};
+
+export type ExecPhoto = {
+  id?: string;
+  downloadUrl?: string | null;
+  storagePath?: string | null;
+  createdAt?: FsDate;
+};
+
+export type ExecItem = {
+  id?: string;
+  description: string;
+  order: number;
+  required: boolean;
+  completed: boolean;
+  completedAt?: FsDate;
+};
+
+export type TaskExecutionLite = {
+  id: string;
+  taskId: string;
+  employeeId: string;
+  status: string;
+  startedAt?: FsDate;
+  finishedAt?: FsDate;
+  observation?: string | null;
+  items: ExecItem[];
+  photos: ExecPhoto[];
+};
+
+export type TaskLite = {
+  id: string;
+  contractId: string;
+  clientId: string;
+  locationId: string;
+  checklistId: string;
+  assignedTo: string;
+};
+
+async function fetchNamed(
+  coll: string,
+  companyId: string,
+): Promise<NamedLite[]> {
+  const snap = await getDocs(
+    query(collection(db, coll), where("companyId", "==", companyId)),
+  );
+  return snap.docs.map((d) => ({
+    id: d.id,
+    name: (d.data().name as string | undefined) ?? "",
+  }));
+}
+
+export const fetchChecklists = (companyId: string) =>
+  fetchNamed("checklists", companyId);
+export const fetchLocations = (companyId: string) =>
+  fetchNamed("locations", companyId);
+
+/** Usuários da empresa (para nome do funcionário e filtro). */
+export async function fetchUsers(companyId: string): Promise<UserLite[]> {
+  const snap = await getDocs(
+    query(collection(db, "users"), where("companyId", "==", companyId)),
+  );
+  return snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<UserLite, "id">) }));
+}
+
+/** Tarefas da empresa. */
+export async function fetchTasks(companyId: string): Promise<TaskLite[]> {
+  const snap = await getDocs(
+    query(collection(db, "tasks"), where("companyId", "==", companyId)),
+  );
+  return snap.docs.map((d) => {
+    const x = d.data();
+    return {
+      id: d.id,
+      contractId: (x.contractId as string) ?? "",
+      clientId: (x.clientId as string) ?? "",
+      locationId: (x.locationId as string) ?? "",
+      checklistId: (x.checklistId as string) ?? "",
+      assignedTo: (x.assignedTo as string) ?? "",
+    };
+  });
+}
+
+/**
+ * Execuções CONCLUÍDAS da empresa. Query por companyId + status (2 igualdades,
+ * sem índice composto); o recorte por período/contrato/funcionário é feito no
+ * cliente sobre esse conjunto.
+ */
+export async function fetchCompletedExecutions(
+  companyId: string,
+): Promise<TaskExecutionLite[]> {
+  const snap = await getDocs(
+    query(
+      collection(db, "taskExecutions"),
+      where("companyId", "==", companyId),
+      where("status", "==", "completed"),
+    ),
+  );
+  return snap.docs.map((d) => {
+    const x = d.data();
+    const photos = Array.isArray(x.photos)
+      ? (x.photos as Record<string, unknown>[]).map((p) => ({
+          id: p.id as string | undefined,
+          downloadUrl: (p.downloadUrl as string | null | undefined) ?? null,
+          storagePath: (p.storagePath as string | null | undefined) ?? null,
+          createdAt: p.createdAt as FsDate,
+        }))
+      : [];
+    const items = Array.isArray(x.items)
+      ? (x.items as Record<string, unknown>[])
+          .map((it) => ({
+            id: it.id as string | undefined,
+            description: (it.description as string | undefined) ?? "",
+            order: (it.order as number | undefined) ?? 0,
+            required: (it.required as boolean | undefined) ?? true,
+            completed: (it.completed as boolean | undefined) ?? false,
+            completedAt: it.completedAt as FsDate,
+          }))
+          .sort((a, b) => a.order - b.order)
+      : [];
+    return {
+      id: d.id,
+      taskId: (x.taskId as string) ?? "",
+      employeeId: (x.employeeId as string) ?? "",
+      status: (x.status as string) ?? "",
+      startedAt: x.startedAt as FsDate,
+      finishedAt: x.finishedAt as FsDate,
+      observation: (x.observation as string | null | undefined) ?? null,
+      items,
+      photos,
+    };
+  });
+}
+
+/** Date de um FsDate (ou null). */
+export function tsToDate(ts?: FsDate): Date | null {
+  return ts && "toDate" in ts && typeof ts.toDate === "function"
+    ? ts.toDate()
+    : null;
+}
