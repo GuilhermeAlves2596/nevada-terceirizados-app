@@ -20,6 +20,10 @@ nunca lê/altera dados da empresa Y.
 - Anti-escalonamento: `self` não pode alterar `role`/`companyId` no próprio doc.
 - Quem cria quem em `/users`: plataforma → qualquer; companyAdmin → companyAdmin/
   supervisor/funcionário do seu tenant; supervisor → só funcionário do seu tenant.
+- **Escrita de `clients`/`contracts` só do gestor**: `create`/`update`/`delete`
+  dessas coleções exigem `companyAdmin`/`platformAdmin` (o supervisor lê, mas não
+  cadastra — isso é do painel do gestor). `locations`/`checklists`/`tasks`/
+  `taskExecutions` seguem graváveis pelo supervisor dentro do tenant.
 
 ## Deploy
 Requer o Firebase CLI (uma vez): `npm i -g firebase-tools` e `firebase login`.
@@ -66,6 +70,8 @@ Papéis / `/users`:
 - [ ] `self` edita nome/telefone. ✅ | `self` tenta mudar `role` p/ companyAdmin. ❌
 - [ ] supervisor cria funcionário no seu tenant. ✅ | supervisor cria supervisor. ❌
 - [ ] companyAdmin cria supervisor no seu tenant. ✅ | em outro tenant. ❌
+- [ ] supervisor cria/edita/exclui `clients` ou `contracts`. ❌ (só gestor)
+- [ ] companyAdmin cria/edita/exclui `clients`/`contracts` no seu tenant. ✅
 - [ ] usuário comum edita `companies/{id}` (assinatura). ❌ (só platformAdmin)
 
 Gate de assinatura (setar `subscriptionStatus: "suspended"` na empresa):

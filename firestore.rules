@@ -127,17 +127,36 @@ service cloud.firestore {
       return canWriteCompany(resource.data.companyId);
     }
 
+    // Só o gestor da empresa (companyAdmin) ou a plataforma escrevem — o
+    // supervisor NÃO cadastra clientes/contratos (modelo SaaS: isso é do painel
+    // do gestor). Mantém tenant + gate de assinatura.
+    function isCompanyManager() {
+      return isCompanyAdmin() || isPlatformAdmin();
+    }
+    function managerCreate() {
+      return isCompanyManager() && canWriteCompany(request.resource.data.companyId);
+    }
+    function managerUpdate() {
+      return isCompanyManager()
+        && canWriteCompany(resource.data.companyId)
+        && request.resource.data.companyId == resource.data.companyId;
+    }
+    function managerDelete() {
+      return isCompanyManager() && canWriteCompany(resource.data.companyId);
+    }
+
+    // Clientes e contratos: leitura pelo tenant; escrita SÓ gestor/plataforma.
     match /clients/{id} {
       allow read: if scopedRead();
-      allow create: if scopedCreate();
-      allow update: if scopedUpdate();
-      allow delete: if scopedDelete();
+      allow create: if managerCreate();
+      allow update: if managerUpdate();
+      allow delete: if managerDelete();
     }
     match /contracts/{id} {
       allow read: if scopedRead();
-      allow create: if scopedCreate();
-      allow update: if scopedUpdate();
-      allow delete: if scopedDelete();
+      allow create: if managerCreate();
+      allow update: if managerUpdate();
+      allow delete: if managerDelete();
     }
     match /locations/{id} {
       allow read: if scopedRead();
