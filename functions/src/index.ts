@@ -189,6 +189,95 @@ export const createEmployee = onCall(async (request) => {
 });
 
 /**
+ * Cria a conta de acesso (Firebase Auth) + o perfil `/users` de um SUPERVISOR,
+ * server-side. Login por e-mail (o supervisor autentica por e-mail; só o
+ * funcionário usa CPF). Autorização: só companyAdmin/platformAdmin — supervisor
+ * NÃO cria supervisor. Aceita vínculo opcional de contratos (deriva clientIds).
+ */
+export const createSupervisor = onCall(async (request) => {
+  const callerUid = request.auth?.uid;
+  if (!callerUid) {
+    throw new HttpsError("unauthenticated", "Faça login novamente.");
+  }
+  const d = request.data ?? {};
+  const name = (d.name as string | undefined)?.trim();
+  const email = (d.email as string | undefined)?.trim().toLowerCase();
+  if (!name || !email) {
+    throw new HttpsError("invalid-argument", "Nome e e-mail são obrigatórios.");
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    throw new HttpsError("invalid-argument", "E-mail inválido.");
+  }
+
+  const caller = (await db.doc(`users/${callerUid}`).get()).data();
+  if (!caller) {
+    throw new HttpsError("permission-denied", "Perfil não encontrado.");
+  }
+  const callerRole = caller.role as string;
+  if (!["companyAdmin", "platformAdmin"].includes(callerRole)) {
+    throw new HttpsError("permission-denied", "Só o gestor cadastra supervisores.");
+  }
+
+  // companyId: companyAdmin usa o próprio; platformAdmin precisa informar.
+  const companyId = callerRole === "platformAdmin" ?
+    (d.companyId as string | undefined) :
+    (caller.companyId as string | undefined);
+  if (!companyId) {
+    throw new HttpsError("invalid-argument", "companyId é obrigatório.");
+  }
+
+  // Vínculo opcional de contratos → valida empresa e deriva clientIds.
+  const contractIds: string[] = Array.isArray(d.contractIds) ?
+    (d.contractIds as string[]) : [];
+  const clientIds = new Set<string>();
+  for (const contractId of contractIds) {
+    const contract = (await db.doc(`contracts/${contractId}`).get()).data();
+    if (!contract) {
+      throw new HttpsError("not-found", `Contrato ${contractId} não encontrado.`);
+    }
+    if (contract.companyId !== companyId) {
+      throw new HttpsError("permission-denied", "Contrato de outra empresa.");
+    }
+    clientIds.add(contract.clientId as string);
+  }
+
+  const phone = (d.phone as string | undefined)?.trim();
+  const tempPassword = generateTempPassword();
+  let uid: string;
+  try {
+    const rec = await auth.createUser({email, password: tempPassword});
+    uid = rec.uid;
+  } catch (e) {
+    const code = (e as {code?: string}).code;
+    if (code === "auth/email-already-exists") {
+      throw new HttpsError("already-exists", "Já existe uma conta com este e-mail.");
+    }
+    if (code === "auth/invalid-email") {
+      throw new HttpsError("invalid-argument", "E-mail inválido.");
+    }
+    throw new HttpsError("internal", "Não foi possível criar o acesso.");
+  }
+
+  const now = FieldValue.serverTimestamp();
+  await db.doc(`users/${uid}`).set({
+    name,
+    role: "supervisor",
+    companyId,
+    contractIds,
+    clientIds: Array.from(clientIds),
+    email,
+    phone: phone && phone.length ? phone : null,
+    cpf: null,
+    mustChangePassword: true,
+    active: true,
+    createdAt: now,
+    updatedAt: now,
+  });
+
+  return {uid, temporaryPassword: tempPassword};
+});
+
+/**
  * Exclui a conta de acesso (Auth) + o perfil `/users` de um usuário.
  * Autorização: platformAdmin/companyAdmin da empresa; supervisor só funcionário
  * do seu escopo. Não permite excluir a si mesmo nem um platformAdmin.
