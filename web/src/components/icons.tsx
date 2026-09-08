@@ -58,3 +58,113 @@ export function LinkIcon(props: IconProps) {
     </Svg>
   );
 }
+
+export function HomeIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M4 11l8-7 8 7" />
+      <path d="M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9" />
+    </Svg>
+  );
+}
+
+export function UsersIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <circle cx="9" cy="8" r="3" />
+      <path d="M3 20a6 6 0 0 1 12 0" />
+      <path d="M16 6a3 3 0 0 1 0 6" />
+      <path d="M17.5 20a6 6 0 0 0-3-5" />
+    </Svg>
+  );
+}
+
+export function BuildingIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <rect x="5" y="3" width="14" height="18" rx="1" />
+      <path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2M13 15h2" />
+    </Svg>
+  );
+}
+
+export function FileIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M7 3h7l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" />
+      <path d="M14 3v4h4" />
+      <path d="M9 13h6M9 17h6" />
+    </Svg>
+  );
+}
+
+export function ChartIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M4 20V4" />
+      <path d="M4 20h16" />
+      <rect x="7" y="12" width="3" height="5" />
+      <rect x="12" y="8" width="3" height="9" />
+      <rect x="17" y="5" width="3" height="12" />
+    </Svg>
+  );
+}
+
+export function SunIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+    </Svg>
+  );
+}
+
+export function MoonIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M20 14.5A8 8 0 1 1 9.5 4a6 6 0 0 0 10.5 10.5Z" />
+    </Svg>
+  );
+}
+
+export function MenuIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M4 6h16M4 12h16M4 18h16" />
+    </Svg>
+  );
+}
+
+export function LogoutIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M15 4h3a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-3" />
+      <path d="M10 12H3" />
+      <path d="M7 8l-4 4 4 4" />
+    </Svg>
+  );
+}
+
+export function XIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M6 6l12 12M18 6L6 18" />
+    </Svg>
+  );
+}
+
+export function ChevronLeftIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M15 6l-6 6 6 6" />
+    </Svg>
+  );
+}
+
+export function ChevronRightIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M9 6l6 6-6 6" />
+    </Svg>
+  );
+}

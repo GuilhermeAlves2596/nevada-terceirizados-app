@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { useAuth } from "@/lib/auth-context";
+import { Loader } from "@/components/spinner";
 import {
   fetchChecklists,
   fetchClients,
@@ -216,14 +217,14 @@ export default function ReportsPage() {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold">Relatórios</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-muted">
             Tarefas executadas por período, contrato e funcionário.
           </p>
         </div>
         {companyId && rows.length > 0 && (
           <button
             onClick={() => setPrintTarget({ type: "all" })}
-            className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium hover:bg-slate-50"
+            className="rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-surface-2"
           >
             Exportar PDF
           </button>
@@ -237,18 +238,18 @@ export default function ReportsPage() {
       )}
 
       {/* Filtros */}
-      <div className="mt-6 grid gap-4 rounded-2xl border border-slate-200 bg-white p-4 sm:grid-cols-2 lg:grid-cols-4">
-        <label className="block text-sm font-medium text-slate-700">
+      <div className="mt-6 grid gap-4 rounded-2xl border border-border bg-surface p-4 sm:grid-cols-2 lg:grid-cols-4">
+        <label className="block text-sm font-medium text-fg">
           De
           <input
             type="date"
             value={startDate}
             max={endDate}
             onChange={(e) => setStartDate(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+            className="mt-1 w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
           />
         </label>
-        <label className="block text-sm font-medium text-slate-700">
+        <label className="block text-sm font-medium text-fg">
           Até
           <input
             type="date"
@@ -256,15 +257,15 @@ export default function ReportsPage() {
             min={startDate}
             max={dateInput(today)}
             onChange={(e) => setEndDate(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+            className="mt-1 w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
           />
         </label>
-        <label className="block text-sm font-medium text-slate-700">
+        <label className="block text-sm font-medium text-fg">
           Contrato
           <select
             value={contractFilter}
             onChange={(e) => setContractFilter(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+            className="mt-1 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
           >
             <option value="">Todos</option>
             {contractList.map((c) => (
@@ -274,12 +275,12 @@ export default function ReportsPage() {
             ))}
           </select>
         </label>
-        <label className="block text-sm font-medium text-slate-700">
+        <label className="block text-sm font-medium text-fg">
           Funcionário
           <select
             value={employeeFilter}
             onChange={(e) => setEmployeeFilter(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+            className="mt-1 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
           >
             <option value="">Todos</option>
             {employees.map((u) => (
@@ -294,15 +295,15 @@ export default function ReportsPage() {
       <div className="mt-2 flex justify-end">
         <button
           onClick={clearFilters}
-          className="text-sm font-medium text-slate-500 hover:text-brand"
+          className="text-sm font-medium text-muted hover:text-brand"
         >
           Limpar filtros
         </button>
       </div>
 
       {!loading && !loadError && (
-        <p className="mt-4 text-sm text-slate-500">
-          <span className="font-medium text-slate-700">{rows.length}</span>{" "}
+        <p className="mt-4 text-sm text-muted">
+          <span className="font-medium text-fg">{rows.length}</span>{" "}
           tarefa(s) executada(s)
         </p>
       )}
@@ -310,11 +311,11 @@ export default function ReportsPage() {
       {/* Lista (clicável) */}
       <div className="mt-4 space-y-4">
         {loading ? (
-          <p className="text-sm text-slate-500">Carregando…</p>
+          <Loader />
         ) : loadError ? (
           <p className="text-sm text-red-600">{loadError}</p>
         ) : rows.length === 0 ? (
-          <p className="rounded-lg border border-dashed border-slate-200 p-6 text-center text-sm text-slate-500">
+          <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted">
             Nenhuma tarefa executada no período/filtros selecionados.
           </p>
         ) : (
@@ -322,21 +323,21 @@ export default function ReportsPage() {
             <button
               key={r.id}
               onClick={() => setDetail(r)}
-              className="block w-full rounded-2xl border border-slate-200 bg-white p-5 text-left transition hover:border-brand"
+              className="block w-full rounded-2xl border border-border bg-surface p-5 text-left transition hover:border-brand"
             >
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div>
                   <h2 className="font-medium">
                     {r.title}
                     {r.location && (
-                      <span className="text-slate-500"> · {r.location}</span>
+                      <span className="text-muted"> · {r.location}</span>
                     )}
                   </h2>
-                  <p className="mt-0.5 text-sm text-slate-500">
+                  <p className="mt-0.5 text-sm text-muted">
                     {r.contract} · {r.employee}
                   </p>
                 </div>
-                <span className="text-sm text-slate-500">{fmtDate(r.date)}</span>
+                <span className="text-sm text-muted">{fmtDate(r.date)}</span>
               </div>
               {r.photos.length > 0 && (
                 <div className="mt-3 flex flex-wrap gap-2">
@@ -346,12 +347,12 @@ export default function ReportsPage() {
                       key={i}
                       src={url}
                       alt="Foto da execução"
-                      className="h-16 w-16 rounded-lg border border-slate-200 object-cover"
+                      className="h-16 w-16 rounded-lg border border-border object-cover"
                       loading="lazy"
                     />
                   ))}
                   {r.photos.length > 6 && (
-                    <span className="self-center text-xs text-slate-400">
+                    <span className="self-center text-xs text-muted">
                       +{r.photos.length - 6}
                     </span>
                   )}
@@ -369,19 +370,19 @@ export default function ReportsPage() {
           onClick={() => setDetail(null)}
         >
           <div
-            className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-lg"
+            className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-surface p-6 shadow-lg"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h2 className="text-lg font-semibold">{detail.title}</h2>
                 {detail.location && (
-                  <p className="text-sm text-slate-500">{detail.location}</p>
+                  <p className="text-sm text-muted">{detail.location}</p>
                 )}
               </div>
               <button
                 onClick={() => setPrintTarget({ type: "one", row: detail })}
-                className="shrink-0 rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium hover:bg-slate-50"
+                className="shrink-0 rounded-lg border border-border px-3 py-1.5 text-sm font-medium hover:bg-surface-2"
               >
                 Exportar PDF
               </button>
@@ -389,41 +390,41 @@ export default function ReportsPage() {
 
             <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
               <div>
-                <dt className="text-slate-500">Cliente</dt>
+                <dt className="text-muted">Cliente</dt>
                 <dd>{detail.client}</dd>
               </div>
               <div>
-                <dt className="text-slate-500">Contrato</dt>
+                <dt className="text-muted">Contrato</dt>
                 <dd>{detail.contract}</dd>
               </div>
               <div>
-                <dt className="text-slate-500">Funcionário</dt>
+                <dt className="text-muted">Funcionário</dt>
                 <dd>{detail.employee}</dd>
               </div>
               <div>
-                <dt className="text-slate-500">Conclusão</dt>
+                <dt className="text-muted">Conclusão</dt>
                 <dd>{fmtDateTime(detail.finishedAt)}</dd>
               </div>
               <div>
-                <dt className="text-slate-500">Início</dt>
+                <dt className="text-muted">Início</dt>
                 <dd>{fmtDateTime(detail.startedAt)}</dd>
               </div>
             </dl>
 
             {detail.items.length > 0 && (
               <div className="mt-4">
-                <h3 className="text-sm font-medium text-slate-700">Checklist</h3>
+                <h3 className="text-sm font-medium text-fg">Checklist</h3>
                 <ul className="mt-2 space-y-1 text-sm">
                   {detail.items.map((it, i) => (
                     <li key={it.id ?? i} className="flex items-start gap-2">
                       <span
                         className={
-                          it.completed ? "text-green-600" : "text-slate-300"
+                          it.completed ? "text-green-600" : "text-muted"
                         }
                       >
                         {it.completed ? "✓" : "○"}
                       </span>
-                      <span className={it.completed ? "" : "text-slate-500"}>
+                      <span className={it.completed ? "" : "text-muted"}>
                         {it.description}
                         {it.required && (
                           <span className="text-red-400"> *</span>
@@ -437,8 +438,8 @@ export default function ReportsPage() {
 
             {detail.observation && (
               <div className="mt-4">
-                <h3 className="text-sm font-medium text-slate-700">Observação</h3>
-                <p className="mt-1 rounded-lg bg-slate-50 p-3 text-sm text-slate-600">
+                <h3 className="text-sm font-medium text-fg">Observação</h3>
+                <p className="mt-1 rounded-lg bg-surface-2 p-3 text-sm text-muted">
                   {detail.observation}
                 </p>
               </div>
@@ -446,7 +447,7 @@ export default function ReportsPage() {
 
             {detail.photos.length > 0 && (
               <div className="mt-4">
-                <h3 className="text-sm font-medium text-slate-700">
+                <h3 className="text-sm font-medium text-fg">
                   Fotos ({detail.photos.length})
                 </h3>
                 <div className="mt-2 flex flex-wrap gap-2">
@@ -454,7 +455,7 @@ export default function ReportsPage() {
                     <button
                       key={i}
                       onClick={() => setLightbox(url)}
-                      className="overflow-hidden rounded-lg border border-slate-200"
+                      className="overflow-hidden rounded-lg border border-border"
                       title="Ampliar"
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -473,7 +474,7 @@ export default function ReportsPage() {
             <div className="mt-6 text-right">
               <button
                 onClick={() => setDetail(null)}
-                className="rounded-lg border border-slate-300 px-4 py-1.5 text-sm font-medium hover:bg-slate-50"
+                className="rounded-lg border border-border px-4 py-1.5 text-sm font-medium hover:bg-surface-2"
               >
                 Fechar
               </button>

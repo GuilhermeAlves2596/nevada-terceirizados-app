@@ -30,14 +30,14 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center px-4">
       <form
         onSubmit={onSubmit}
-        className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-8 shadow-sm"
+        className="w-full max-w-sm rounded-2xl border border-border bg-surface p-8 shadow-sm"
       >
         <div className="mb-6 text-center">
           <h1 className="text-xl font-semibold text-brand-dark">Nevada</h1>
-          <p className="mt-1 text-sm text-slate-500">Painel do gestor</p>
+          <p className="mt-1 text-sm text-muted">Painel do gestor</p>
         </div>
 
-        <label className="block text-sm font-medium text-slate-700">
+        <label className="block text-sm font-medium text-fg">
           E-mail
           <input
             type="email"
@@ -45,11 +45,11 @@ export default function LoginPage() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+            className="mt-1 w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
           />
         </label>
 
-        <label className="mt-4 block text-sm font-medium text-slate-700">
+        <label className="mt-4 block text-sm font-medium text-fg">
           Senha
           <input
             type="password"
@@ -57,7 +57,7 @@ export default function LoginPage() {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+            className="mt-1 w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
           />
         </label>
 
