@@ -55,7 +55,12 @@ export function contractStatusLabel(value?: string): string {
 export type Client = {
   id: string;
   name: string;
+  document?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  address?: string | null;
   active?: boolean;
+  createdAt?: FsDate;
 };
 
 export type Contract = {

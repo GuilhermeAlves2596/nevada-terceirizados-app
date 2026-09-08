@@ -10,6 +10,7 @@ const MANAGER_ROLES = ["companyAdmin", "platformAdmin"];
 const NAV = [
   { href: "/dashboard", label: "Início" },
   { href: "/supervisors", label: "Supervisores" },
+  { href: "/clients", label: "Clientes" },
   { href: "/contracts", label: "Contratos" },
 ];
 

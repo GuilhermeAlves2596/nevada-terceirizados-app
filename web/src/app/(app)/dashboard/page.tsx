@@ -26,10 +26,15 @@ export default function DashboardPage() {
           </p>
         </Link>
 
-        <div className="rounded-2xl border border-dashed border-slate-200 p-5 text-slate-400">
+        <Link
+          href="/clients"
+          className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-brand"
+        >
           <h2 className="font-medium">Clientes</h2>
-          <p className="mt-1 text-sm">Em breve.</p>
-        </div>
+          <p className="mt-1 text-sm text-slate-500">
+            Cadastrar e gerenciar os clientes da empresa.
+          </p>
+        </Link>
 
         <Link
           href="/contracts"

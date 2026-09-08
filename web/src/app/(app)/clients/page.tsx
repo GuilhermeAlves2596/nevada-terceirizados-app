@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   collection,
@@ -8,46 +7,39 @@ import {
   doc,
   serverTimestamp,
   setDoc,
-  Timestamp,
   updateDoc,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth-context";
 import {
-  CONTRACT_STATUSES,
-  contractStatusLabel,
   fetchClients,
   fetchContracts,
-  formatDate,
-  fromDateInput,
-  toDateInput,
   type Client,
   type Contract,
-  type ContractStatus,
 } from "@/lib/model";
 import { EditIcon, TrashIcon } from "@/components/icons";
 
 type FormState = {
   id: string | null; // null = novo
   name: string;
-  clientId: string;
-  status: ContractStatus;
-  description: string;
-  startDate: string;
-  endDate: string;
+  document: string;
+  phone: string;
+  email: string;
+  address: string;
+  active: boolean;
 };
 
 const EMPTY_FORM: FormState = {
   id: null,
   name: "",
-  clientId: "",
-  status: "active",
-  description: "",
-  startDate: "",
-  endDate: "",
+  document: "",
+  phone: "",
+  email: "",
+  address: "",
+  active: true,
 };
 
-export default function ContractsPage() {
+export default function ClientsPage() {
   const { profile } = useAuth();
   const companyId = profile?.companyId ?? null;
 
@@ -60,34 +52,34 @@ export default function ContractsPage() {
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
-  const [confirmDelete, setConfirmDelete] = useState<Contract | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<Client | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
-  const clientNames = useMemo(() => {
-    const m = new Map<string, string>();
-    clients.forEach((c) => m.set(c.id, c.name));
+  const contractCountByClient = useMemo(() => {
+    const m = new Map<string, number>();
+    contracts.forEach((c) => m.set(c.clientId, (m.get(c.clientId) ?? 0) + 1));
     return m;
-  }, [clients]);
+  }, [contracts]);
 
   const load = useCallback(async () => {
     if (!companyId) {
-      setContracts([]);
       setClients([]);
+      setContracts([]);
       setLoading(false);
       return;
     }
     setLoading(true);
     setLoadError(null);
     try {
-      const [cs, ct] = await Promise.all([
+      const [cl, ct] = await Promise.all([
         fetchClients(companyId),
         fetchContracts(companyId),
       ]);
-      setClients(cs);
+      setClients(cl);
       setContracts(ct);
     } catch {
-      setLoadError("Não foi possível carregar os contratos.");
+      setLoadError("Não foi possível carregar os clientes.");
     } finally {
       setLoading(false);
     }
@@ -99,52 +91,45 @@ export default function ContractsPage() {
 
   function openNew() {
     setFormError(null);
-    setForm({ ...EMPTY_FORM, clientId: clients[0]?.id ?? "" });
+    setForm({ ...EMPTY_FORM });
   }
 
-  function openEdit(c: Contract) {
+  function openEdit(c: Client) {
     setFormError(null);
     setForm({
       id: c.id,
       name: c.name ?? "",
-      clientId: c.clientId ?? "",
-      status: (c.status as ContractStatus) ?? "active",
-      description: c.description ?? "",
-      startDate: toDateInput(c.startDate),
-      endDate: toDateInput(c.endDate),
+      document: c.document ?? "",
+      phone: c.phone ?? "",
+      email: c.email ?? "",
+      address: c.address ?? "",
+      active: c.active !== false,
     });
   }
 
   async function onSave(e: React.FormEvent) {
     e.preventDefault();
     if (!form || !companyId) return;
-    if (!form.name.trim() || !form.clientId) {
-      setFormError("Nome e cliente são obrigatórios.");
+    if (!form.name.trim()) {
+      setFormError("O nome é obrigatório.");
       return;
     }
     setFormError(null);
     setSaving(true);
-    const start = fromDateInput(form.startDate);
-    const end = fromDateInput(form.endDate);
-    if (start && end && end < start) {
-      setFormError("A data final não pode ser anterior à inicial.");
-      setSaving(false);
-      return;
-    }
     try {
       const base = {
-        clientId: form.clientId,
         name: form.name.trim(),
-        description: form.description.trim() || null,
-        status: form.status,
-        startDate: start ? Timestamp.fromDate(start) : null,
-        endDate: end ? Timestamp.fromDate(end) : null,
+        document: form.document.trim() || null,
+        phone: form.phone.trim() || null,
+        email: form.email.trim() || null,
+        address: form.address.trim() || null,
+        active: form.active,
         updatedAt: serverTimestamp(),
       };
       if (form.id) {
-        await updateDoc(doc(db, "contracts", form.id), base);
+        await updateDoc(doc(db, "clients", form.id), base);
       } else {
-        const ref = doc(collection(db, "contracts"));
+        const ref = doc(collection(db, "clients"));
         await setDoc(ref, {
           ...base,
           companyId,
@@ -154,40 +139,37 @@ export default function ContractsPage() {
       setForm(null);
       await load();
     } catch {
-      setFormError("Falha ao salvar o contrato. Verifique suas permissões.");
+      setFormError("Falha ao salvar o cliente. Verifique suas permissões.");
     } finally {
       setSaving(false);
     }
   }
 
-  async function onDelete(c: Contract) {
+  async function onDelete(c: Client) {
     setActionError(null);
     setDeleting(true);
     try {
-      await deleteDoc(doc(db, "contracts", c.id));
+      await deleteDoc(doc(db, "clients", c.id));
       setConfirmDelete(null);
       await load();
     } catch {
-      setActionError("Falha ao excluir o contrato.");
+      setActionError("Falha ao excluir o cliente.");
     } finally {
       setDeleting(false);
     }
   }
 
-  const period = (c: Contract) => {
-    const s = formatDate(c.startDate);
-    const e = formatDate(c.endDate);
-    if (s === "—" && e === "—") return "—";
-    return `${s} → ${e}`;
-  };
+  const linkedContracts = confirmDelete
+    ? contractCountByClient.get(confirmDelete.id) ?? 0
+    : 0;
 
   return (
     <div>
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Contratos</h1>
+          <h1 className="text-2xl font-semibold">Clientes</h1>
           <p className="mt-1 text-sm text-slate-500">
-            Contratos da empresa por cliente.
+            Clientes atendidos pela empresa.
           </p>
         </div>
         {companyId && (
@@ -195,7 +177,7 @@ export default function ContractsPage() {
             onClick={openNew}
             className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark"
           >
-            Novo contrato
+            Novo cliente
           </button>
         )}
       </div>
@@ -206,51 +188,55 @@ export default function ContractsPage() {
         </p>
       )}
 
-      {companyId && !loading && clients.length === 0 && (
-        <p className="mt-6 rounded-lg bg-amber-50 p-4 text-sm text-amber-800">
-          Nenhum cliente cadastrado ainda. Cadastre um cliente em{" "}
-          <Link href="/clients" className="font-medium underline">
-            Clientes
-          </Link>{" "}
-          antes de criar um contrato.
-        </p>
-      )}
-
       <div className="mt-8">
         {loading ? (
           <p className="text-sm text-slate-500">Carregando…</p>
         ) : loadError ? (
           <p className="text-sm text-red-600">{loadError}</p>
-        ) : contracts.length === 0 ? (
+        ) : clients.length === 0 ? (
           <p className="rounded-lg border border-dashed border-slate-200 p-6 text-center text-sm text-slate-500">
-            Nenhum contrato cadastrado ainda.
+            Nenhum cliente cadastrado ainda.
           </p>
         ) : (
           <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
             <table className="w-full text-sm">
               <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
                 <tr>
-                  <th className="px-5 py-3 font-medium">Contrato</th>
                   <th className="px-5 py-3 font-medium">Cliente</th>
-                  <th className="px-5 py-3 font-medium">Status</th>
-                  <th className="hidden px-5 py-3 font-medium md:table-cell">
-                    Período
+                  <th className="hidden px-5 py-3 font-medium sm:table-cell">
+                    Documento
                   </th>
+                  <th className="hidden px-5 py-3 font-medium md:table-cell">
+                    Telefone
+                  </th>
+                  <th className="px-5 py-3 font-medium">Contratos</th>
+                  <th className="px-5 py-3 font-medium">Status</th>
                   <th className="px-5 py-3" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {contracts.map((c) => (
+                {clients.map((c) => (
                   <tr key={c.id}>
                     <td className="px-5 py-3 font-medium">{c.name}</td>
-                    <td className="px-5 py-3 text-slate-600">
-                      {clientNames.get(c.clientId) ?? "—"}
+                    <td className="hidden px-5 py-3 text-slate-600 sm:table-cell">
+                      {c.document || "—"}
+                    </td>
+                    <td className="hidden px-5 py-3 text-slate-600 md:table-cell">
+                      {c.phone || "—"}
+                    </td>
+                    <td className="px-5 py-3 text-slate-500">
+                      {contractCountByClient.get(c.id) ?? 0}
                     </td>
                     <td className="px-5 py-3">
-                      <StatusBadge status={c.status} />
-                    </td>
-                    <td className="hidden px-5 py-3 text-slate-500 md:table-cell">
-                      {period(c)}
+                      <span
+                        className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          c.active === false
+                            ? "bg-slate-100 text-slate-600"
+                            : "bg-green-100 text-green-700"
+                        }`}
+                      >
+                        {c.active === false ? "Inativo" : "Ativo"}
+                      </span>
                     </td>
                     <td className="px-5 py-3">
                       <div className="flex justify-end gap-2">
@@ -283,7 +269,7 @@ export default function ContractsPage() {
         )}
       </div>
 
-      {/* Form de contrato (novo/editar) */}
+      {/* Form de cliente (novo/editar) */}
       {form && (
         <div
           className="fixed inset-0 z-20 flex items-center justify-center bg-slate-900/40 p-4"
@@ -295,7 +281,7 @@ export default function ContractsPage() {
             className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-lg"
           >
             <h2 className="text-lg font-semibold">
-              {form.id ? "Editar contrato" : "Novo contrato"}
+              {form.id ? "Editar cliente" : "Novo cliente"}
             </h2>
 
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -310,73 +296,52 @@ export default function ContractsPage() {
               </label>
 
               <label className="block text-sm font-medium text-slate-700">
-                Cliente
-                <select
-                  required
-                  value={form.clientId}
-                  onChange={(e) => setForm({ ...form, clientId: e.target.value })}
-                  className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
-                >
-                  <option value="" disabled>
-                    Selecione…
-                  </option>
-                  {clients.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="block text-sm font-medium text-slate-700">
-                Status
-                <select
-                  value={form.status}
-                  onChange={(e) =>
-                    setForm({ ...form, status: e.target.value as ContractStatus })
-                  }
-                  className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
-                >
-                  {CONTRACT_STATUSES.map((s) => (
-                    <option key={s.value} value={s.value}>
-                      {s.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="block text-sm font-medium text-slate-700">
-                Início (opcional)
+                CNPJ/CPF (opcional)
                 <input
-                  type="date"
-                  value={form.startDate}
+                  value={form.document}
                   onChange={(e) =>
-                    setForm({ ...form, startDate: e.target.value })
+                    setForm({ ...form, document: e.target.value })
                   }
                   className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
                 />
               </label>
 
               <label className="block text-sm font-medium text-slate-700">
-                Fim (opcional)
+                Telefone (opcional)
                 <input
-                  type="date"
-                  value={form.endDate}
-                  onChange={(e) => setForm({ ...form, endDate: e.target.value })}
+                  value={form.phone}
+                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
                   className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
                 />
               </label>
 
-              <label className="block text-sm font-medium text-slate-700 sm:col-span-2">
-                Descrição (opcional)
-                <textarea
-                  rows={3}
-                  value={form.description}
-                  onChange={(e) =>
-                    setForm({ ...form, description: e.target.value })
-                  }
+              <label className="block text-sm font-medium text-slate-700">
+                E-mail (opcional)
+                <input
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
                   className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
                 />
+              </label>
+
+              <label className="block text-sm font-medium text-slate-700">
+                Endereço (opcional)
+                <input
+                  value={form.address}
+                  onChange={(e) => setForm({ ...form, address: e.target.value })}
+                  className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+                />
+              </label>
+
+              <label className="flex items-center gap-2 text-sm font-medium text-slate-700 sm:col-span-2">
+                <input
+                  type="checkbox"
+                  checked={form.active}
+                  onChange={(e) => setForm({ ...form, active: e.target.checked })}
+                  className="h-4 w-4 rounded border-slate-300 text-brand focus:ring-brand"
+                />
+                Ativo
               </label>
             </div>
 
@@ -393,7 +358,7 @@ export default function ContractsPage() {
               </button>
               <button
                 type="submit"
-                disabled={saving || clients.length === 0}
+                disabled={saving}
                 className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark disabled:opacity-60"
               >
                 {saving ? "Salvando…" : "Salvar"}
@@ -413,11 +378,19 @@ export default function ContractsPage() {
             className="w-full max-w-md rounded-2xl bg-white p-6 shadow-lg"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-lg font-semibold">Excluir contrato</h2>
-            <p className="mt-2 text-sm text-slate-600">
-              Excluir <span className="font-medium">{confirmDelete.name}</span>?
-              Esta ação não pode ser desfeita.
-            </p>
+            <h2 className="text-lg font-semibold">Excluir cliente</h2>
+            {linkedContracts > 0 ? (
+              <p className="mt-2 text-sm text-slate-600">
+                <span className="font-medium">{confirmDelete.name}</span> tem{" "}
+                {linkedContracts} contrato(s) vinculado(s). Exclua ou reatribua
+                esses contratos antes de remover o cliente.
+              </p>
+            ) : (
+              <p className="mt-2 text-sm text-slate-600">
+                Excluir <span className="font-medium">{confirmDelete.name}</span>?
+                Esta ação não pode ser desfeita.
+              </p>
+            )}
             {actionError && (
               <p className="mt-3 text-sm text-red-600">{actionError}</p>
             )}
@@ -431,7 +404,7 @@ export default function ContractsPage() {
               </button>
               <button
                 onClick={() => onDelete(confirmDelete)}
-                disabled={deleting}
+                disabled={deleting || linkedContracts > 0}
                 className="rounded-lg bg-red-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-60"
               >
                 {deleting ? "Excluindo…" : "Excluir"}
@@ -441,22 +414,5 @@ export default function ContractsPage() {
         </div>
       )}
     </div>
-  );
-}
-
-function StatusBadge({ status }: { status?: string }) {
-  const styles: Record<string, string> = {
-    active: "bg-green-100 text-green-700",
-    inactive: "bg-slate-100 text-slate-600",
-    expired: "bg-amber-100 text-amber-700",
-  };
-  return (
-    <span
-      className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
-        styles[status ?? ""] ?? "bg-slate-100 text-slate-600"
-      }`}
-    >
-      {contractStatusLabel(status)}
-    </span>
   );
 }
