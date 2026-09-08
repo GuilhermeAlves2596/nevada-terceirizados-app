@@ -10,6 +10,7 @@ const MANAGER_ROLES = ["companyAdmin", "platformAdmin"];
 const NAV = [
   { href: "/dashboard", label: "Início" },
   { href: "/supervisors", label: "Supervisores" },
+  { href: "/contracts", label: "Contratos" },
 ];
 
 export default function AppLayout({

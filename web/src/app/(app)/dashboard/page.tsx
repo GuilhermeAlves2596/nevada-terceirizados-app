@@ -31,10 +31,15 @@ export default function DashboardPage() {
           <p className="mt-1 text-sm">Em breve.</p>
         </div>
 
-        <div className="rounded-2xl border border-dashed border-slate-200 p-5 text-slate-400">
+        <Link
+          href="/contracts"
+          className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-brand"
+        >
           <h2 className="font-medium">Contratos</h2>
-          <p className="mt-1 text-sm">Em breve.</p>
-        </div>
+          <p className="mt-1 text-sm text-slate-500">
+            Cadastrar e gerenciar contratos por cliente.
+          </p>
+        </Link>
       </div>
     </div>
   );
