@@ -10,6 +10,17 @@ export const COLLECTIONS = [
   'taskExecutions',
 ];
 
+/// Coleções cuja ESCRITA é exclusiva do gestor/plataforma (painel do gestor).
+export const MANAGER_ONLY_COLLECTIONS = ['clients', 'contracts'];
+
+/// Coleções que o supervisor também escreve (domínio de campo dele).
+export const SUPERVISOR_WRITABLE_COLLECTIONS = [
+  'locations',
+  'checklists',
+  'tasks',
+  'taskExecutions',
+];
+
 /// Popula a base de teste (chamado dentro de withSecurityRulesDisabled).
 ///
 /// 3 empresas (A e B ativas; SUSP suspensa) e usuários de cada papel, mais um

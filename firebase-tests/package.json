@@ -6,7 +6,8 @@
   "description": "Testes automatizados das Firebase Security Rules (Fase 12) via emulador.",
   "scripts": {
     "test": "node --test",
-    "emulate": "firebase emulators:exec --config ../firebase.json --project demo-nevada --only firestore,storage \"node --test\""
+    "emulate": "firebase emulators:exec --config ../firebase.json --project demo-nevada --only firestore,storage \"node --test\"",
+    "emulate:checklists": "firebase emulators:exec --config ../firebase.json --project demo-nevada --only firestore,storage \"node --test --test-name-pattern=checklists.*escreve\""
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^3.0.4",

@@ -2,12 +2,19 @@ import { before, after, beforeEach, describe, test } from 'node:test';
 import { assertFails, assertSucceeds } from '@firebase/rules-unit-testing';
 import { doc, getDoc, setDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { createTestEnv } from './env.js';
-import { seedBaseline, COLLECTIONS } from './seed.js';
+import {
+  seedBaseline,
+  COLLECTIONS,
+  MANAGER_ONLY_COLLECTIONS,
+  SUPERVISOR_WRITABLE_COLLECTIONS,
+} from './seed.js';
 
 let testEnv;
 
 before(async () => {
-  testEnv = await createTestEnv();
+  // projectId próprio: isola do storage.rules.test.js (que também limpa o
+  // Firestore no beforeEach) quando o node roda os arquivos em paralelo.
+  testEnv = await createTestEnv('demo-nevada-fs');
 });
 after(async () => {
   await testEnv.cleanup();
@@ -23,13 +30,17 @@ const db = (uid) => testEnv.authenticatedContext(uid).firestore();
 const anon = () => testEnv.unauthenticatedContext().firestore();
 
 describe('isolamento entre empresas', () => {
+  // Leitura: todo o tenant enxerga; o outro tenant é negado.
   for (const col of COLLECTIONS) {
     test(`${col}: lê o próprio tenant, nega o outro`, async () => {
       await assertSucceeds(getDoc(doc(db('sup_a'), `${col}/${col}_a`)));
       await assertFails(getDoc(doc(db('sup_a'), `${col}/${col}_b`)));
     });
+  }
 
-    test(`${col}: escreve no próprio tenant, nega no outro`, async () => {
+  // Escrita das coleções do supervisor: escreve no próprio tenant, nega o outro.
+  for (const col of SUPERVISOR_WRITABLE_COLLECTIONS) {
+    test(`${col}: supervisor escreve no próprio tenant, nega no outro`, async () => {
       await assertSucceeds(
         setDoc(doc(db('sup_a'), `${col}/new_a`), { companyId: 'company_a', name: 'n' }),
       );
@@ -40,9 +51,45 @@ describe('isolamento entre empresas', () => {
     });
   }
 
+  // Escrita das coleções do gestor: gestor escreve no próprio tenant, nega o outro.
+  for (const col of MANAGER_ONLY_COLLECTIONS) {
+    test(`${col}: gestor escreve no próprio tenant, nega no outro`, async () => {
+      await assertSucceeds(
+        setDoc(doc(db('admin_a'), `${col}/new_a`), { companyId: 'company_a', name: 'n' }),
+      );
+      await assertFails(
+        setDoc(doc(db('admin_a'), `${col}/new_b`), { companyId: 'company_b', name: 'n' }),
+      );
+      await assertFails(updateDoc(doc(db('admin_a'), `${col}/${col}_b`), { name: 'z' }));
+    });
+  }
+
   test('não autenticado é negado', async () => {
     await assertFails(getDoc(doc(anon(), 'clients/clients_a')));
   });
+});
+
+describe('clientes/contratos: escrita só do gestor', () => {
+  for (const col of MANAGER_ONLY_COLLECTIONS) {
+    test(`${col}: supervisor lê mas NÃO cria/edita/exclui`, async () => {
+      // Lê (é do tenant dele) …
+      await assertSucceeds(getDoc(doc(db('sup_a'), `${col}/${col}_a`)));
+      // … mas não escreve.
+      await assertFails(
+        setDoc(doc(db('sup_a'), `${col}/sup_new`), { companyId: 'company_a', name: 'n' }),
+      );
+      await assertFails(updateDoc(doc(db('sup_a'), `${col}/${col}_a`), { name: 'z' }));
+      await assertFails(deleteDoc(doc(db('sup_a'), `${col}/${col}_a`)));
+    });
+
+    test(`${col}: gestor cria/edita/exclui no próprio tenant`, async () => {
+      await assertSucceeds(
+        setDoc(doc(db('admin_a'), `${col}/adm_new`), { companyId: 'company_a', name: 'n' }),
+      );
+      await assertSucceeds(updateDoc(doc(db('admin_a'), `${col}/${col}_a`), { name: 'z' }));
+      await assertSucceeds(deleteDoc(doc(db('admin_a'), `${col}/${col}_a`)));
+    });
+  }
 });
 
 describe('/users — criação e papéis', () => {

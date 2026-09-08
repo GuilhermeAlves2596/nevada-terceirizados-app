@@ -13,13 +13,37 @@ nunca lê/altera dados da empresa Y.
 
 ## Modelo
 - Papel e `companyId` do solicitante vêm SEMPRE de `/users/{uid}` lido no servidor.
-- Fronteira dura: **companyId + papel**. Escopo por contrato (supervisor só vê
-  seus contratos) fica no app por ora — endurecimento futuro.
+- Fronteira dura: **companyId + papel**. O recorte fino **por contrato**
+  (supervisor só vê seus contratos) fica **no app** (`DataScope`) — ver o
+  risco residual abaixo.
 - **Gate de assinatura**: bloqueia *escritas* quando `companies/{id}.subscriptionStatus`
   não é `active`/`trial`. Leitura segue liberada (o app mostra o aviso de suspensão).
 - Anti-escalonamento: `self` não pode alterar `role`/`companyId` no próprio doc.
 - Quem cria quem em `/users`: plataforma → qualquer; companyAdmin → companyAdmin/
   supervisor/funcionário do seu tenant; supervisor → só funcionário do seu tenant.
+- **Escrita de `clients`/`contracts` só do gestor**: `create`/`update`/`delete`
+  dessas coleções exigem `companyAdmin`/`platformAdmin` (o supervisor lê, mas não
+  cadastra — isso é do painel do gestor). `locations`/`checklists`/`tasks`/
+  `taskExecutions` seguem graváveis pelo supervisor dentro do tenant.
+
+## Risco residual conhecido: leitura por contrato (aceito)
+O isolamento **entre empresas** (companyId) é garantido server-side. Já o
+recorte **por contrato dentro da mesma empresa** é aplicado só no app: um
+supervisor vê no app apenas seus `contractIds`/`clientIds`, mas as rules
+liberam a leitura de **qualquer** documento do próprio tenant. Logo, um
+supervisor que fale direto com o Firestore (fora do app) conseguiria ler
+dados de **contratos irmãos da própria empresa** — nunca de outra empresa.
+
+**Por que não está nas rules:** a regra teria de exigir
+`resource.data.contractId in <lista-do-/users>`, mas essa lista é dinâmica
+(vem de `get(/users/{uid})`) e o Firestore não consegue casá-la com a query
+de listagem → a query inteira seria **negada** (supervisor não veria nada).
+Enforcement real exigiria denormalizar um array de uids permitidos em cada
+doc (com fan-out a cada mudança de vínculo) + índices compostos.
+
+**Decisão (2026-09-08):** aceito por ora. Severidade baixa — exige má-fé
+técnica com credencial válida e fica contido ao próprio tenant. Revisitar se
+os contratos passarem a ter dados sensíveis entre si.
 
 ## Deploy
 Requer o Firebase CLI (uma vez): `npm i -g firebase-tools` e `firebase login`.
@@ -66,6 +90,8 @@ Papéis / `/users`:
 - [ ] `self` edita nome/telefone. ✅ | `self` tenta mudar `role` p/ companyAdmin. ❌
 - [ ] supervisor cria funcionário no seu tenant. ✅ | supervisor cria supervisor. ❌
 - [ ] companyAdmin cria supervisor no seu tenant. ✅ | em outro tenant. ❌
+- [ ] supervisor cria/edita/exclui `clients` ou `contracts`. ❌ (só gestor)
+- [ ] companyAdmin cria/edita/exclui `clients`/`contracts` no seu tenant. ✅
 - [ ] usuário comum edita `companies/{id}` (assinatura). ❌ (só platformAdmin)
 
 Gate de assinatura (setar `subscriptionStatus: "suspended"` na empresa):
