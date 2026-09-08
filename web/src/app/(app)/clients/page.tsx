@@ -110,8 +110,14 @@ export default function ClientsPage() {
   async function onSave(e: React.FormEvent) {
     e.preventDefault();
     if (!form || !companyId) return;
-    if (!form.name.trim()) {
-      setFormError("O nome é obrigatório.");
+    if (
+      !form.name.trim() ||
+      !form.document.trim() ||
+      !form.phone.trim() ||
+      !form.email.trim() ||
+      !form.address.trim()
+    ) {
+      setFormError("Preencha todos os campos.");
       return;
     }
     setFormError(null);
@@ -296,8 +302,9 @@ export default function ClientsPage() {
               </label>
 
               <label className="block text-sm font-medium text-slate-700">
-                CNPJ/CPF (opcional)
+                CNPJ/CPF
                 <input
+                  required
                   value={form.document}
                   onChange={(e) =>
                     setForm({ ...form, document: e.target.value })
@@ -307,8 +314,9 @@ export default function ClientsPage() {
               </label>
 
               <label className="block text-sm font-medium text-slate-700">
-                Telefone (opcional)
+                Telefone
                 <input
+                  required
                   value={form.phone}
                   onChange={(e) => setForm({ ...form, phone: e.target.value })}
                   className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
@@ -316,9 +324,10 @@ export default function ClientsPage() {
               </label>
 
               <label className="block text-sm font-medium text-slate-700">
-                E-mail (opcional)
+                E-mail
                 <input
                   type="email"
+                  required
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
@@ -326,8 +335,9 @@ export default function ClientsPage() {
               </label>
 
               <label className="block text-sm font-medium text-slate-700">
-                Endereço (opcional)
+                Endereço
                 <input
+                  required
                   value={form.address}
                   onChange={(e) => setForm({ ...form, address: e.target.value })}
                   className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"

@@ -118,8 +118,8 @@ export default function ContractsPage() {
   async function onSave(e: React.FormEvent) {
     e.preventDefault();
     if (!form || !companyId) return;
-    if (!form.name.trim() || !form.clientId) {
-      setFormError("Nome e cliente são obrigatórios.");
+    if (!form.name.trim() || !form.clientId || !form.startDate) {
+      setFormError("Nome, cliente e data de início são obrigatórios.");
       return;
     }
     setFormError(null);
@@ -346,9 +346,10 @@ export default function ContractsPage() {
               </label>
 
               <label className="block text-sm font-medium text-slate-700">
-                Início (opcional)
+                Início
                 <input
                   type="date"
+                  required
                   value={form.startDate}
                   onChange={(e) =>
                     setForm({ ...form, startDate: e.target.value })
