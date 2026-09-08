@@ -14,12 +14,17 @@ isolamento multi-tenant é garantido pelas Security Rules, não pelo frontend.
 ```bash
 cd web
 npm install
+cp .env.local.example .env.local   # e preencha os valores do Firebase
 npm run dev
 ```
 
-Abre em `http://localhost:3000`. A config **pública** do Firebase (`nevada-dev`)
-já vem embutida em `src/lib/firebase.ts`; para apontar a outro projeto, use um
-`.env.local` (ver `.env.local.example`).
+Abre em `http://localhost:3000`. A config do Firebase é lida de variáveis
+`NEXT_PUBLIC_*` (ver `.env.local.example`) — o `.env.local` **não é
+versionado**. Pegue os valores no Firebase Console → Configurações do projeto →
+Seus apps → app Web. Os valores de config web não são segredo (vão pro bundle do
+cliente); ficam fora do repositório só por higiene/secret-scanning. A proteção
+real é das **Security Rules** + **restrição da API key** no Google Cloud
+(referrer HTTP + APIs permitidas).
 
 ## O que já tem (fatia inicial)
 
