@@ -12,7 +12,9 @@ import {
 let testEnv;
 
 before(async () => {
-  testEnv = await createTestEnv();
+  // projectId próprio: isola do storage.rules.test.js (que também limpa o
+  // Firestore no beforeEach) quando o node roda os arquivos em paralelo.
+  testEnv = await createTestEnv('demo-nevada-fs');
 });
 after(async () => {
   await testEnv.cleanup();
