@@ -44,6 +44,19 @@ firebase emulators:exec --project demo-nevada --only firestore,storage \
   < 10 MB; nega cross-tenant; leitura isolada; empresa suspensa não escreve.
 
 ## Notas
+- **Isolamento assimétrico por `projectId`** (ver `env.js`): o
+  `firestore.rules.test.js` roda num projeto próprio (`demo-nevada-fs`) e o
+  `storage.rules.test.js` fica no `--project` (`demo-nevada`). O `node --test`
+  roda os arquivos em paralelo contra o mesmo emulador e ambos dão
+  `clearFirestore()` no `beforeEach` (o Storage também lê os `/users`); com
+  projectId compartilhado o clear de um apagava o seed do outro no meio de um
+  teste → falha intermitente (ex.: create de supervisor "negado" porque o
+  `users/sup_a` sumiu por um instante). O storage **precisa** ficar no
+  `--project` porque o `firestore.get(/users)` das storage.rules lê, no
+  emulador, o Firestore fixado no `--project` — num projectId diferente a regra
+  não acharia os `/users`.
+- Para rodar um teste específico use o pattern **sem espaços** (regex), ex.:
+  `npm run emulate:checklists`.
 - `node_modules/` é ignorado no git.
 - Se o emulador não subir com erro de *loopback*/selector (comum em sandboxes
   ou ambientes com rede restrita), rode em uma máquina/shell normal.

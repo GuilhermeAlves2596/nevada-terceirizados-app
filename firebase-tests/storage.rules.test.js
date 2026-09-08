@@ -7,7 +7,13 @@ import { seedBaseline } from './seed.js';
 let testEnv;
 
 before(async () => {
-  testEnv = await createTestEnv();
+  // DEVE ficar no projeto do --project (demo-nevada): no emulador, o
+  // `firestore.get(/users)` que as storage.rules fazem lê o Firestore FIXADO
+  // no --project, não o projectId do testEnv. O isolamento vem do outro lado:
+  // o firestore.rules.test.js usa um projectId próprio (demo-nevada-fs), então
+  // o clearFirestore de lá não apaga o Firestore (demo-nevada) que este teste
+  // semeia e as storage.rules leem.
+  testEnv = await createTestEnv('demo-nevada');
 });
 after(async () => {
   await testEnv.cleanup();
