@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
+import { Loader } from "@/components/spinner";
 
 export default function Home() {
   const { user, loading } = useAuth();
@@ -13,5 +14,5 @@ export default function Home() {
     router.replace(user ? "/dashboard" : "/login");
   }, [user, loading, router]);
 
-  return <div className="p-8 text-sm text-slate-500">Carregando…</div>;
+  return <Loader full />;
 }

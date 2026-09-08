@@ -3,7 +3,29 @@
 @tailwind utilities;
 
 :root {
+  --bg: 248 250 252; /* slate-50 */
+  --surface: 255 255 255; /* white */
+  --surface-2: 241 245 249; /* slate-100 */
+  --border: 226 232 240; /* slate-200 */
+  --fg: 15 23 42; /* slate-900 */
+  --muted: 100 116 139; /* slate-500 */
+  --brand: 29 79 145; /* #1D4F91 */
+  --brand-dark: 22 61 112;
+  --brand-soft: 232 238 246;
   color-scheme: light;
+}
+
+.dark {
+  --bg: 15 23 42; /* slate-900 */
+  --surface: 30 41 59; /* slate-800 */
+  --surface-2: 51 65 85; /* slate-700 */
+  --border: 51 65 85; /* slate-700 */
+  --fg: 226 232 240; /* slate-200 */
+  --muted: 148 163 184; /* slate-400 */
+  --brand: 96 165 250; /* azul mais claro p/ contraste no escuro */
+  --brand-dark: 59 130 246;
+  --brand-soft: 30 58 92;
+  color-scheme: dark;
 }
 
 /* Impressão / Exportar PDF: só o #print-root aparece. Ele é montado como filho

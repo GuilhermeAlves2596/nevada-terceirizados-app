@@ -11,6 +11,7 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth-context";
+import { Loader } from "@/components/spinner";
 import {
   fetchClients,
   fetchContracts,
@@ -174,7 +175,7 @@ export default function ClientsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Clientes</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-muted">
             Clientes atendidos pela empresa.
           </p>
         </div>
@@ -196,17 +197,17 @@ export default function ClientsPage() {
 
       <div className="mt-8">
         {loading ? (
-          <p className="text-sm text-slate-500">Carregando…</p>
+          <Loader />
         ) : loadError ? (
           <p className="text-sm text-red-600">{loadError}</p>
         ) : clients.length === 0 ? (
-          <p className="rounded-lg border border-dashed border-slate-200 p-6 text-center text-sm text-slate-500">
+          <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted">
             Nenhum cliente cadastrado ainda.
           </p>
         ) : (
-          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+          <div className="overflow-hidden rounded-2xl border border-border bg-surface">
             <table className="w-full text-sm">
-              <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+              <thead className="bg-surface-2 text-left text-xs uppercase tracking-wide text-muted">
                 <tr>
                   <th className="px-5 py-3 font-medium">Cliente</th>
                   <th className="hidden px-5 py-3 font-medium sm:table-cell">
@@ -220,24 +221,24 @@ export default function ClientsPage() {
                   <th className="px-5 py-3" />
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-border">
                 {clients.map((c) => (
                   <tr key={c.id}>
                     <td className="px-5 py-3 font-medium">{c.name}</td>
-                    <td className="hidden px-5 py-3 text-slate-600 sm:table-cell">
+                    <td className="hidden px-5 py-3 text-muted sm:table-cell">
                       {c.document || "—"}
                     </td>
-                    <td className="hidden px-5 py-3 text-slate-600 md:table-cell">
+                    <td className="hidden px-5 py-3 text-muted md:table-cell">
                       {c.phone || "—"}
                     </td>
-                    <td className="px-5 py-3 text-slate-500">
+                    <td className="px-5 py-3 text-muted">
                       {contractCountByClient.get(c.id) ?? 0}
                     </td>
                     <td className="px-5 py-3">
                       <span
                         className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
                           c.active === false
-                            ? "bg-slate-100 text-slate-600"
+                            ? "bg-surface-2 text-muted"
                             : "bg-green-100 text-green-700"
                         }`}
                       >
@@ -250,7 +251,7 @@ export default function ClientsPage() {
                           onClick={() => openEdit(c)}
                           title="Editar"
                           aria-label="Editar"
-                          className="rounded-lg border border-slate-300 p-2 text-slate-600 hover:bg-slate-50 hover:text-brand"
+                          className="rounded-lg border border-border p-2 text-muted hover:bg-surface-2 hover:text-brand"
                         >
                           <EditIcon />
                         </button>
@@ -284,24 +285,24 @@ export default function ClientsPage() {
           <form
             onSubmit={onSave}
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-lg"
+            className="w-full max-w-lg rounded-2xl bg-surface p-6 shadow-lg"
           >
             <h2 className="text-lg font-semibold">
               {form.id ? "Editar cliente" : "Novo cliente"}
             </h2>
 
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              <label className="block text-sm font-medium text-slate-700 sm:col-span-2">
+              <label className="block text-sm font-medium text-fg sm:col-span-2">
                 Nome
                 <input
                   required
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+                  className="mt-1 w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
                 />
               </label>
 
-              <label className="block text-sm font-medium text-slate-700">
+              <label className="block text-sm font-medium text-fg">
                 CNPJ/CPF
                 <input
                   required
@@ -309,47 +310,47 @@ export default function ClientsPage() {
                   onChange={(e) =>
                     setForm({ ...form, document: e.target.value })
                   }
-                  className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+                  className="mt-1 w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
                 />
               </label>
 
-              <label className="block text-sm font-medium text-slate-700">
+              <label className="block text-sm font-medium text-fg">
                 Telefone
                 <input
                   required
                   value={form.phone}
                   onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                  className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+                  className="mt-1 w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
                 />
               </label>
 
-              <label className="block text-sm font-medium text-slate-700">
+              <label className="block text-sm font-medium text-fg">
                 E-mail
                 <input
                   type="email"
                   required
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+                  className="mt-1 w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
                 />
               </label>
 
-              <label className="block text-sm font-medium text-slate-700">
+              <label className="block text-sm font-medium text-fg">
                 Endereço
                 <input
                   required
                   value={form.address}
                   onChange={(e) => setForm({ ...form, address: e.target.value })}
-                  className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+                  className="mt-1 w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
                 />
               </label>
 
-              <label className="flex items-center gap-2 text-sm font-medium text-slate-700 sm:col-span-2">
+              <label className="flex items-center gap-2 text-sm font-medium text-fg sm:col-span-2">
                 <input
                   type="checkbox"
                   checked={form.active}
                   onChange={(e) => setForm({ ...form, active: e.target.checked })}
-                  className="h-4 w-4 rounded border-slate-300 text-brand focus:ring-brand"
+                  className="h-4 w-4 rounded border-border text-brand focus:ring-brand"
                 />
                 Ativo
               </label>
@@ -362,7 +363,7 @@ export default function ClientsPage() {
                 type="button"
                 onClick={() => setForm(null)}
                 disabled={saving}
-                className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium hover:bg-slate-50 disabled:opacity-60"
+                className="rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-surface-2 disabled:opacity-60"
               >
                 Cancelar
               </button>
@@ -385,18 +386,18 @@ export default function ClientsPage() {
           onClick={() => !deleting && setConfirmDelete(null)}
         >
           <div
-            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-lg"
+            className="w-full max-w-md rounded-2xl bg-surface p-6 shadow-lg"
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-lg font-semibold">Excluir cliente</h2>
             {linkedContracts > 0 ? (
-              <p className="mt-2 text-sm text-slate-600">
+              <p className="mt-2 text-sm text-muted">
                 <span className="font-medium">{confirmDelete.name}</span> tem{" "}
                 {linkedContracts} contrato(s) vinculado(s). Exclua ou reatribua
                 esses contratos antes de remover o cliente.
               </p>
             ) : (
-              <p className="mt-2 text-sm text-slate-600">
+              <p className="mt-2 text-sm text-muted">
                 Excluir <span className="font-medium">{confirmDelete.name}</span>?
                 Esta ação não pode ser desfeita.
               </p>
@@ -408,7 +409,7 @@ export default function ClientsPage() {
               <button
                 onClick={() => setConfirmDelete(null)}
                 disabled={deleting}
-                className="rounded-lg border border-slate-300 px-4 py-1.5 text-sm font-medium hover:bg-slate-50 disabled:opacity-60"
+                className="rounded-lg border border-border px-4 py-1.5 text-sm font-medium hover:bg-surface-2 disabled:opacity-60"
               >
                 Cancelar
               </button>
