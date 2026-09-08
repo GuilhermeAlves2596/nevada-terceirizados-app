@@ -9,17 +9,11 @@ import '../../features/auth/domain/entities/app_user.dart';
 import '../../features/auth/presentation/pages/change_password_page.dart';
 import '../../features/auth/presentation/pages/forgot_password_page.dart';
 import '../../features/checklists/domain/entities/checklist.dart';
-import '../../features/clients/domain/entities/client.dart';
-import '../../features/contracts/domain/entities/contract.dart';
 import '../../features/tasks/domain/entities/task.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/splash_page.dart';
 import '../../features/checklists/presentation/pages/checklist_form_page.dart';
 import '../../features/checklists/presentation/pages/checklists_list_page.dart';
-import '../../features/clients/presentation/pages/client_form_page.dart';
-import '../../features/clients/presentation/pages/clients_list_page.dart';
-import '../../features/contracts/presentation/pages/contract_form_page.dart';
-import '../../features/contracts/presentation/pages/contracts_list_page.dart';
 import '../../features/dashboard/presentation/pages/employee_dashboard_page.dart';
 import '../../features/dashboard/presentation/pages/supervisor_dashboard_page.dart';
 import '../../features/employees/presentation/pages/employee_form_page.dart';
@@ -30,8 +24,6 @@ import '../../features/locations/presentation/pages/locations_list_page.dart';
 import '../../features/profile/presentation/pages/profile_edit_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/qr_code/presentation/pages/qr_code_view_page.dart';
-import '../../features/supervisors/presentation/pages/supervisor_contracts_page.dart';
-import '../../features/supervisors/presentation/pages/supervisors_page.dart';
 import '../../features/qr_code/presentation/pages/qr_scanner_page.dart';
 import '../../features/tasks/presentation/pages/employee_history_page.dart';
 import '../../features/tasks/presentation/pages/employee_tasks_page.dart';
@@ -161,15 +153,6 @@ final routerProvider = Provider<GoRouter>((ref) {
             EmployeeFormPage(existing: state.extra as AppUser?),
       ),
       GoRoute(
-        path: RoutePaths.supervisorClients,
-        builder: (context, state) => const ClientsListPage(),
-      ),
-      GoRoute(
-        path: RoutePaths.supervisorClientsCreate,
-        builder: (context, state) =>
-            ClientFormPage(existing: state.extra as Client?),
-      ),
-      GoRoute(
         path: RoutePaths.supervisorTasks,
         builder: (context, state) =>
             SupervisorTasksPage(filter: state.uri.queryParameters['filter']),
@@ -183,15 +166,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '${RoutePaths.supervisorTasks}/:id',
         builder: (context, state) =>
             SupervisorTaskDetailPage(taskId: state.pathParameters['id']!),
-      ),
-      GoRoute(
-        path: RoutePaths.supervisorContracts,
-        builder: (context, state) => const ContractsListPage(),
-      ),
-      GoRoute(
-        path: RoutePaths.supervisorContractsCreate,
-        builder: (context, state) =>
-            ContractFormPage(existing: state.extra as Contract?),
       ),
       GoRoute(
         path: RoutePaths.supervisorLocations,
@@ -219,15 +193,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: RoutePaths.supervisorReports,
         builder: (context, state) =>
             const ComingSoonPage(title: 'Relatórios'),
-      ),
-      GoRoute(
-        path: RoutePaths.supervisorSupervisors,
-        builder: (context, state) => const SupervisorsPage(),
-      ),
-      GoRoute(
-        path: '${RoutePaths.supervisorSupervisors}/:id',
-        builder: (context, state) =>
-            SupervisorContractsPage(supervisor: state.extra as AppUser),
       ),
       GoRoute(
         path: RoutePaths.supervisorProfile,

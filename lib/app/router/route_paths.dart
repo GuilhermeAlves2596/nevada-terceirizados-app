@@ -22,10 +22,6 @@ abstract final class RoutePaths {
   static const supervisorDashboard = '/supervisor/dashboard';
   static const supervisorEmployees = '/supervisor/employees';
   static const supervisorEmployeesCreate = '/supervisor/employees/create';
-  static const supervisorClients = '/supervisor/clients';
-  static const supervisorClientsCreate = '/supervisor/clients/create';
-  static const supervisorContracts = '/supervisor/contracts';
-  static const supervisorContractsCreate = '/supervisor/contracts/create';
   static const supervisorLocations = '/supervisor/locations';
   static const supervisorLocationsCreate = '/supervisor/locations/create';
   static const supervisorChecklists = '/supervisor/checklists';
@@ -33,7 +29,6 @@ abstract final class RoutePaths {
   static const supervisorTasks = '/supervisor/tasks';
   static const supervisorTasksCreate = '/supervisor/tasks/create';
   static const supervisorReports = '/supervisor/reports';
-  static const supervisorSupervisors = '/supervisor/supervisors';
   static const supervisorProfile = '/supervisor/profile';
   static const supervisorProfileEdit = '/supervisor/profile/edit';
 
