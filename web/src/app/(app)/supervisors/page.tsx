@@ -37,6 +37,44 @@ function formatDate(ts?: { toDate?: () => Date } | null): string {
   }
 }
 
+function EyeIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-[18px] w-[18px]"
+      aria-hidden="true"
+    >
+      <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
+function TrashIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-[18px] w-[18px]"
+      aria-hidden="true"
+    >
+      <path d="M4 7h16" />
+      <path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+      <path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12" />
+      <path d="M10 11v6M14 11v6" />
+    </svg>
+  );
+}
+
 export default function SupervisorsPage() {
   const { profile } = useAuth();
   const companyId = profile?.companyId ?? null;
@@ -282,18 +320,22 @@ export default function SupervisorsPage() {
                   </span>
                   <button
                     onClick={() => setViewing(s)}
-                    className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium hover:bg-slate-50"
+                    title="Ver detalhes"
+                    aria-label="Ver detalhes"
+                    className="rounded-lg border border-slate-300 p-2 text-slate-600 hover:bg-slate-50 hover:text-brand"
                   >
-                    Ver
+                    <EyeIcon />
                   </button>
                   <button
                     onClick={() => {
                       setActionError(null);
                       setConfirmDelete(s);
                     }}
-                    className="rounded-lg border border-red-200 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50"
+                    title="Excluir"
+                    aria-label="Excluir"
+                    className="rounded-lg border border-red-200 p-2 text-red-600 hover:bg-red-50"
                   >
-                    Excluir
+                    <TrashIcon />
                   </button>
                 </div>
               </li>
@@ -347,8 +389,9 @@ export default function SupervisorsPage() {
                   setActionError(null);
                   setConfirmDelete(s);
                 }}
-                className="rounded-lg border border-red-200 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50"
               >
+                <TrashIcon />
                 Excluir
               </button>
               <button
