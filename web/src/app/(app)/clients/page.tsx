@@ -14,8 +14,10 @@ import { useAuth } from "@/lib/auth-context";
 import { Loader } from "@/components/spinner";
 import {
   fetchClients,
+  fetchClientTypes,
   fetchContracts,
   type Client,
+  type ClientType,
   type Contract,
 } from "@/lib/model";
 import { EditIcon, TrashIcon } from "@/components/icons";
@@ -27,6 +29,7 @@ type FormState = {
   phone: string;
   email: string;
   address: string;
+  clientTypeId: string;
   active: boolean;
 };
 
@@ -37,6 +40,7 @@ const EMPTY_FORM: FormState = {
   phone: "",
   email: "",
   address: "",
+  clientTypeId: "",
   active: true,
 };
 
@@ -46,6 +50,7 @@ export default function ClientsPage() {
 
   const [clients, setClients] = useState<Client[]>([]);
   const [contracts, setContracts] = useState<Contract[]>([]);
+  const [types, setTypes] = useState<ClientType[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -63,10 +68,17 @@ export default function ClientsPage() {
     return m;
   }, [contracts]);
 
+  const typeNames = useMemo(() => {
+    const m = new Map<string, string>();
+    types.forEach((t) => m.set(t.id, t.name));
+    return m;
+  }, [types]);
+
   const load = useCallback(async () => {
     if (!companyId) {
       setClients([]);
       setContracts([]);
+      setTypes([]);
       setLoading(false);
       return;
     }
@@ -83,6 +95,13 @@ export default function ClientsPage() {
       setLoadError("Não foi possível carregar os clientes.");
     } finally {
       setLoading(false);
+    }
+    // Tipos numa chamada à parte: se falhar (ex.: rules ainda não deployadas),
+    // a lista de clientes continua funcionando — só o dropdown de tipo fica vazio.
+    try {
+      setTypes(await fetchClientTypes(companyId));
+    } catch {
+      setTypes([]);
     }
   }, [companyId]);
 
@@ -104,6 +123,7 @@ export default function ClientsPage() {
       phone: c.phone ?? "",
       email: c.email ?? "",
       address: c.address ?? "",
+      clientTypeId: c.clientTypeId ?? "",
       active: c.active !== false,
     });
   }
@@ -116,7 +136,8 @@ export default function ClientsPage() {
       !form.document.trim() ||
       !form.phone.trim() ||
       !form.email.trim() ||
-      !form.address.trim()
+      !form.address.trim() ||
+      !form.clientTypeId
     ) {
       setFormError("Preencha todos os campos.");
       return;
@@ -130,6 +151,7 @@ export default function ClientsPage() {
         phone: form.phone.trim() || null,
         email: form.email.trim() || null,
         address: form.address.trim() || null,
+        clientTypeId: form.clientTypeId || null,
         active: form.active,
         updatedAt: serverTimestamp(),
       };
@@ -210,6 +232,9 @@ export default function ClientsPage() {
               <thead className="bg-surface-2 text-left text-xs uppercase tracking-wide text-muted">
                 <tr>
                   <th className="px-5 py-3 font-medium">Cliente</th>
+                  <th className="hidden px-5 py-3 font-medium lg:table-cell">
+                    Tipo
+                  </th>
                   <th className="hidden px-5 py-3 font-medium sm:table-cell">
                     Documento
                   </th>
@@ -225,6 +250,11 @@ export default function ClientsPage() {
                 {clients.map((c) => (
                   <tr key={c.id}>
                     <td className="px-5 py-3 font-medium">{c.name}</td>
+                    <td className="hidden px-5 py-3 text-muted lg:table-cell">
+                      {c.clientTypeId
+                        ? (typeNames.get(c.clientTypeId) ?? "—")
+                        : "—"}
+                    </td>
                     <td className="hidden px-5 py-3 text-muted sm:table-cell">
                       {c.document || "—"}
                     </td>
@@ -343,6 +373,36 @@ export default function ClientsPage() {
                   onChange={(e) => setForm({ ...form, address: e.target.value })}
                   className="mt-1 w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
                 />
+              </label>
+
+              <label className="block text-sm font-medium text-fg sm:col-span-2">
+                Tipo de cliente
+                <select
+                  required
+                  value={form.clientTypeId}
+                  onChange={(e) =>
+                    setForm({ ...form, clientTypeId: e.target.value })
+                  }
+                  className="mt-1 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+                >
+                  <option value="" disabled>
+                    Selecione…
+                  </option>
+                  {types
+                    .filter(
+                      (t) => t.active !== false || t.id === form.clientTypeId,
+                    )
+                    .map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.name}
+                      </option>
+                    ))}
+                </select>
+                {types.length === 0 && (
+                  <span className="mt-1 block text-xs text-amber-700">
+                    Cadastre um tipo em “Tipos de cliente” primeiro.
+                  </span>
+                )}
               </label>
 
               <label className="flex items-center gap-2 text-sm font-medium text-fg sm:col-span-2">
