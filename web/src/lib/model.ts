@@ -59,9 +59,26 @@ export type Client = {
   phone?: string | null;
   email?: string | null;
   address?: string | null;
+  clientTypeId?: string | null;
   active?: boolean;
   createdAt?: FsDate;
 };
+
+export type ClientType = {
+  id: string;
+  name: string;
+  active?: boolean;
+};
+
+/** Tipos de cliente da empresa (ordenados por nome). */
+export async function fetchClientTypes(companyId: string): Promise<ClientType[]> {
+  const snap = await getDocs(
+    query(collection(db, "clientTypes"), where("companyId", "==", companyId)),
+  );
+  return snap.docs
+    .map((d) => ({ id: d.id, ...(d.data() as Omit<ClientType, "id">) }))
+    .sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""));
+}
 
 export type Contract = {
   id: string;

@@ -15,6 +15,7 @@ import {
   MenuIcon,
   MoonIcon,
   SunIcon,
+  TagIcon,
   UsersIcon,
   XIcon,
 } from "@/components/icons";
@@ -25,6 +26,7 @@ const NAV = [
   { href: "/dashboard", label: "Início", icon: HomeIcon },
   { href: "/supervisors", label: "Supervisores", icon: UsersIcon },
   { href: "/clients", label: "Clientes", icon: BuildingIcon },
+  { href: "/client-types", label: "Tipos de cliente", icon: TagIcon },
   { href: "/contracts", label: "Contratos", icon: FileIcon },
   { href: "/reports", label: "Relatórios", icon: ChartIcon },
 ];

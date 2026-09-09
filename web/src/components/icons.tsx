@@ -168,3 +168,12 @@ export function ChevronRightIcon(props: IconProps) {
     </Svg>
   );
 }
+
+export function TagIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M4 4h7l9 9-7 7-9-9V4Z" />
+      <circle cx="8" cy="8" r="1.4" />
+    </Svg>
+  );
+}
