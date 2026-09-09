@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../app/theme/app_colors.dart';
+import '../../app/theme/app_palette.dart';
 import '../../app/theme/app_spacing.dart';
 import '../../app/theme/app_typography.dart';
 
@@ -56,7 +57,7 @@ class AppTextField extends StatelessWidget {
             hintText: hint,
             prefixIcon: prefixIcon == null
                 ? null
-                : Icon(prefixIcon, color: AppColors.textMuted, size: 20),
+                : Icon(prefixIcon, color: context.c.textMuted, size: 20),
             suffixIcon: suffix,
           ),
         ),
@@ -129,7 +130,7 @@ class AppTextFormField extends StatelessWidget {
             hintText: hint,
             prefixIcon: prefixIcon == null
                 ? null
-                : Icon(prefixIcon, color: AppColors.textMuted, size: 20),
+                : Icon(prefixIcon, color: context.c.textMuted, size: 20),
           ),
         ),
       ],

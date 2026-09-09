@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../app/theme/app_colors.dart';
+import '../../app/theme/app_palette.dart';
 import '../../app/theme/app_spacing.dart';
 import '../../app/theme/app_typography.dart';
 import 'app_button.dart';
@@ -51,7 +52,7 @@ class AppEmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 56, color: AppColors.border),
+            Icon(icon, size: 56, color: context.c.border),
             AppSpacing.gapMd,
             if (title != null) ...[
               Text(title!, style: AppTypography.title, textAlign: TextAlign.center),

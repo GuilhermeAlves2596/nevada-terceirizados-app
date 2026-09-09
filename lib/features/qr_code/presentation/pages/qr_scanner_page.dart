@@ -6,6 +6,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../../../../app/router/route_paths.dart';
 import '../../../../app/theme/app_colors.dart';
+import '../../../../app/theme/app_palette.dart';
 import '../../../../app/theme/app_radius.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_typography.dart';
@@ -211,7 +212,7 @@ class _CameraUnavailable extends StatelessWidget {
           Text(
             'Neste preview web, use a digitação do código abaixo.',
             textAlign: TextAlign.center,
-            style: AppTypography.caption.copyWith(color: AppColors.border),
+            style: AppTypography.caption.copyWith(color: context.c.border),
           ),
         ],
       ),

@@ -4,6 +4,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../../../app/providers/company_catalog.dart';
 import '../../../../app/theme/app_colors.dart';
+import '../../../../app/theme/app_palette.dart';
 import '../../../../app/theme/app_radius.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_typography.dart';
@@ -63,7 +64,7 @@ class QrCodeViewPage extends ConsumerWidget {
                       decoration: BoxDecoration(
                         color: AppColors.white,
                         borderRadius: AppRadius.brMd,
-                        border: Border.all(color: AppColors.border),
+                        border: Border.all(color: context.c.border),
                       ),
                       child: QrImageView(
                         data: payload,
@@ -85,7 +86,7 @@ class QrCodeViewPage extends ConsumerWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: AppColors.surface,
+                        color: context.c.surface,
                         borderRadius: AppRadius.brPill,
                       ),
                       child: Text(location.qrCodeId!,
@@ -97,8 +98,8 @@ class QrCodeViewPage extends ConsumerWidget {
               AppSpacing.gapLg,
               Row(
                 children: [
-                  const Icon(Icons.info_outline,
-                      size: 18, color: AppColors.textMuted),
+                  Icon(Icons.info_outline,
+                      size: 18, color: context.c.textMuted),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(

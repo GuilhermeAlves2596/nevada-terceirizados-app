@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/di/repository_providers.dart';
 import '../../../../app/providers/company_catalog.dart';
 import '../../../../app/theme/app_colors.dart';
+import '../../../../app/theme/app_palette.dart';
 import '../../../../app/theme/app_radius.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_typography.dart';
@@ -320,17 +321,17 @@ class _ItemTile extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         decoration: BoxDecoration(
-          color: AppColors.white,
+          color: context.c.card,
           borderRadius: AppRadius.brMd,
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: context.c.border),
         ),
         child: Row(
           children: [
             ReorderableDragStartListener(
               index: index,
-              child: const Padding(
-                padding: EdgeInsets.all(4),
-                child: Icon(Icons.drag_indicator, color: AppColors.textMuted),
+              child: Padding(
+                padding: const EdgeInsets.all(4),
+                child: Icon(Icons.drag_indicator, color: context.c.textMuted),
               ),
             ),
             Text('$number.', style: AppTypography.caption),
@@ -342,7 +343,7 @@ class _ItemTile extends StatelessWidget {
               onPressed: onToggleRequired,
               icon: Icon(
                 required ? Icons.star : Icons.star_border,
-                color: required ? AppColors.warning : AppColors.textMuted,
+                color: required ? AppColors.warning : context.c.textMuted,
                 size: 20,
               ),
             ),

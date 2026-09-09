@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/route_paths.dart';
 import '../../../../app/theme/app_colors.dart';
+import '../../../../app/theme/app_palette.dart';
 import '../../../../core/utils/credentials.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_typography.dart';
@@ -77,9 +78,9 @@ class EmployeesListPage extends ConsumerWidget {
                           ),
                         ),
                         if (!e.active)
-                          const AppStatusBadge(
+                          AppStatusBadge(
                             label: 'Inativo',
-                            color: AppColors.textMuted,
+                            color: context.c.textMuted,
                           ),
                       ],
                     ),

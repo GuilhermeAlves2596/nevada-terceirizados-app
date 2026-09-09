@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/route_paths.dart';
 import '../../../../app/theme/app_colors.dart';
+import '../../../../app/theme/app_palette.dart';
 import '../../../../app/theme/app_radius.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_typography.dart';
@@ -265,7 +266,7 @@ class _ManagementGrid extends ConsumerWidget {
       children: [
         for (final item in items)
           Material(
-            color: AppColors.white,
+            color: context.c.card,
             borderRadius: AppRadius.brLg,
             child: InkWell(
               borderRadius: AppRadius.brLg,
@@ -274,14 +275,14 @@ class _ManagementGrid extends ConsumerWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 decoration: BoxDecoration(
                   borderRadius: AppRadius.brLg,
-                  border: Border.all(color: AppColors.border),
+                  border: Border.all(color: context.c.border),
                 ),
                 child: Row(
                   children: [
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: AppColors.primarySoft,
+                        color: context.c.primarySoft,
                         borderRadius: AppRadius.brMd,
                       ),
                       child: Icon(item.icon,

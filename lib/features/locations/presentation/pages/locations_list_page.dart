@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/providers/company_catalog.dart';
 import '../../../../app/router/route_paths.dart';
 import '../../../../app/theme/app_colors.dart';
+import '../../../../app/theme/app_palette.dart';
 import '../../../../app/theme/app_radius.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_typography.dart';
@@ -59,7 +60,7 @@ class LocationsListPage extends ConsumerWidget {
                         Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: AppColors.primarySoft,
+                            color: context.c.primarySoft,
                             borderRadius: AppRadius.brMd,
                           ),
                           child: const Icon(Icons.location_on_outlined,
@@ -84,8 +85,8 @@ class LocationsListPage extends ConsumerWidget {
                         if (l.qrCodeId != null)
                           Row(
                             children: [
-                              const Icon(Icons.qr_code_2,
-                                  size: 16, color: AppColors.textMuted),
+                              Icon(Icons.qr_code_2,
+                                  size: 16, color: context.c.textMuted),
                               const SizedBox(width: 4),
                               Text(l.qrCodeId!, style: AppTypography.caption),
                             ],

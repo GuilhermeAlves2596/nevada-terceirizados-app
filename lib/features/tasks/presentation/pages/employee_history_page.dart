@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/route_paths.dart';
 import '../../../../app/theme/app_colors.dart';
+import '../../../../app/theme/app_palette.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/widgets/app_state_views.dart';
@@ -104,15 +105,15 @@ class _FilterBar extends StatelessWidget {
           AppSpacing.md, AppSpacing.sm, AppSpacing.md, 0),
       child: Row(
         children: [
-          _chip('Concluídas', _HistoryFilter.concluidas),
+          _chip(context, 'Concluídas', _HistoryFilter.concluidas),
           const SizedBox(width: 8),
-          _chip('Todas', _HistoryFilter.todas),
+          _chip(context, 'Todas', _HistoryFilter.todas),
         ],
       ),
     );
   }
 
-  Widget _chip(String label, _HistoryFilter value) {
+  Widget _chip(BuildContext context, String label, _HistoryFilter value) {
     final isSelected = selected == value;
     return ChoiceChip(
       label: Text(label),
@@ -121,7 +122,7 @@ class _FilterBar extends StatelessWidget {
       showCheckmark: false,
       selectedColor: AppColors.primary,
       labelStyle: AppTypography.caption.copyWith(
-        color: isSelected ? AppColors.white : AppColors.textSecondary,
+        color: isSelected ? AppColors.white : context.c.textMuted,
         fontWeight: FontWeight.w600,
       ),
     );

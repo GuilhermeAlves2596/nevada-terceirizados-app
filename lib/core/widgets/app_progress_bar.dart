@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../app/theme/app_colors.dart';
+import '../../app/theme/app_palette.dart';
 import '../../app/theme/app_radius.dart';
 
 /// Barra de progresso visual (0–100).
@@ -30,7 +31,7 @@ class AppProgressBar extends StatelessWidget {
       child: LinearProgressIndicator(
         value: clamped / 100,
         minHeight: height,
-        backgroundColor: AppColors.border,
+        backgroundColor: context.c.border,
         valueColor: AlwaysStoppedAnimation(barColor),
       ),
     );

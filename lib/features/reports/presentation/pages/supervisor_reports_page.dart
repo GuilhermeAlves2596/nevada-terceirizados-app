@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/app_colors.dart';
+import '../../../../app/theme/app_palette.dart';
 import '../../../../app/theme/app_radius.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../providers/report_providers.dart';
@@ -108,8 +109,8 @@ class _SupervisorReportsPageState
               AppSpacing.gapMd,
               Text(
                 '${filtered.length} tarefa(s) executada(s)',
-                style: const TextStyle(
-                  color: AppColors.textMuted,
+                style: TextStyle(
+                  color: context.c.textMuted,
                   fontSize: 13,
                 ),
               ),
@@ -120,11 +121,11 @@ class _SupervisorReportsPageState
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     borderRadius: AppRadius.brLg,
-                    border: Border.all(color: AppColors.border),
+                    border: Border.all(color: context.c.border),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Nenhuma tarefa executada no período/filtros.',
-                    style: TextStyle(color: AppColors.textMuted),
+                    style: TextStyle(color: context.c.textMuted),
                   ),
                 )
               else
@@ -146,7 +147,7 @@ class _SupervisorReportsPageState
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.white,
+      backgroundColor: context.c.card,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
       ),
@@ -193,9 +194,9 @@ class _FiltersCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: context.c.card,
         borderRadius: AppRadius.brLg,
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.c.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -262,7 +263,7 @@ class _ReportCard extends StatelessWidget {
         .where((p) => (p.downloadUrl ?? '').isNotEmpty)
         .toList();
     return Material(
-      color: AppColors.white,
+      color: context.c.card,
       borderRadius: AppRadius.brLg,
       child: InkWell(
         borderRadius: AppRadius.brLg,
@@ -271,7 +272,7 @@ class _ReportCard extends StatelessWidget {
           padding: const EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(
             borderRadius: AppRadius.brLg,
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: context.c.border),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -285,16 +286,16 @@ class _ReportCard extends StatelessWidget {
                       children: [
                         Text(
                           '${row.checklistName} · ${row.locationName}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontWeight: FontWeight.w600,
-                            color: AppColors.textPrimary,
+                            color: context.c.textPrimary,
                           ),
                         ),
                         const SizedBox(height: 2),
                         Text(
                           '${row.contractName} · ${row.employeeName}',
-                          style: const TextStyle(
-                            color: AppColors.textMuted,
+                          style: TextStyle(
+                            color: context.c.textMuted,
                             fontSize: 13,
                           ),
                         ),
@@ -303,8 +304,8 @@ class _ReportCard extends StatelessWidget {
                   ),
                   Text(
                     row.date == null ? '—' : _fmtDate(row.date!),
-                    style: const TextStyle(
-                      color: AppColors.textMuted,
+                    style: TextStyle(
+                      color: context.c.textMuted,
                       fontSize: 12,
                     ),
                   ),
@@ -328,9 +329,9 @@ class _ReportCard extends StatelessWidget {
                         errorBuilder: (_, _, _) => Container(
                           width: 56,
                           height: 56,
-                          color: AppColors.surface,
-                          child: const Icon(Icons.broken_image_outlined,
-                              size: 20, color: AppColors.textMuted),
+                          color: context.c.surface,
+                          child: Icon(Icons.broken_image_outlined,
+                              size: 20, color: context.c.textMuted),
                         ),
                       ),
                     ),
@@ -369,29 +370,29 @@ class _DetailSheet extends StatelessWidget {
               height: 4,
               margin: const EdgeInsets.only(bottom: AppSpacing.md),
               decoration: BoxDecoration(
-                color: AppColors.border,
+                color: context.c.border,
                 borderRadius: AppRadius.brPill,
               ),
             ),
           ),
           Text(
             row.checklistName,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+              color: context.c.textPrimary,
             ),
           ),
           Text(
             row.locationName,
-            style: const TextStyle(color: AppColors.textMuted),
+            style: TextStyle(color: context.c.textMuted),
           ),
           AppSpacing.gapMd,
-          _kv('Cliente', row.clientName),
-          _kv('Contrato', row.contractName),
-          _kv('Funcionário', row.employeeName),
-          _kv('Início', _fmtDateTime(e.startedAt)),
-          _kv('Conclusão', _fmtDateTime(e.finishedAt)),
+          _kv(context, 'Cliente', row.clientName),
+          _kv(context, 'Contrato', row.contractName),
+          _kv(context, 'Funcionário', row.employeeName),
+          _kv(context, 'Início', _fmtDateTime(e.startedAt)),
+          _kv(context, 'Conclusão', _fmtDateTime(e.finishedAt)),
           if (e.items.isNotEmpty) ...[
             AppSpacing.gapMd,
             const Text('Checklist',
@@ -409,7 +410,7 @@ class _DetailSheet extends StatelessWidget {
                         size: 18,
                         color: it.completed
                             ? AppColors.success
-                            : AppColors.border,
+                            : context.c.border,
                       ),
                       AppSpacing.hGapXs,
                       Expanded(
@@ -417,8 +418,8 @@ class _DetailSheet extends StatelessWidget {
                           it.description,
                           style: TextStyle(
                             color: it.completed
-                                ? AppColors.textPrimary
-                                : AppColors.textMuted,
+                                ? context.c.textPrimary
+                                : context.c.textMuted,
                           ),
                         ),
                       ),
@@ -434,7 +435,7 @@ class _DetailSheet extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(AppSpacing.sm),
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: context.c.surface,
                 borderRadius: AppRadius.brMd,
               ),
               child: Text(e.observation!),
@@ -461,9 +462,9 @@ class _DetailSheet extends StatelessWidget {
                             errorBuilder: (_, _, _) => Container(
                               width: 96,
                               height: 96,
-                              color: AppColors.surface,
-                              child: const Icon(Icons.broken_image_outlined,
-                                  color: AppColors.textMuted),
+                              color: context.c.surface,
+                              child: Icon(Icons.broken_image_outlined,
+                                  color: context.c.textMuted),
                             ),
                           ),
                         ),
@@ -477,7 +478,7 @@ class _DetailSheet extends StatelessWidget {
     );
   }
 
-  static Widget _kv(String k, String v) => Padding(
+  static Widget _kv(BuildContext context, String k, String v) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 3),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -485,7 +486,7 @@ class _DetailSheet extends StatelessWidget {
             SizedBox(
               width: 96,
               child: Text(k,
-                  style: const TextStyle(color: AppColors.textMuted)),
+                  style: TextStyle(color: context.c.textMuted)),
             ),
             Expanded(child: Text(v)),
           ],
