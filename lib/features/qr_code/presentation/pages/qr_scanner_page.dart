@@ -235,7 +235,7 @@ class _ManualEntry extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: const BoxDecoration(color: AppColors.white),
+      decoration: BoxDecoration(color: context.c.card),
       child: SafeArea(
         top: false,
         child: Column(
