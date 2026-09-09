@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:printing/printing.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_palette.dart';
 import '../../../../app/theme/app_radius.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../providers/report_providers.dart';
+import '../report_pdf.dart';
 
 /// Relatório de tarefas executadas do supervisor — recortado pelo escopo dele
 /// (contratos/clientes vinculados). Filtros por período, contrato e funcionário.
@@ -22,6 +24,7 @@ class _SupervisorReportsPageState
   late DateTimeRange _range;
   String? _contractId;
   String? _employeeId;
+  bool _sharing = false;
 
   @override
   void initState() {
@@ -38,6 +41,50 @@ class _SupervisorReportsPageState
     if (d == null) return false;
     final day = DateTime(d.year, d.month, d.day);
     return !day.isBefore(_range.start) && !day.isAfter(_range.end);
+  }
+
+  bool _matches(ReportRow r) {
+    if (!_inRange(r.date)) return false;
+    if (_contractId != null && r.contractId != _contractId) return false;
+    if (_employeeId != null && r.employeeId != _employeeId) return false;
+    return true;
+  }
+
+  Future<void> _share() async {
+    final all =
+        ref.read(supervisorReportRowsProvider).valueOrNull ?? const <ReportRow>[];
+    final rows = all.where(_matches).toList();
+    if (rows.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Nada para compartilhar no período/filtros.')),
+      );
+      return;
+    }
+    final contracts = <String, String>{};
+    final employees = <String, String>{};
+    for (final r in all) {
+      contracts[r.contractId] = r.contractName;
+      employees[r.employeeId] = r.employeeName;
+    }
+    setState(() => _sharing = true);
+    try {
+      final bytes = await buildSupervisorReportPdf(
+        rows: rows,
+        periodLabel: '${_fmtDate(_range.start)} a ${_fmtDate(_range.end)}',
+        contractLabel: _contractId == null ? null : contracts[_contractId],
+        employeeLabel: _employeeId == null ? null : employees[_employeeId],
+      );
+      await Printing.sharePdf(bytes: bytes, filename: 'relatorio-nevada.pdf');
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Falha ao gerar o PDF.')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _sharing = false);
+    }
   }
 
   Future<void> _pickRange() async {
@@ -69,7 +116,22 @@ class _SupervisorReportsPageState
     final async = ref.watch(supervisorReportRowsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Relatórios')),
+      appBar: AppBar(
+        title: const Text('Relatórios'),
+        actions: [
+          IconButton(
+            tooltip: 'Compartilhar PDF',
+            onPressed: _sharing ? null : _share,
+            icon: _sharing
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.ios_share),
+          ),
+        ],
+      ),
       body: async.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (_, _) => const Center(
@@ -84,12 +146,7 @@ class _SupervisorReportsPageState
             employees[r.employeeId] = r.employeeName;
           }
 
-          final filtered = rows.where((r) {
-            if (!_inRange(r.date)) return false;
-            if (_contractId != null && r.contractId != _contractId) return false;
-            if (_employeeId != null && r.employeeId != _employeeId) return false;
-            return true;
-          }).toList();
+          final filtered = rows.where(_matches).toList();
 
           return ListView(
             padding: const EdgeInsets.all(AppSpacing.md),
