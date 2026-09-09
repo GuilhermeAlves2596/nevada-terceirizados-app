@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../app/providers/theme_mode_provider.dart';
 import '../../../../app/router/route_paths.dart';
-import '../../../../app/theme/app_colors.dart';
+import '../../../../app/theme/app_palette.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/utils/credentials.dart';
@@ -82,6 +83,14 @@ class ProfilePage extends ConsumerWidget {
                   ),
                 ),
                 AppSpacing.gapXl,
+                Text('Aparência', style: AppTypography.subtitle),
+                AppSpacing.gapSm,
+                _ThemeSelector(
+                  mode: ref.watch(themeModeProvider),
+                  onChanged: (m) =>
+                      ref.read(themeModeProvider.notifier).setMode(m),
+                ),
+                AppSpacing.gapXl,
                 AppButton(
                   label: 'Editar perfil',
                   icon: Icons.edit_outlined,
@@ -123,7 +132,7 @@ class _InfoRow extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 20, color: AppColors.textMuted),
+          Icon(icon, size: 20, color: context.c.textMuted),
           const SizedBox(width: 14),
           SizedBox(
             width: 92,
@@ -134,6 +143,27 @@ class _InfoRow extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _ThemeSelector extends StatelessWidget {
+  const _ThemeSelector({required this.mode, required this.onChanged});
+
+  final ThemeMode mode;
+  final ValueChanged<ThemeMode> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return SegmentedButton<ThemeMode>(
+      segments: const [
+        ButtonSegment(value: ThemeMode.system, label: Text('Sistema')),
+        ButtonSegment(value: ThemeMode.light, label: Text('Claro')),
+        ButtonSegment(value: ThemeMode.dark, label: Text('Escuro')),
+      ],
+      selected: {mode},
+      showSelectedIcon: false,
+      onSelectionChanged: (s) => onChanged(s.first),
     );
   }
 }

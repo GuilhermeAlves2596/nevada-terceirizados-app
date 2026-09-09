@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/auth/presentation/controllers/auth_controller.dart';
 import '../../features/auth/presentation/controllers/auth_state.dart';
-import '../../core/widgets/coming_soon_page.dart';
 import '../../features/auth/domain/entities/app_user.dart';
 import '../../features/auth/presentation/pages/change_password_page.dart';
 import '../../features/auth/presentation/pages/forgot_password_page.dart';
@@ -25,6 +24,7 @@ import '../../features/profile/presentation/pages/profile_edit_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/qr_code/presentation/pages/qr_code_view_page.dart';
 import '../../features/qr_code/presentation/pages/qr_scanner_page.dart';
+import '../../features/reports/presentation/pages/supervisor_reports_page.dart';
 import '../../features/tasks/presentation/pages/employee_history_page.dart';
 import '../../features/tasks/presentation/pages/employee_tasks_page.dart';
 import '../../features/tasks/presentation/pages/new_task_page.dart';
@@ -191,8 +191,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: RoutePaths.supervisorReports,
-        builder: (context, state) =>
-            const ComingSoonPage(title: 'Relatórios'),
+        builder: (context, state) => const SupervisorReportsPage(),
       ),
       GoRoute(
         path: RoutePaths.supervisorProfile,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../app/theme/app_colors.dart';
+import '../../app/theme/app_palette.dart';
 import '../../app/theme/app_spacing.dart';
 import '../../app/theme/app_typography.dart';
 
@@ -48,7 +49,7 @@ class AppDropdownField<T> extends StatelessWidget {
               (required ? (v) => v == null ? 'Selecione uma opção' : null : null),
           decoration: InputDecoration(
             prefixIcon:
-                icon == null ? null : Icon(icon, color: AppColors.textMuted, size: 20),
+                icon == null ? null : Icon(icon, color: context.c.textMuted, size: 20),
             hintText: enabled ? (hint ?? 'Selecione') : (hint ?? 'Indisponível'),
           ),
         ),
@@ -87,7 +88,7 @@ class AppDatePickerField extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           child: InputDecorator(
             decoration: InputDecoration(
-              prefixIcon: Icon(icon, color: AppColors.textMuted, size: 20),
+              prefixIcon: Icon(icon, color: context.c.textMuted, size: 20),
             ),
             child: Text(
               hasValue ? value! : placeholder,

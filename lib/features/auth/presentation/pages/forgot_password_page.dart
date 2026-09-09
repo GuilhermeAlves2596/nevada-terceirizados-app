@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/app_colors.dart';
+import '../../../../app/theme/app_palette.dart';
 import '../../../../app/theme/app_radius.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_typography.dart';
@@ -132,7 +133,7 @@ class _MsgBanner extends StatelessWidget {
     final (bg, fg, icon) = switch (kind) {
       _MsgKind.success => (AppColors.successSoft, AppColors.success, Icons.check_circle_outline),
       _MsgKind.error => (AppColors.dangerSoft, AppColors.danger, Icons.error_outline),
-      _MsgKind.info => (AppColors.surface, AppColors.textMuted, Icons.info_outline),
+      _MsgKind.info => (context.c.surface, context.c.textMuted, Icons.info_outline),
     };
     return Container(
       padding: const EdgeInsets.all(AppSpacing.sm),
@@ -140,7 +141,7 @@ class _MsgBanner extends StatelessWidget {
         color: bg,
         borderRadius: AppRadius.brMd,
         border: kind == _MsgKind.info
-            ? Border.all(color: AppColors.border)
+            ? Border.all(color: context.c.border)
             : null,
       ),
       child: Row(

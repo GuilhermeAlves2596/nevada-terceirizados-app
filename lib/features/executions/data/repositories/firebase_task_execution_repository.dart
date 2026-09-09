@@ -334,4 +334,19 @@ class FirebaseTaskExecutionRepository implements TaskExecutionRepository {
       finishedAt: DateTime.now(),
     ));
   }
+
+  @override
+  Future<List<TaskExecution>> findCompletedForCompany({
+    required String companyId,
+  }) async {
+    // companyId + status: 2 igualdades (sem índice composto) e satisfaz as
+    // Security Rules (query precisa filtrar companyId).
+    final snap = await _col
+        .where('companyId', isEqualTo: companyId)
+        .where('status', isEqualTo: ExecutionStatus.completed.name)
+        .get();
+    return snap.docs
+        .map((d) => executionFromDoc(d.id, d.data()))
+        .toList();
+  }
 }
