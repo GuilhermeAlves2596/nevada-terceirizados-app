@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:printing/printing.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../../../app/providers/company_catalog.dart';
@@ -11,6 +12,7 @@ import '../../../../app/theme/app_typography.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/app_state_views.dart';
 import '../../domain/qr_payload.dart';
+import '../qr_pdf.dart';
 
 class QrCodeViewPage extends ConsumerWidget {
   const QrCodeViewPage({super.key, required this.locationId});
@@ -22,7 +24,36 @@ class QrCodeViewPage extends ConsumerWidget {
     final catalog = ref.watch(companyCatalogProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('QR Code do ambiente')),
+      appBar: AppBar(
+        title: const Text('QR Code do ambiente'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.ios_share),
+            tooltip: 'Compartilhar / imprimir',
+            onPressed: () async {
+              final data = ref.read(companyCatalogProvider).valueOrNull;
+              final loc = data?.locationsById[locationId];
+              if (loc == null || loc.qrCodeId == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                      content: Text('Sem QR Code para compartilhar.')),
+                );
+                return;
+              }
+              final bytes = await buildLocationQrPdf(
+                name: loc.name,
+                client: data?.clientsById[loc.clientId]?.name ?? '',
+                code: loc.qrCodeId!,
+                payload: QrPayload(code: loc.qrCodeId!).encode(),
+              );
+              await Printing.sharePdf(
+                bytes: bytes,
+                filename: 'qr-${loc.qrCodeId}.pdf',
+              );
+            },
+          ),
+        ],
+      ),
       body: catalog.when(
         loading: () => const AppLoading(),
         error: (e, _) =>
