@@ -54,8 +54,15 @@ export default function AppLayout({
 
   useEffect(() => {
     if (loading) return;
-    if (!user) router.replace("/login");
-  }, [user, loading, router]);
+    if (!user) {
+      router.replace("/login");
+      return;
+    }
+    // 1º acesso: força a troca da senha temporária antes de usar o painel.
+    if (profile?.mustChangePassword) {
+      router.replace("/change-password");
+    }
+  }, [user, profile, loading, router]);
 
   // Fecha o drawer ao navegar.
   useEffect(() => {

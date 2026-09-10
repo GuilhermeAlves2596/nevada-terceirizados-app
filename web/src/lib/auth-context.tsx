@@ -24,6 +24,7 @@ export type Profile = {
   email?: string | null;
   phone?: string | null;
   jobTitle?: string | null;
+  mustChangePassword?: boolean;
   contractIds?: string[];
   clientIds?: string[];
 };
