@@ -177,3 +177,14 @@ export function TagIcon(props: IconProps) {
     </Svg>
   );
 }
+
+export function ChecklistIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <rect x="5" y="4" width="14" height="17" rx="2" />
+      <path d="M9 3h6v3H9z" />
+      <path d="M8.5 11l1.5 1.5 2.5-2.5" />
+      <path d="M8.5 16l1.5 1.5 2.5-2.5" />
+    </Svg>
+  );
+}
