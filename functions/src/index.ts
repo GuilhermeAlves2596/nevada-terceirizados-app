@@ -21,26 +21,42 @@ function generateTempPassword(): string {
 }
 
 /**
- * Garante que a empresa ainda tem assento livre antes de criar uma conta.
- * Assento = TODA conta da empresa (gestor + supervisor + funcionário). O limite
- * vem de `companies/{id}.seats` (definido pelo plano). Sem seats configurado
- * (<=0 ou ausente) = sem limite. Lança `resource-exhausted` quando cheio.
+ * Valida que a empresa pode ganhar mais UMA conta antes de criá-la. Lê o doc da
+ * empresa uma vez e checa dois portões:
+ *  1. Assinatura ATIVA — `subscriptionStatus` in [active, trial] (espelha a
+ *     rule `companyActive`). Empresa suspensa/cancelada não cria contas.
+ *  2. Assento livre — assento = TODA conta da empresa (gestor + supervisor +
+ *     funcionário). Limite em `companies/{id}.seats` (definido pelo plano);
+ *     seats ausente/<=0 = ilimitado.
+ * Lança HttpsError adequado em cada caso.
  */
-async function assertSeatAvailable(companyId: string): Promise<void> {
+async function assertCanAddAccount(companyId: string): Promise<void> {
   const company = (await db.doc(`companies/${companyId}`).get()).data();
-  const seats = company?.seats;
-  if (typeof seats !== "number" || seats <= 0) return; // sem limite
-  const agg = await db
-    .collection("users")
-    .where("companyId", "==", companyId)
-    .count()
-    .get();
-  const used = agg.data().count;
-  if (used >= seats) {
+  if (!company) {
+    throw new HttpsError("not-found", "Empresa não encontrada.");
+  }
+  const status = company.subscriptionStatus as string | undefined;
+  if (status !== "active" && status !== "trial") {
     throw new HttpsError(
-      "resource-exhausted",
-      `Limite de ${seats} contas do plano atingido. Aumente o plano da empresa.`,
+      "failed-precondition",
+      "A assinatura da empresa está inativa. Regularize a assinatura para " +
+        "criar novas contas.",
     );
+  }
+  const seats = company.seats;
+  if (typeof seats === "number" && seats > 0) {
+    const agg = await db
+      .collection("users")
+      .where("companyId", "==", companyId)
+      .count()
+      .get();
+    if (agg.data().count >= seats) {
+      throw new HttpsError(
+        "resource-exhausted",
+        `Limite de ${seats} contas do plano atingido. ` +
+          "Aumente o plano da empresa.",
+      );
+    }
   }
 }
 
@@ -175,7 +191,7 @@ export const createEmployee = onCall(async (request) => {
     throw new HttpsError("already-exists", "Já existe um funcionário com este CPF.");
   }
 
-  await assertSeatAvailable(companyId);
+  await assertCanAddAccount(companyId);
 
   const syntheticEmail = `${cpf}@func.nevada.app`;
   const tempPassword = generateTempPassword();
@@ -267,7 +283,7 @@ export const createSupervisor = onCall(async (request) => {
     clientIds.add(contract.clientId as string);
   }
 
-  await assertSeatAvailable(companyId);
+  await assertCanAddAccount(companyId);
 
   const phone = (d.phone as string | undefined)?.trim();
   const tempPassword = generateTempPassword();
@@ -342,12 +358,7 @@ export const createCompanyAdmin = onCall(async (request) => {
     );
   }
 
-  const company = (await db.doc(`companies/${companyId}`).get()).data();
-  if (!company) {
-    throw new HttpsError("not-found", "Empresa não encontrada.");
-  }
-
-  await assertSeatAvailable(companyId);
+  await assertCanAddAccount(companyId);
 
   const phone = (d.phone as string | undefined)?.trim();
   const jobTitle = (d.jobTitle as string | undefined)?.trim();
