@@ -12,9 +12,11 @@ import {
   query,
   where,
 } from "firebase/firestore";
-import { httpsCallable, type FunctionsError } from "firebase/functions";
+import { httpsCallable } from "firebase/functions";
 import { db, functions } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth-context";
+import { useToast } from "@/lib/toast";
+import { errorMessage } from "@/lib/errors";
 import { Loader } from "@/components/spinner";
 import {
   formatDate,
@@ -50,6 +52,7 @@ const deleteUserAccount = httpsCallable<{ userId: string }, { ok: boolean }>(
 export default function CompanyDetailPage() {
   const { profile } = useAuth();
   const isPlatformAdmin = profile?.role === "platformAdmin";
+  const toast = useToast();
   const params = useParams<{ id: string }>();
   const companyId = params.id;
 
@@ -64,13 +67,11 @@ export default function CompanyDetailPage() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
   const [created, setCreated] = useState<CreatedCreds | null>(null);
 
   const [viewing, setViewing] = useState<Manager | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Manager | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const [actionError, setActionError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!isPlatformAdmin || !companyId) {
@@ -118,7 +119,6 @@ export default function CompanyDetailPage() {
 
   async function onCreate(e: React.FormEvent) {
     e.preventDefault();
-    setFormError(null);
     setSubmitting(true);
     try {
       const res = await createCompanyAdmin({
@@ -136,24 +136,25 @@ export default function CompanyDetailPage() {
       setEmail("");
       setPhone("");
       await load();
+      toast.success("Gestor cadastrado.");
     } catch (err) {
-      const fe = err as FunctionsError;
-      setFormError(fe?.message ?? "Falha ao cadastrar o gestor.");
+      toast.error(
+        errorMessage(err, { fallback: "Falha ao cadastrar o gestor." }),
+      );
     } finally {
       setSubmitting(false);
     }
   }
 
   async function onDelete(m: Manager) {
-    setActionError(null);
     setDeleting(true);
     try {
       await deleteUserAccount({ userId: m.id });
       setConfirmDelete(null);
       await load();
+      toast.success("Gestor excluído.");
     } catch (err) {
-      const fe = err as FunctionsError;
-      setActionError(fe?.message ?? "Falha ao excluir o gestor.");
+      toast.error(errorMessage(err, { fallback: "Falha ao excluir o gestor." }));
     } finally {
       setDeleting(false);
     }
@@ -245,10 +246,6 @@ export default function CompanyDetailPage() {
                 ) : null}
               </dd>
             </div>
-            <div className="flex gap-3">
-              <dt className="w-24 shrink-0 text-muted">Ativa</dt>
-              <dd>{company.active === false ? "Não" : "Sim"}</dd>
-            </div>
           </dl>
 
           {/* Gestores */}
@@ -262,7 +259,6 @@ export default function CompanyDetailPage() {
             <button
               onClick={() => {
                 setShowForm((v) => !v);
-                setFormError(null);
               }}
               disabled={blockNewManager && !showForm}
               title={
@@ -366,10 +362,6 @@ export default function CompanyDetailPage() {
                 </label>
               </div>
 
-              {formError && (
-                <p className="mt-3 text-sm text-red-600">{formError}</p>
-              )}
-
               <div className="mt-5">
                 <button
                   type="submit"
@@ -413,10 +405,7 @@ export default function CompanyDetailPage() {
                         <EyeIcon />
                       </button>
                       <button
-                        onClick={() => {
-                          setActionError(null);
-                          setConfirmDelete(m);
-                        }}
+                        onClick={() => setConfirmDelete(m)}
                         title="Excluir"
                         aria-label="Excluir"
                         className="rounded-lg border border-red-200 p-2 text-red-600 hover:bg-red-50"
@@ -478,7 +467,6 @@ export default function CompanyDetailPage() {
                 onClick={() => {
                   const m = viewing;
                   setViewing(null);
-                  setActionError(null);
                   setConfirmDelete(m);
                 }}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50"
@@ -515,9 +503,6 @@ export default function CompanyDetailPage() {
               </span>
               ? Isso remove a conta de acesso e o perfil — não pode ser desfeito.
             </p>
-            {actionError && (
-              <p className="mt-3 text-sm text-red-600">{actionError}</p>
-            )}
             <div className="mt-6 flex justify-end gap-3">
               <button
                 onClick={() => setConfirmDelete(null)}

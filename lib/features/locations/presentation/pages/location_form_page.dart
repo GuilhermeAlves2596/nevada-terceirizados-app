@@ -6,7 +6,7 @@ import '../../../../app/di/repository_providers.dart';
 import '../../../../app/providers/company_catalog.dart';
 import '../../../../app/providers/data_scope.dart';
 import '../../../../app/theme/app_spacing.dart';
-import '../../../../core/errors/app_exception.dart';
+import '../../../../core/errors/error_messages.dart';
 import '../../../../core/utils/snackbars.dart';
 import '../../../../core/widgets/app_form_fields.dart';
 import '../../../../core/widgets/app_form_scaffold.dart';
@@ -60,8 +60,8 @@ class _LocationFormPageState extends ConsumerState<LocationFormPage> {
       if (!mounted) return;
       showSuccessSnack(context, 'Ambiente cadastrado! QR: ${created.qrCodeId}');
       context.pop();
-    } on AppException catch (e) {
-      if (mounted) showErrorSnack(context, e.message);
+    } catch (e) {
+      if (mounted) showErrorSnack(context, messageForError(e));
     } finally {
       if (mounted) setState(() => _saving = false);
     }

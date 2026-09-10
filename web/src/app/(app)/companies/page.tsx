@@ -11,6 +11,8 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth-context";
+import { useToast } from "@/lib/toast";
+import { errorMessage } from "@/lib/errors";
 import { Loader } from "@/components/spinner";
 import {
   fetchCompanies,
@@ -33,7 +35,6 @@ type FormState = {
   document: string;
   plan: PlanTier | "";
   subscriptionStatus: SubscriptionStatus;
-  active: boolean;
 };
 
 const EMPTY_FORM: FormState = {
@@ -42,12 +43,12 @@ const EMPTY_FORM: FormState = {
   document: "",
   plan: "",
   subscriptionStatus: "trial",
-  active: true,
 };
 
 export default function CompaniesPage() {
   const { profile } = useAuth();
   const isPlatformAdmin = profile?.role === "platformAdmin";
+  const toast = useToast();
 
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
@@ -91,7 +92,6 @@ export default function CompaniesPage() {
       plan: (c.plan as PlanTier) ?? "",
       subscriptionStatus:
         (c.subscriptionStatus as SubscriptionStatus) ?? "trial",
-      active: c.active !== false,
     });
   }
 
@@ -117,9 +117,11 @@ export default function CompaniesPage() {
         plan: form.plan,
         subscriptionStatus: form.subscriptionStatus,
         seats: seatsNum,
-        active: form.active,
+        // Mantido por coerência: espelha o status (o gate real é o status).
+        active: subscriptionGrantsAccess(form.subscriptionStatus),
         updatedAt: serverTimestamp(),
       };
+      const edited = Boolean(form.id);
       if (form.id) {
         await updateDoc(doc(db, "companies", form.id), base);
       } else {
@@ -128,8 +130,9 @@ export default function CompaniesPage() {
       }
       setForm(null);
       await load();
-    } catch {
-      setFormError("Falha ao salvar a empresa. Verifique suas permissões.");
+      toast.success(edited ? "Empresa atualizada." : "Empresa cadastrada.");
+    } catch (err) {
+      toast.error(errorMessage(err));
     } finally {
       setSaving(false);
     }
@@ -353,15 +356,6 @@ export default function CompaniesPage() {
                 </select>
               </label>
 
-              <label className="flex items-center gap-2 text-sm font-medium text-fg sm:col-span-2">
-                <input
-                  type="checkbox"
-                  checked={form.active}
-                  onChange={(e) => setForm({ ...form, active: e.target.checked })}
-                  className="h-4 w-4 rounded border-border text-brand focus:ring-brand"
-                />
-                Ativa
-              </label>
             </div>
 
             <p className="mt-3 text-xs text-muted">
