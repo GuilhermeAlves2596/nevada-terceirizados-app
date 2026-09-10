@@ -100,12 +100,19 @@ class _ChecklistFormPageState extends ConsumerState<ChecklistFormPage> {
       for (final d in _items) (description: d.description, required: d.required),
     ];
 
+    final me = ref.read(currentUserProvider)?.id;
+    final existing = widget.existing;
+    // Editar um checklist PADRÃO (do gestor) cria uma CÓPIA do usuário; o
+    // padrão fica intacto. Editar o próprio/legado atualiza no lugar.
+    final isPadrao =
+        existing != null && existing.isStandard && existing.ownerId != me;
+
     setState(() => _saving = true);
     try {
       final repo = ref.read(checklistRepositoryProvider);
-      if (_isEditing) {
+      if (existing != null && !isPadrao) {
         await repo.update(
-          id: widget.existing!.id,
+          id: existing.id,
           name: _name.text,
           serviceType: _serviceType,
           description: _description.text,
@@ -117,12 +124,20 @@ class _ChecklistFormPageState extends ConsumerState<ChecklistFormPage> {
           name: _name.text,
           serviceType: _serviceType,
           description: _description.text,
+          ownerId: me,
+          sourceId: isPadrao ? existing.id : null,
+          clientTypeId: isPadrao ? existing.clientTypeId : null,
           items: items,
         );
       }
       _invalidate();
       if (!mounted) return;
-      showSuccessSnack(context, _isEditing ? 'Checklist atualizado!' : 'Checklist criado!');
+      showSuccessSnack(
+        context,
+        isPadrao
+            ? 'Cópia criada! O padrão do gestor não foi alterado.'
+            : (existing != null ? 'Checklist atualizado!' : 'Checklist criado!'),
+      );
       context.pop();
     } on AppException catch (e) {
       if (mounted) showErrorSnack(context, e.message);
@@ -154,11 +169,17 @@ class _ChecklistFormPageState extends ConsumerState<ChecklistFormPage> {
 
   @override
   Widget build(BuildContext context) {
+    final me = ref.watch(currentUserProvider)?.id;
+    final existing = widget.existing;
+    final isPadrao =
+        existing != null && existing.isStandard && existing.ownerId != me;
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isEditing ? 'Editar checklist' : 'Novo checklist'),
+        title: Text(_isEditing
+            ? (isPadrao ? 'Editar (cópia)' : 'Editar checklist')
+            : 'Novo checklist'),
         actions: [
-          if (_isEditing)
+          if (_isEditing && !isPadrao)
             IconButton(
               tooltip: 'Excluir',
               icon: const Icon(Icons.delete_outline, color: AppColors.danger),
@@ -171,6 +192,30 @@ class _ChecklistFormPageState extends ConsumerState<ChecklistFormPage> {
         child: ListView(
           padding: const EdgeInsets.all(AppSpacing.md),
           children: [
+            if (isPadrao) ...[
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.sm),
+                decoration: BoxDecoration(
+                  color: context.c.primarySoft,
+                  borderRadius: AppRadius.brMd,
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.info_outline,
+                        size: 18, color: AppColors.primary),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Checklist padrão do gestor. Ao salvar, uma cópia sua é '
+                        'criada — o padrão não é alterado.',
+                        style: AppTypography.caption,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              AppSpacing.gapMd,
+            ],
             AppTextFormField(
               label: 'Nome',
               controller: _name,
