@@ -9,6 +9,7 @@ import { Loader } from "@/components/spinner";
 import {
   BuildingIcon,
   ChartIcon,
+  ChecklistIcon,
   FileIcon,
   HomeIcon,
   LogoutIcon,
@@ -27,6 +28,7 @@ const NAV = [
   { href: "/supervisors", label: "Supervisores", icon: UsersIcon },
   { href: "/clients", label: "Clientes", icon: BuildingIcon },
   { href: "/client-types", label: "Tipos de cliente", icon: TagIcon },
+  { href: "/standard-checklists", label: "Checklists padrão", icon: ChecklistIcon },
   { href: "/contracts", label: "Contratos", icon: FileIcon },
   { href: "/reports", label: "Relatórios", icon: ChartIcon },
 ];

@@ -16,7 +16,13 @@ mixin _$Checklist {
 
  String get id; String get companyId; String get name; ServiceType get serviceType; String? get description;/// Vínculos opcionais: um checklist pode ser genérico ou específico de um
 /// cliente/contrato/local.
- String? get clientId; String? get contractId; String? get locationId; List<ChecklistItem> get items; bool get active; DateTime get createdAt; DateTime get updatedAt;
+ String? get clientId; String? get contractId; String? get locationId;/// Checklists PADRÃO (cadastrados pelo gestor no painel web) são vinculados
+/// a um **tipo de cliente** e marcados com [isStandard] = true.
+ String? get clientTypeId; bool get isStandard;/// Quando um supervisor edita um padrão, é criada uma **cópia** dele com
+/// [ownerId] = uid do supervisor e [sourceId] = id do padrão de origem
+/// (o padrão do gestor fica intacto). Checklists criados pelo supervisor
+/// também levam [ownerId]. Padrão do gestor: ownerId nulo.
+ String? get ownerId; String? get sourceId; List<ChecklistItem> get items; bool get active; DateTime get createdAt; DateTime get updatedAt;
 /// Create a copy of Checklist
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -27,16 +33,16 @@ $ChecklistCopyWith<Checklist> get copyWith => _$ChecklistCopyWithImpl<Checklist>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Checklist&&(identical(other.id, id) || other.id == id)&&(identical(other.companyId, companyId) || other.companyId == companyId)&&(identical(other.name, name) || other.name == name)&&(identical(other.serviceType, serviceType) || other.serviceType == serviceType)&&(identical(other.description, description) || other.description == description)&&(identical(other.clientId, clientId) || other.clientId == clientId)&&(identical(other.contractId, contractId) || other.contractId == contractId)&&(identical(other.locationId, locationId) || other.locationId == locationId)&&const DeepCollectionEquality().equals(other.items, items)&&(identical(other.active, active) || other.active == active)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Checklist&&(identical(other.id, id) || other.id == id)&&(identical(other.companyId, companyId) || other.companyId == companyId)&&(identical(other.name, name) || other.name == name)&&(identical(other.serviceType, serviceType) || other.serviceType == serviceType)&&(identical(other.description, description) || other.description == description)&&(identical(other.clientId, clientId) || other.clientId == clientId)&&(identical(other.contractId, contractId) || other.contractId == contractId)&&(identical(other.locationId, locationId) || other.locationId == locationId)&&(identical(other.clientTypeId, clientTypeId) || other.clientTypeId == clientTypeId)&&(identical(other.isStandard, isStandard) || other.isStandard == isStandard)&&(identical(other.ownerId, ownerId) || other.ownerId == ownerId)&&(identical(other.sourceId, sourceId) || other.sourceId == sourceId)&&const DeepCollectionEquality().equals(other.items, items)&&(identical(other.active, active) || other.active == active)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,companyId,name,serviceType,description,clientId,contractId,locationId,const DeepCollectionEquality().hash(items),active,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,companyId,name,serviceType,description,clientId,contractId,locationId,clientTypeId,isStandard,ownerId,sourceId,const DeepCollectionEquality().hash(items),active,createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'Checklist(id: $id, companyId: $companyId, name: $name, serviceType: $serviceType, description: $description, clientId: $clientId, contractId: $contractId, locationId: $locationId, items: $items, active: $active, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'Checklist(id: $id, companyId: $companyId, name: $name, serviceType: $serviceType, description: $description, clientId: $clientId, contractId: $contractId, locationId: $locationId, clientTypeId: $clientTypeId, isStandard: $isStandard, ownerId: $ownerId, sourceId: $sourceId, items: $items, active: $active, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -47,7 +53,7 @@ abstract mixin class $ChecklistCopyWith<$Res>  {
   factory $ChecklistCopyWith(Checklist value, $Res Function(Checklist) _then) = _$ChecklistCopyWithImpl;
 @useResult
 $Res call({
- String id, String companyId, String name, ServiceType serviceType, String? description, String? clientId, String? contractId, String? locationId, List<ChecklistItem> items, bool active, DateTime createdAt, DateTime updatedAt
+ String id, String companyId, String name, ServiceType serviceType, String? description, String? clientId, String? contractId, String? locationId, String? clientTypeId, bool isStandard, String? ownerId, String? sourceId, List<ChecklistItem> items, bool active, DateTime createdAt, DateTime updatedAt
 });
 
 
@@ -64,7 +70,7 @@ class _$ChecklistCopyWithImpl<$Res>
 
 /// Create a copy of Checklist
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? companyId = null,Object? name = null,Object? serviceType = null,Object? description = freezed,Object? clientId = freezed,Object? contractId = freezed,Object? locationId = freezed,Object? items = null,Object? active = null,Object? createdAt = null,Object? updatedAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? companyId = null,Object? name = null,Object? serviceType = null,Object? description = freezed,Object? clientId = freezed,Object? contractId = freezed,Object? locationId = freezed,Object? clientTypeId = freezed,Object? isStandard = null,Object? ownerId = freezed,Object? sourceId = freezed,Object? items = null,Object? active = null,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,companyId: null == companyId ? _self.companyId : companyId // ignore: cast_nullable_to_non_nullable
@@ -74,6 +80,10 @@ as ServiceType,description: freezed == description ? _self.description : descrip
 as String?,clientId: freezed == clientId ? _self.clientId : clientId // ignore: cast_nullable_to_non_nullable
 as String?,contractId: freezed == contractId ? _self.contractId : contractId // ignore: cast_nullable_to_non_nullable
 as String?,locationId: freezed == locationId ? _self.locationId : locationId // ignore: cast_nullable_to_non_nullable
+as String?,clientTypeId: freezed == clientTypeId ? _self.clientTypeId : clientTypeId // ignore: cast_nullable_to_non_nullable
+as String?,isStandard: null == isStandard ? _self.isStandard : isStandard // ignore: cast_nullable_to_non_nullable
+as bool,ownerId: freezed == ownerId ? _self.ownerId : ownerId // ignore: cast_nullable_to_non_nullable
+as String?,sourceId: freezed == sourceId ? _self.sourceId : sourceId // ignore: cast_nullable_to_non_nullable
 as String?,items: null == items ? _self.items : items // ignore: cast_nullable_to_non_nullable
 as List<ChecklistItem>,active: null == active ? _self.active : active // ignore: cast_nullable_to_non_nullable
 as bool,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
@@ -163,10 +173,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String companyId,  String name,  ServiceType serviceType,  String? description,  String? clientId,  String? contractId,  String? locationId,  List<ChecklistItem> items,  bool active,  DateTime createdAt,  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String companyId,  String name,  ServiceType serviceType,  String? description,  String? clientId,  String? contractId,  String? locationId,  String? clientTypeId,  bool isStandard,  String? ownerId,  String? sourceId,  List<ChecklistItem> items,  bool active,  DateTime createdAt,  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Checklist() when $default != null:
-return $default(_that.id,_that.companyId,_that.name,_that.serviceType,_that.description,_that.clientId,_that.contractId,_that.locationId,_that.items,_that.active,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.companyId,_that.name,_that.serviceType,_that.description,_that.clientId,_that.contractId,_that.locationId,_that.clientTypeId,_that.isStandard,_that.ownerId,_that.sourceId,_that.items,_that.active,_that.createdAt,_that.updatedAt);case _:
   return orElse();
 
 }
@@ -184,10 +194,10 @@ return $default(_that.id,_that.companyId,_that.name,_that.serviceType,_that.desc
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String companyId,  String name,  ServiceType serviceType,  String? description,  String? clientId,  String? contractId,  String? locationId,  List<ChecklistItem> items,  bool active,  DateTime createdAt,  DateTime updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String companyId,  String name,  ServiceType serviceType,  String? description,  String? clientId,  String? contractId,  String? locationId,  String? clientTypeId,  bool isStandard,  String? ownerId,  String? sourceId,  List<ChecklistItem> items,  bool active,  DateTime createdAt,  DateTime updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _Checklist():
-return $default(_that.id,_that.companyId,_that.name,_that.serviceType,_that.description,_that.clientId,_that.contractId,_that.locationId,_that.items,_that.active,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.companyId,_that.name,_that.serviceType,_that.description,_that.clientId,_that.contractId,_that.locationId,_that.clientTypeId,_that.isStandard,_that.ownerId,_that.sourceId,_that.items,_that.active,_that.createdAt,_that.updatedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -204,10 +214,10 @@ return $default(_that.id,_that.companyId,_that.name,_that.serviceType,_that.desc
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String companyId,  String name,  ServiceType serviceType,  String? description,  String? clientId,  String? contractId,  String? locationId,  List<ChecklistItem> items,  bool active,  DateTime createdAt,  DateTime updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String companyId,  String name,  ServiceType serviceType,  String? description,  String? clientId,  String? contractId,  String? locationId,  String? clientTypeId,  bool isStandard,  String? ownerId,  String? sourceId,  List<ChecklistItem> items,  bool active,  DateTime createdAt,  DateTime updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _Checklist() when $default != null:
-return $default(_that.id,_that.companyId,_that.name,_that.serviceType,_that.description,_that.clientId,_that.contractId,_that.locationId,_that.items,_that.active,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.companyId,_that.name,_that.serviceType,_that.description,_that.clientId,_that.contractId,_that.locationId,_that.clientTypeId,_that.isStandard,_that.ownerId,_that.sourceId,_that.items,_that.active,_that.createdAt,_that.updatedAt);case _:
   return null;
 
 }
@@ -219,7 +229,7 @@ return $default(_that.id,_that.companyId,_that.name,_that.serviceType,_that.desc
 
 
 class _Checklist extends Checklist {
-  const _Checklist({required this.id, required this.companyId, required this.name, required this.serviceType, this.description, this.clientId, this.contractId, this.locationId, final  List<ChecklistItem> items = const <ChecklistItem>[], this.active = true, required this.createdAt, required this.updatedAt}): _items = items,super._();
+  const _Checklist({required this.id, required this.companyId, required this.name, required this.serviceType, this.description, this.clientId, this.contractId, this.locationId, this.clientTypeId, this.isStandard = false, this.ownerId, this.sourceId, final  List<ChecklistItem> items = const <ChecklistItem>[], this.active = true, required this.createdAt, required this.updatedAt}): _items = items,super._();
   
 
 @override final  String id;
@@ -232,6 +242,16 @@ class _Checklist extends Checklist {
 @override final  String? clientId;
 @override final  String? contractId;
 @override final  String? locationId;
+/// Checklists PADRÃO (cadastrados pelo gestor no painel web) são vinculados
+/// a um **tipo de cliente** e marcados com [isStandard] = true.
+@override final  String? clientTypeId;
+@override@JsonKey() final  bool isStandard;
+/// Quando um supervisor edita um padrão, é criada uma **cópia** dele com
+/// [ownerId] = uid do supervisor e [sourceId] = id do padrão de origem
+/// (o padrão do gestor fica intacto). Checklists criados pelo supervisor
+/// também levam [ownerId]. Padrão do gestor: ownerId nulo.
+@override final  String? ownerId;
+@override final  String? sourceId;
  final  List<ChecklistItem> _items;
 @override@JsonKey() List<ChecklistItem> get items {
   if (_items is EqualUnmodifiableListView) return _items;
@@ -253,16 +273,16 @@ _$ChecklistCopyWith<_Checklist> get copyWith => __$ChecklistCopyWithImpl<_Checkl
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Checklist&&(identical(other.id, id) || other.id == id)&&(identical(other.companyId, companyId) || other.companyId == companyId)&&(identical(other.name, name) || other.name == name)&&(identical(other.serviceType, serviceType) || other.serviceType == serviceType)&&(identical(other.description, description) || other.description == description)&&(identical(other.clientId, clientId) || other.clientId == clientId)&&(identical(other.contractId, contractId) || other.contractId == contractId)&&(identical(other.locationId, locationId) || other.locationId == locationId)&&const DeepCollectionEquality().equals(other._items, _items)&&(identical(other.active, active) || other.active == active)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Checklist&&(identical(other.id, id) || other.id == id)&&(identical(other.companyId, companyId) || other.companyId == companyId)&&(identical(other.name, name) || other.name == name)&&(identical(other.serviceType, serviceType) || other.serviceType == serviceType)&&(identical(other.description, description) || other.description == description)&&(identical(other.clientId, clientId) || other.clientId == clientId)&&(identical(other.contractId, contractId) || other.contractId == contractId)&&(identical(other.locationId, locationId) || other.locationId == locationId)&&(identical(other.clientTypeId, clientTypeId) || other.clientTypeId == clientTypeId)&&(identical(other.isStandard, isStandard) || other.isStandard == isStandard)&&(identical(other.ownerId, ownerId) || other.ownerId == ownerId)&&(identical(other.sourceId, sourceId) || other.sourceId == sourceId)&&const DeepCollectionEquality().equals(other._items, _items)&&(identical(other.active, active) || other.active == active)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,companyId,name,serviceType,description,clientId,contractId,locationId,const DeepCollectionEquality().hash(_items),active,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,companyId,name,serviceType,description,clientId,contractId,locationId,clientTypeId,isStandard,ownerId,sourceId,const DeepCollectionEquality().hash(_items),active,createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'Checklist(id: $id, companyId: $companyId, name: $name, serviceType: $serviceType, description: $description, clientId: $clientId, contractId: $contractId, locationId: $locationId, items: $items, active: $active, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'Checklist(id: $id, companyId: $companyId, name: $name, serviceType: $serviceType, description: $description, clientId: $clientId, contractId: $contractId, locationId: $locationId, clientTypeId: $clientTypeId, isStandard: $isStandard, ownerId: $ownerId, sourceId: $sourceId, items: $items, active: $active, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -273,7 +293,7 @@ abstract mixin class _$ChecklistCopyWith<$Res> implements $ChecklistCopyWith<$Re
   factory _$ChecklistCopyWith(_Checklist value, $Res Function(_Checklist) _then) = __$ChecklistCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String companyId, String name, ServiceType serviceType, String? description, String? clientId, String? contractId, String? locationId, List<ChecklistItem> items, bool active, DateTime createdAt, DateTime updatedAt
+ String id, String companyId, String name, ServiceType serviceType, String? description, String? clientId, String? contractId, String? locationId, String? clientTypeId, bool isStandard, String? ownerId, String? sourceId, List<ChecklistItem> items, bool active, DateTime createdAt, DateTime updatedAt
 });
 
 
@@ -290,7 +310,7 @@ class __$ChecklistCopyWithImpl<$Res>
 
 /// Create a copy of Checklist
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? companyId = null,Object? name = null,Object? serviceType = null,Object? description = freezed,Object? clientId = freezed,Object? contractId = freezed,Object? locationId = freezed,Object? items = null,Object? active = null,Object? createdAt = null,Object? updatedAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? companyId = null,Object? name = null,Object? serviceType = null,Object? description = freezed,Object? clientId = freezed,Object? contractId = freezed,Object? locationId = freezed,Object? clientTypeId = freezed,Object? isStandard = null,Object? ownerId = freezed,Object? sourceId = freezed,Object? items = null,Object? active = null,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_Checklist(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,companyId: null == companyId ? _self.companyId : companyId // ignore: cast_nullable_to_non_nullable
@@ -300,6 +320,10 @@ as ServiceType,description: freezed == description ? _self.description : descrip
 as String?,clientId: freezed == clientId ? _self.clientId : clientId // ignore: cast_nullable_to_non_nullable
 as String?,contractId: freezed == contractId ? _self.contractId : contractId // ignore: cast_nullable_to_non_nullable
 as String?,locationId: freezed == locationId ? _self.locationId : locationId // ignore: cast_nullable_to_non_nullable
+as String?,clientTypeId: freezed == clientTypeId ? _self.clientTypeId : clientTypeId // ignore: cast_nullable_to_non_nullable
+as String?,isStandard: null == isStandard ? _self.isStandard : isStandard // ignore: cast_nullable_to_non_nullable
+as bool,ownerId: freezed == ownerId ? _self.ownerId : ownerId // ignore: cast_nullable_to_non_nullable
+as String?,sourceId: freezed == sourceId ? _self.sourceId : sourceId // ignore: cast_nullable_to_non_nullable
 as String?,items: null == items ? _self._items : items // ignore: cast_nullable_to_non_nullable
 as List<ChecklistItem>,active: null == active ? _self.active : active // ignore: cast_nullable_to_non_nullable
 as bool,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable

@@ -70,6 +70,83 @@ export type ClientType = {
   active?: boolean;
 };
 
+// ---------- Checklists padrão ----------
+
+export type ServiceType =
+  | "limpeza"
+  | "jardinagem"
+  | "portaria"
+  | "recepcao"
+  | "higienizacao"
+  | "apoioAdministrativo"
+  | "movimentacaoCarga";
+
+export const SERVICE_TYPES: { value: ServiceType; label: string }[] = [
+  { value: "limpeza", label: "Limpeza" },
+  { value: "jardinagem", label: "Jardinagem" },
+  { value: "portaria", label: "Portaria" },
+  { value: "recepcao", label: "Recepção" },
+  { value: "higienizacao", label: "Higienização" },
+  { value: "apoioAdministrativo", label: "Apoio Administrativo" },
+  { value: "movimentacaoCarga", label: "Movimentação de Carga" },
+];
+
+export function serviceTypeLabel(value?: string): string {
+  return SERVICE_TYPES.find((s) => s.value === value)?.label ?? "—";
+}
+
+export type ChecklistItemLite = {
+  id: string;
+  description: string;
+  order: number;
+  required: boolean;
+};
+
+export type StandardChecklist = {
+  id: string;
+  name: string;
+  serviceType: string;
+  clientTypeId?: string | null;
+  items: ChecklistItemLite[];
+  active?: boolean;
+};
+
+/** Checklists PADRÃO da empresa (isStandard=true). */
+export async function fetchStandardChecklists(
+  companyId: string,
+): Promise<StandardChecklist[]> {
+  const snap = await getDocs(
+    query(
+      collection(db, "checklists"),
+      where("companyId", "==", companyId),
+      where("isStandard", "==", true),
+    ),
+  );
+  return snap.docs
+    .map((d) => {
+      const x = d.data();
+      const items = Array.isArray(x.items)
+        ? (x.items as Record<string, unknown>[])
+            .map((it) => ({
+              id: (it.id as string) ?? "",
+              description: (it.description as string) ?? "",
+              order: (it.order as number | undefined) ?? 0,
+              required: (it.required as boolean | undefined) ?? true,
+            }))
+            .sort((a, b) => a.order - b.order)
+        : [];
+      return {
+        id: d.id,
+        name: (x.name as string) ?? "",
+        serviceType: (x.serviceType as string) ?? "limpeza",
+        clientTypeId: (x.clientTypeId as string | null | undefined) ?? null,
+        items,
+        active: (x.active as boolean | undefined) ?? true,
+      };
+    })
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
 /** Tipos de cliente da empresa (ordenados por nome). */
 export async function fetchClientTypes(companyId: string): Promise<ClientType[]> {
   const snap = await getDocs(
