@@ -88,6 +88,17 @@ export function BuildingIcon(props: IconProps) {
   );
 }
 
+export function CompaniesIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M3 21h18" />
+      <path d="M5 21V7l7-4v18" />
+      <path d="M12 21V9l7 3v9" />
+      <path d="M8 9h.01M8 13h.01M8 17h.01" />
+    </Svg>
+  );
+}
+
 export function FileIcon(props: IconProps) {
   return (
     <Svg {...props}>

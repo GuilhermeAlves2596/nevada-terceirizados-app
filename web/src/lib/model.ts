@@ -70,6 +70,98 @@ export type ClientType = {
   active?: boolean;
 };
 
+// ---------- Empresas (tenants) — área do platformAdmin ----------
+
+export type SubscriptionStatus =
+  | "trial"
+  | "active"
+  | "suspended"
+  | "canceled";
+
+export const SUBSCRIPTION_STATUSES: {
+  value: SubscriptionStatus;
+  label: string;
+}[] = [
+  { value: "trial", label: "Teste" },
+  { value: "active", label: "Ativa" },
+  { value: "suspended", label: "Suspensa" },
+  { value: "canceled", label: "Cancelada" },
+];
+
+export function subscriptionStatusLabel(value?: string): string {
+  return (
+    SUBSCRIPTION_STATUSES.find((s) => s.value === value)?.label ?? "—"
+  );
+}
+
+/** Status que liberam o acesso da empresa (espelha a rule companyActive). */
+export function subscriptionGrantsAccess(value?: string): boolean {
+  return value === "active" || value === "trial";
+}
+
+// Planos de assinatura: cada nível DEFINE o limite de assentos (= total de
+// contas da empresa, somando gestores + supervisores + funcionários).
+// Os números aqui são a tabela de venda — ajuste conforme o pricing.
+export type PlanTier =
+  | "starter"
+  | "basic"
+  | "pro"
+  | "enterprise"
+  | "unlimited";
+
+// seats: null = ILIMITADO (sem teto de contas).
+export const PLANS: { value: PlanTier; label: string; seats: number | null }[] =
+  [
+    { value: "starter", label: "Essencial", seats: 5 },
+    { value: "basic", label: "Básico", seats: 10 },
+    { value: "pro", label: "Pro", seats: 50 },
+    { value: "enterprise", label: "Enterprise", seats: 200 },
+    { value: "unlimited", label: "Ilimitado", seats: null },
+  ];
+
+export function planLabel(value?: string): string {
+  return PLANS.find((p) => p.value === value)?.label ?? "—";
+}
+
+/** true se o plano existe na tabela. */
+export function isKnownPlan(value?: string): value is PlanTier {
+  return PLANS.some((p) => p.value === value);
+}
+
+/**
+ * Assentos do plano: número, ou null = ilimitado (também null se o plano é
+ * desconhecido — use isKnownPlan para distinguir).
+ */
+export function planSeats(value?: string): number | null {
+  return PLANS.find((p) => p.value === value)?.seats ?? null;
+}
+
+/** Rótulo dos assentos do plano: "5", "Ilimitado", ou "—". */
+export function planSeatsLabel(value?: string): string {
+  const p = PLANS.find((x) => x.value === value);
+  if (!p) return "—";
+  return p.seats == null ? "Ilimitado" : String(p.seats);
+}
+
+export type Company = {
+  id: string;
+  name: string;
+  document?: string | null;
+  plan?: string | null;
+  subscriptionStatus?: SubscriptionStatus | string;
+  seats?: number | null;
+  active?: boolean;
+  createdAt?: FsDate;
+};
+
+/** Empresas (tenants) — só o platformAdmin lê todas. */
+export async function fetchCompanies(): Promise<Company[]> {
+  const snap = await getDocs(collection(db, "companies"));
+  return snap.docs
+    .map((d) => ({ id: d.id, ...(d.data() as Omit<Company, "id">) }))
+    .sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""));
+}
+
 // ---------- Checklists padrão ----------
 
 export type ServiceType =

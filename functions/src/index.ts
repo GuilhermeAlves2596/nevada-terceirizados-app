@@ -21,6 +21,30 @@ function generateTempPassword(): string {
 }
 
 /**
+ * Garante que a empresa ainda tem assento livre antes de criar uma conta.
+ * Assento = TODA conta da empresa (gestor + supervisor + funcionário). O limite
+ * vem de `companies/{id}.seats` (definido pelo plano). Sem seats configurado
+ * (<=0 ou ausente) = sem limite. Lança `resource-exhausted` quando cheio.
+ */
+async function assertSeatAvailable(companyId: string): Promise<void> {
+  const company = (await db.doc(`companies/${companyId}`).get()).data();
+  const seats = company?.seats;
+  if (typeof seats !== "number" || seats <= 0) return; // sem limite
+  const agg = await db
+    .collection("users")
+    .where("companyId", "==", companyId)
+    .count()
+    .get();
+  const used = agg.data().count;
+  if (used >= seats) {
+    throw new HttpsError(
+      "resource-exhausted",
+      `Limite de ${seats} contas do plano atingido. Aumente o plano da empresa.`,
+    );
+  }
+}
+
+/**
  * Redefine a senha de um funcionário e devolve a nova senha temporária.
  *
  * Só o cliente não pode redefinir a senha de outro usuário, então isso vive no
@@ -151,6 +175,8 @@ export const createEmployee = onCall(async (request) => {
     throw new HttpsError("already-exists", "Já existe um funcionário com este CPF.");
   }
 
+  await assertSeatAvailable(companyId);
+
   const syntheticEmail = `${cpf}@func.nevada.app`;
   const tempPassword = generateTempPassword();
   let uid: string;
@@ -241,6 +267,8 @@ export const createSupervisor = onCall(async (request) => {
     clientIds.add(contract.clientId as string);
   }
 
+  await assertSeatAvailable(companyId);
+
   const phone = (d.phone as string | undefined)?.trim();
   const tempPassword = generateTempPassword();
   let uid: string;
@@ -267,6 +295,88 @@ export const createSupervisor = onCall(async (request) => {
     clientIds: Array.from(clientIds),
     email,
     phone: phone && phone.length ? phone : null,
+    cpf: null,
+    mustChangePassword: true,
+    active: true,
+    createdAt: now,
+    updatedAt: now,
+  });
+
+  return {uid, temporaryPassword: tempPassword};
+});
+
+/**
+ * Cria a conta de acesso (Firebase Auth) + o perfil `/users` de um GESTOR
+ * (companyAdmin) de uma empresa, server-side. Login por e-mail. Onboarding de
+ * tenant: só a PLATAFORMA (platformAdmin) cadastra gestor, informando a empresa
+ * (companyId). Aceita N gestores por empresa. Senha temporária + troca no 1º
+ * acesso. NÃO vincula contratos (o gestor enxerga toda a empresa).
+ */
+export const createCompanyAdmin = onCall(async (request) => {
+  const callerUid = request.auth?.uid;
+  if (!callerUid) {
+    throw new HttpsError("unauthenticated", "Faça login novamente.");
+  }
+  const d = request.data ?? {};
+  const name = (d.name as string | undefined)?.trim();
+  const email = (d.email as string | undefined)?.trim().toLowerCase();
+  const companyId = (d.companyId as string | undefined)?.trim();
+  if (!name || !email || !companyId) {
+    throw new HttpsError(
+      "invalid-argument",
+      "Nome, e-mail e empresa são obrigatórios.",
+    );
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    throw new HttpsError("invalid-argument", "E-mail inválido.");
+  }
+
+  const caller = (await db.doc(`users/${callerUid}`).get()).data();
+  if (!caller) {
+    throw new HttpsError("permission-denied", "Perfil não encontrado.");
+  }
+  if (caller.role !== "platformAdmin") {
+    throw new HttpsError(
+      "permission-denied",
+      "Só a plataforma cadastra gestores.",
+    );
+  }
+
+  const company = (await db.doc(`companies/${companyId}`).get()).data();
+  if (!company) {
+    throw new HttpsError("not-found", "Empresa não encontrada.");
+  }
+
+  await assertSeatAvailable(companyId);
+
+  const phone = (d.phone as string | undefined)?.trim();
+  const jobTitle = (d.jobTitle as string | undefined)?.trim();
+  const tempPassword = generateTempPassword();
+  let uid: string;
+  try {
+    const rec = await auth.createUser({email, password: tempPassword});
+    uid = rec.uid;
+  } catch (e) {
+    const code = (e as {code?: string}).code;
+    if (code === "auth/email-already-exists") {
+      throw new HttpsError("already-exists", "Já existe uma conta com este e-mail.");
+    }
+    if (code === "auth/invalid-email") {
+      throw new HttpsError("invalid-argument", "E-mail inválido.");
+    }
+    throw new HttpsError("internal", "Não foi possível criar o acesso.");
+  }
+
+  const now = FieldValue.serverTimestamp();
+  await db.doc(`users/${uid}`).set({
+    name,
+    role: "companyAdmin",
+    companyId,
+    contractIds: [],
+    clientIds: [],
+    email,
+    phone: phone && phone.length ? phone : null,
+    jobTitle: jobTitle && jobTitle.length ? jobTitle : null,
     cpf: null,
     mustChangePassword: true,
     active: true,

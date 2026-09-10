@@ -188,7 +188,12 @@ export default function DashboardPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold">
-            Olá, {profile?.name ?? "gestor"}
+            Olá,{" "}
+            {profile?.name?.trim()
+              ? profile.name
+              : profile?.role === "platformAdmin"
+                ? "administrador"
+                : "gestor"}
           </h1>
           <p className="mt-1 text-sm text-muted">Atividades de {monthLabel}.</p>
         </div>

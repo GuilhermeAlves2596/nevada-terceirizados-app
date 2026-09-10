@@ -10,6 +10,7 @@ import {
   BuildingIcon,
   ChartIcon,
   ChecklistIcon,
+  CompaniesIcon,
   FileIcon,
   HomeIcon,
   LogoutIcon,
@@ -32,6 +33,13 @@ const NAV = [
   { href: "/contracts", label: "Contratos", icon: FileIcon },
   { href: "/reports", label: "Relatórios", icon: ChartIcon },
 ];
+
+// Item exclusivo do admin da plataforma (gestão de empresas/tenants).
+const PLATFORM_NAV = {
+  href: "/companies",
+  label: "Empresas",
+  icon: CompaniesIcon,
+};
 
 export default function AppLayout({
   children,
@@ -76,6 +84,12 @@ export default function AppLayout({
     );
   }
 
+  // platformAdmin ganha "Empresas" logo após "Início".
+  const nav =
+    profile.role === "platformAdmin"
+      ? [NAV[0], PLATFORM_NAV, ...NAV.slice(1)]
+      : NAV;
+
   const initials = (profile.name ?? profile.email ?? "?")
     .split(" ")
     .slice(0, 2)
@@ -117,7 +131,7 @@ export default function AppLayout({
         </div>
 
         <nav className="flex-1 space-y-1 px-3 py-2">
-          {NAV.map((item) => {
+          {nav.map((item) => {
             const active =
               pathname === item.href || pathname.startsWith(item.href + "/");
             const Icon = item.icon;
@@ -160,7 +174,11 @@ export default function AppLayout({
               </div>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">
-                  {profile.name ?? "Gestor"}
+                  {profile.name?.trim()
+                    ? profile.name
+                    : profile.role === "platformAdmin"
+                      ? "Administrador"
+                      : "Gestor"}
                 </p>
                 <p className="truncate text-xs text-muted">
                 {user.email ?? profile.email}
