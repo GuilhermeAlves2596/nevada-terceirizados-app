@@ -77,6 +77,24 @@ class ChecklistsListPage extends ConsumerWidget {
                             ],
                           ),
                         ),
+                        if (c.isStandard) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 3),
+                            decoration: const BoxDecoration(
+                              color: AppColors.primary,
+                              borderRadius: AppRadius.brPill,
+                            ),
+                            child: Text(
+                              'Padrão',
+                              style: AppTypography.caption.copyWith(
+                                color: AppColors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   );

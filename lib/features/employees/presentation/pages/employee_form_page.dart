@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/di/repository_providers.dart';
 import '../../../../app/providers/company_catalog.dart';
 import '../../../../app/theme/app_colors.dart';
+import '../../../../app/theme/app_palette.dart';
 import '../../../../app/theme/app_radius.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_typography.dart';
@@ -277,9 +278,9 @@ class _EmployeeFormPageState extends ConsumerState<EmployeeFormPage> {
                     : contracts.firstWhere((c) => c.id == v).clientId;
               }),
               validator: (v) => v == null ? 'Selecione um contrato' : null,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 prefixIcon: Icon(Icons.description_outlined,
-                    color: AppColors.textMuted, size: 20),
+                    color: context.c.textMuted, size: 20),
                 hintText: 'Selecione',
               ),
             ),
@@ -385,13 +386,13 @@ class _ReadOnlyRow extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.c.surface,
         borderRadius: AppRadius.brMd,
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.c.border),
       ),
       child: Row(
         children: [
-          const Icon(Icons.badge_outlined, size: 20, color: AppColors.textMuted),
+          Icon(Icons.badge_outlined, size: 20, color: context.c.textMuted),
           const SizedBox(width: 10),
           Text('$label: ', style: AppTypography.bodyMuted),
           Text(value, style: AppTypography.subtitle),
@@ -412,9 +413,9 @@ class _CredentialRow extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.c.surface,
         borderRadius: AppRadius.brMd,
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.c.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -158,6 +158,13 @@ service cloud.firestore {
       allow update: if managerUpdate();
       allow delete: if managerDelete();
     }
+    // Tipos de cliente: leitura pelo tenant; escrita SÓ gestor/plataforma.
+    match /clientTypes/{id} {
+      allow read: if scopedRead();
+      allow create: if managerCreate();
+      allow update: if managerUpdate();
+      allow delete: if managerDelete();
+    }
     match /locations/{id} {
       allow read: if scopedRead();
       allow create: if scopedCreate();

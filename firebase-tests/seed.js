@@ -3,6 +3,7 @@ import { doc, setDoc } from 'firebase/firestore';
 /// Coleções com escopo de empresa (todas carregam companyId).
 export const COLLECTIONS = [
   'clients',
+  'clientTypes',
   'contracts',
   'locations',
   'checklists',
@@ -11,7 +12,7 @@ export const COLLECTIONS = [
 ];
 
 /// Coleções cuja ESCRITA é exclusiva do gestor/plataforma (painel do gestor).
-export const MANAGER_ONLY_COLLECTIONS = ['clients', 'contracts'];
+export const MANAGER_ONLY_COLLECTIONS = ['clients', 'contracts', 'clientTypes'];
 
 /// Coleções que o supervisor também escreve (domínio de campo dele).
 export const SUPERVISOR_WRITABLE_COLLECTIONS = [

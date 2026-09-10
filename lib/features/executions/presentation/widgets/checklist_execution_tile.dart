@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../../app/theme/app_colors.dart';
+import '../../../../app/theme/app_palette.dart';
 import '../../../../app/theme/app_radius.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../domain/entities/execution_item.dart';
@@ -22,10 +23,15 @@ class ChecklistExecutionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final done = item.completed;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    // successSoft é um verde claro fixo; no escuro usamos um verde escuro para
+    // o texto (claro) continuar legível.
+    final doneBg =
+        isDark ? const Color(0xFF16351F) : AppColors.successSoft;
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Material(
-        color: done ? AppColors.successSoft : AppColors.white,
+        color: done ? doneBg : context.c.card,
         borderRadius: AppRadius.brMd,
         child: InkWell(
           borderRadius: AppRadius.brMd,
@@ -40,7 +46,7 @@ class ChecklistExecutionTile extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: AppRadius.brMd,
               border: Border.all(
-                color: done ? AppColors.success : AppColors.border,
+                color: done ? AppColors.success : context.c.border,
               ),
             ),
             child: Row(
@@ -52,11 +58,11 @@ class ChecklistExecutionTile extends StatelessWidget {
                     item.description,
                     style: AppTypography.body.copyWith(
                       color: enabled || done
-                          ? AppColors.textPrimary
-                          : AppColors.textMuted,
+                          ? context.c.textPrimary
+                          : context.c.textMuted,
                       decoration:
                           done ? TextDecoration.lineThrough : TextDecoration.none,
-                      decorationColor: AppColors.textMuted,
+                      decorationColor: context.c.textMuted,
                     ),
                   ),
                 ),
@@ -65,7 +71,7 @@ class ChecklistExecutionTile extends StatelessWidget {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
-                      color: AppColors.surface,
+                      color: context.c.surface,
                       borderRadius: AppRadius.brPill,
                     ),
                     child: Text('opcional', style: AppTypography.caption),
@@ -97,7 +103,7 @@ class _Checkbox extends StatelessWidget {
         border: Border.all(
           color: done
               ? AppColors.success
-              : (enabled ? AppColors.textMuted : AppColors.border),
+              : (enabled ? context.c.textMuted : context.c.border),
           width: 2,
         ),
       ),

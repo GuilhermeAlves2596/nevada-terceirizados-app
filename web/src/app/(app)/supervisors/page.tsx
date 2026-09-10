@@ -13,6 +13,7 @@ import {
 import { httpsCallable, type FunctionsError } from "firebase/functions";
 import { db, functions } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth-context";
+import { Loader } from "@/components/spinner";
 import {
   fetchClients,
   fetchContracts,
@@ -215,7 +216,7 @@ export default function SupervisorsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Supervisores</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-muted">
             Contas de supervisor da sua empresa.
           </p>
         </div>
@@ -242,17 +243,17 @@ export default function SupervisorsPage() {
       {created && (
         <div className="mt-6 rounded-2xl border border-brand/40 bg-brand-soft p-5">
           <h2 className="font-medium text-brand-dark">Supervisor criado</h2>
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="mt-1 text-sm text-muted">
             Anote e repasse ao supervisor. A senha é temporária — ele precisará
             trocá-la no primeiro acesso.
           </p>
           <dl className="mt-3 space-y-1 text-sm">
             <div className="flex gap-2">
-              <dt className="w-32 text-slate-500">E-mail</dt>
+              <dt className="w-32 text-muted">E-mail</dt>
               <dd className="font-mono">{created.email}</dd>
             </div>
             <div className="flex gap-2">
-              <dt className="w-32 text-slate-500">Senha temporária</dt>
+              <dt className="w-32 text-muted">Senha temporária</dt>
               <dd className="font-mono">{created.temporaryPassword}</dd>
             </div>
           </dl>
@@ -263,13 +264,13 @@ export default function SupervisorsPage() {
                   `E-mail: ${created.email}\nSenha: ${created.temporaryPassword}`,
                 )
               }
-              className="rounded-lg border border-brand/40 bg-white px-3 py-1.5 text-sm font-medium text-brand-dark hover:bg-white/70"
+              className="rounded-lg border border-brand/40 bg-surface px-3 py-1.5 text-sm font-medium text-brand-dark hover:bg-surface/70"
             >
               Copiar
             </button>
             <button
               onClick={() => setCreated(null)}
-              className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-500 hover:bg-white/50"
+              className="rounded-lg px-3 py-1.5 text-sm font-medium text-muted hover:bg-surface/50"
             >
               Fechar
             </button>
@@ -280,34 +281,34 @@ export default function SupervisorsPage() {
       {showForm && companyId && (
         <form
           onSubmit={onCreate}
-          className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+          className="mt-6 rounded-2xl border border-border bg-surface p-6 shadow-sm"
         >
           <div className="grid gap-4 sm:grid-cols-2">
-            <label className="block text-sm font-medium text-slate-700">
+            <label className="block text-sm font-medium text-fg">
               Nome
               <input
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+                className="mt-1 w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
               />
             </label>
-            <label className="block text-sm font-medium text-slate-700">
+            <label className="block text-sm font-medium text-fg">
               E-mail
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+                className="mt-1 w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
               />
             </label>
-            <label className="block text-sm font-medium text-slate-700">
+            <label className="block text-sm font-medium text-fg">
               Telefone (opcional)
               <input
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+                className="mt-1 w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
               />
             </label>
           </div>
@@ -324,7 +325,7 @@ export default function SupervisorsPage() {
             >
               {submitting ? "Cadastrando…" : "Cadastrar supervisor"}
             </button>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-muted">
               Depois use o botão de vínculo (ícone de corrente) na lista para
               atribuir contratos.
             </p>
@@ -334,23 +335,23 @@ export default function SupervisorsPage() {
 
       <div className="mt-8">
         {loading ? (
-          <p className="text-sm text-slate-500">Carregando…</p>
+          <Loader />
         ) : loadError ? (
           <p className="text-sm text-red-600">{loadError}</p>
         ) : list.length === 0 ? (
-          <p className="rounded-lg border border-dashed border-slate-200 p-6 text-center text-sm text-slate-500">
+          <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted">
             Nenhum supervisor cadastrado ainda.
           </p>
         ) : (
-          <ul className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+          <ul className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface">
             {list.map((s) => (
               <li key={s.id} className="flex items-center justify-between px-5 py-4">
                 <div className="min-w-0">
                   <p className="truncate font-medium">{s.name ?? "(sem nome)"}</p>
-                  <p className="truncate text-sm text-slate-500">{s.email}</p>
+                  <p className="truncate text-sm text-muted">{s.email}</p>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
-                  <span className="hidden text-xs text-slate-400 sm:inline">
+                  <span className="hidden text-xs text-muted sm:inline">
                     {(s.contractIds?.length ?? 0) === 0
                       ? "sem contratos"
                       : `${s.contractIds?.length} contrato(s)`}
@@ -359,7 +360,7 @@ export default function SupervisorsPage() {
                     onClick={() => setViewing(s)}
                     title="Ver detalhes"
                     aria-label="Ver detalhes"
-                    className="rounded-lg border border-slate-300 p-2 text-slate-600 hover:bg-slate-50 hover:text-brand"
+                    className="rounded-lg border border-border p-2 text-muted hover:bg-surface-2 hover:text-brand"
                   >
                     <EyeIcon />
                   </button>
@@ -367,7 +368,7 @@ export default function SupervisorsPage() {
                     onClick={() => openLinking(s)}
                     title="Vincular contratos"
                     aria-label="Vincular contratos"
-                    className="rounded-lg border border-slate-300 p-2 text-slate-600 hover:bg-slate-50 hover:text-brand"
+                    className="rounded-lg border border-border p-2 text-muted hover:bg-surface-2 hover:text-brand"
                   >
                     <LinkIcon />
                   </button>
@@ -396,25 +397,25 @@ export default function SupervisorsPage() {
           onClick={() => setViewing(null)}
         >
           <div
-            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-lg"
+            className="w-full max-w-md rounded-2xl bg-surface p-6 shadow-lg"
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-lg font-semibold">{viewing.name ?? "Supervisor"}</h2>
             <dl className="mt-4 space-y-2 text-sm">
               <div className="flex gap-3">
-                <dt className="w-32 shrink-0 text-slate-500">E-mail</dt>
+                <dt className="w-32 shrink-0 text-muted">E-mail</dt>
                 <dd className="break-all">{viewing.email ?? "—"}</dd>
               </div>
               <div className="flex gap-3">
-                <dt className="w-32 shrink-0 text-slate-500">Telefone</dt>
+                <dt className="w-32 shrink-0 text-muted">Telefone</dt>
                 <dd>{viewing.phone ?? "—"}</dd>
               </div>
               <div className="flex gap-3">
-                <dt className="w-32 shrink-0 text-slate-500">Status</dt>
+                <dt className="w-32 shrink-0 text-muted">Status</dt>
                 <dd>{viewing.active === false ? "Inativo" : "Ativo"}</dd>
               </div>
               <div className="flex gap-3">
-                <dt className="w-32 shrink-0 text-slate-500">Contratos</dt>
+                <dt className="w-32 shrink-0 text-muted">Contratos</dt>
                 <dd className="flex-1">
                   {(viewing.contractIds?.length ?? 0) === 0 ? (
                     "nenhum vinculado"
@@ -428,7 +429,7 @@ export default function SupervisorsPage() {
                 </dd>
               </div>
               <div className="flex gap-3">
-                <dt className="w-32 shrink-0 text-slate-500">Criado em</dt>
+                <dt className="w-32 shrink-0 text-muted">Criado em</dt>
                 <dd>{formatDate(viewing.createdAt)}</dd>
               </div>
             </dl>
@@ -448,14 +449,14 @@ export default function SupervisorsPage() {
               <div className="flex gap-2">
                 <button
                   onClick={() => openLinking(viewing)}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium hover:bg-slate-50"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm font-medium hover:bg-surface-2"
                 >
                   <LinkIcon />
                   Contratos
                 </button>
                 <button
                   onClick={() => setViewing(null)}
-                  className="rounded-lg border border-slate-300 px-4 py-1.5 text-sm font-medium hover:bg-slate-50"
+                  className="rounded-lg border border-border px-4 py-1.5 text-sm font-medium hover:bg-surface-2"
                 >
                   Fechar
                 </button>
@@ -472,11 +473,11 @@ export default function SupervisorsPage() {
           onClick={() => !savingLink && setLinking(null)}
         >
           <div
-            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-lg"
+            className="w-full max-w-md rounded-2xl bg-surface p-6 shadow-lg"
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-lg font-semibold">Vincular contratos</h2>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-muted">
               {linking.name ?? linking.email} — marque os contratos que este
               supervisor cobre.
             </p>
@@ -491,7 +492,7 @@ export default function SupervisorsPage() {
                   const checked = selectedContractIds.has(c.id);
                   return (
                     <li key={c.id}>
-                      <label className="flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 hover:bg-slate-50">
+                      <label className="flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 hover:bg-surface-2">
                         <input
                           type="checkbox"
                           checked={checked}
@@ -501,11 +502,11 @@ export default function SupervisorsPage() {
                             else next.delete(c.id);
                             setSelectedContractIds(next);
                           }}
-                          className="h-4 w-4 rounded border-slate-300 text-brand focus:ring-brand"
+                          className="h-4 w-4 rounded border-border text-brand focus:ring-brand"
                         />
                         <span className="text-sm">
                           <span className="font-medium">{c.name}</span>
-                          <span className="text-slate-500">
+                          <span className="text-muted">
                             {" · "}
                             {clientNames.get(c.clientId) ?? "—"}
                           </span>
@@ -525,7 +526,7 @@ export default function SupervisorsPage() {
               <button
                 onClick={() => setLinking(null)}
                 disabled={savingLink}
-                className="rounded-lg border border-slate-300 px-4 py-1.5 text-sm font-medium hover:bg-slate-50 disabled:opacity-60"
+                className="rounded-lg border border-border px-4 py-1.5 text-sm font-medium hover:bg-surface-2 disabled:opacity-60"
               >
                 Cancelar
               </button>
@@ -548,11 +549,11 @@ export default function SupervisorsPage() {
           onClick={() => !deleting && setConfirmDelete(null)}
         >
           <div
-            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-lg"
+            className="w-full max-w-md rounded-2xl bg-surface p-6 shadow-lg"
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-lg font-semibold">Excluir supervisor</h2>
-            <p className="mt-2 text-sm text-slate-600">
+            <p className="mt-2 text-sm text-muted">
               Excluir <span className="font-medium">{confirmDelete.name ?? confirmDelete.email}</span>?
               Isso remove a conta de acesso e o perfil — não pode ser desfeito.
             </p>
@@ -561,7 +562,7 @@ export default function SupervisorsPage() {
               <button
                 onClick={() => setConfirmDelete(null)}
                 disabled={deleting}
-                className="rounded-lg border border-slate-300 px-4 py-1.5 text-sm font-medium hover:bg-slate-50 disabled:opacity-60"
+                className="rounded-lg border border-border px-4 py-1.5 text-sm font-medium hover:bg-surface-2 disabled:opacity-60"
               >
                 Cancelar
               </button>

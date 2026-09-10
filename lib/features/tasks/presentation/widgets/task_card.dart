@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_colors.dart';
+import '../../../../app/theme/app_palette.dart';
 import '../../../../app/theme/app_radius.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/extensions/date_extensions.dart';
@@ -40,7 +41,7 @@ class TaskCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(9),
                 decoration: BoxDecoration(
-                  color: AppColors.primarySoft,
+                  color: context.c.primarySoft,
                   borderRadius: AppRadius.brMd,
                 ),
                 child: Icon(view.serviceType.icon,
@@ -78,15 +79,17 @@ class TaskCard extends StatelessWidget {
           const SizedBox(height: 12),
           Row(
             children: [
-              _meta(Icons.event_outlined, task.scheduledDate.relativeLabel),
+              _meta(context, Icons.event_outlined,
+                  task.scheduledDate.relativeLabel),
               if (task.scheduledStartTime != null) ...[
                 const SizedBox(width: 14),
-                _meta(Icons.schedule_outlined, task.scheduledStartTime!),
+                _meta(context, Icons.schedule_outlined,
+                    task.scheduledStartTime!),
               ],
               if (showEmployee) ...[
                 const SizedBox(width: 14),
                 Expanded(
-                  child: _meta(Icons.person_outline, view.employeeName,
+                  child: _meta(context, Icons.person_outline, view.employeeName,
                       ellipsis: true),
                 ),
               ],
@@ -107,7 +110,8 @@ class TaskCard extends StatelessWidget {
     );
   }
 
-  Widget _meta(IconData icon, String text, {bool ellipsis = false}) {
+  Widget _meta(BuildContext context, IconData icon, String text,
+      {bool ellipsis = false}) {
     final label = Text(
       text,
       style: AppTypography.caption,
@@ -117,7 +121,7 @@ class TaskCard extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 14, color: AppColors.textMuted),
+        Icon(icon, size: 14, color: context.c.textMuted),
         const SizedBox(width: 4),
         ellipsis ? Flexible(child: label) : label,
       ],

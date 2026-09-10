@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/di/repository_providers.dart';
 import '../../../../app/providers/company_catalog.dart';
 import '../../../../app/providers/data_scope.dart';
-import '../../../../app/theme/app_colors.dart';
+import '../../../../app/theme/app_palette.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/enums/task_priority.dart';
@@ -317,7 +317,7 @@ class _NewTaskPageState extends ConsumerState<NewTaskPage> {
           onChanged: enabled ? onChanged : null,
           validator: validator ?? (v) => v == null ? 'Selecione uma opção' : null,
           decoration: InputDecoration(
-            prefixIcon: Icon(icon, color: AppColors.textMuted, size: 20),
+            prefixIcon: Icon(icon, color: context.c.textMuted, size: 20),
             hintText: enabled ? 'Selecione' : (emptyHint ?? 'Indisponível'),
           ),
         ),
@@ -342,7 +342,7 @@ class _NewTaskPageState extends ConsumerState<NewTaskPage> {
           borderRadius: BorderRadius.circular(12),
           child: InputDecorator(
             decoration: InputDecoration(
-              prefixIcon: Icon(icon, color: AppColors.textMuted, size: 20),
+              prefixIcon: Icon(icon, color: context.c.textMuted, size: 20),
             ),
             child: Text(
               value,

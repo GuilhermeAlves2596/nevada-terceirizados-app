@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'app_colors.dart';
-
 /// Tipografia central.
 ///
 /// Títulos usam **League Spartan** e textos usam **Roboto** (seção 44).
@@ -13,14 +11,18 @@ abstract final class AppTypography {
 
   static const String _displayFont = 'League Spartan';
 
+  /// Cinza "muted" universal: legível tanto no tema claro quanto no escuro
+  /// (os estilos de título/corpo NÃO fixam cor — herdam a cor do tema).
+  static const Color _muted = Color(0xFF8A93A3);
+
   static TextStyle _title(double size, FontWeight weight) => GoogleFonts.leagueSpartan(
         fontSize: size,
         fontWeight: weight,
-        color: AppColors.textPrimary,
         height: 1.15,
       );
 
-  static TextStyle _body(double size, FontWeight weight, Color color) => GoogleFonts.roboto(
+  static TextStyle _body(double size, FontWeight weight, [Color? color]) =>
+      GoogleFonts.roboto(
         fontSize: size,
         fontWeight: weight,
         color: color,
@@ -31,11 +33,11 @@ abstract final class AppTypography {
   static TextStyle get displayMedium => _title(28, FontWeight.w700);
   static TextStyle get headline => _title(22, FontWeight.w600);
   static TextStyle get title => _title(18, FontWeight.w600);
-  static TextStyle get subtitle => _body(15, FontWeight.w600, AppColors.textPrimary);
+  static TextStyle get subtitle => _body(15, FontWeight.w600);
 
-  static TextStyle get body => _body(14, FontWeight.w400, AppColors.textPrimary);
-  static TextStyle get bodyMuted => _body(14, FontWeight.w400, AppColors.textSecondary);
-  static TextStyle get caption => _body(12, FontWeight.w400, AppColors.textSecondary);
+  static TextStyle get body => _body(14, FontWeight.w400);
+  static TextStyle get bodyMuted => _body(14, FontWeight.w400, _muted);
+  static TextStyle get caption => _body(12, FontWeight.w400, _muted);
   static TextStyle get button => GoogleFonts.leagueSpartan(
         fontSize: 15,
         fontWeight: FontWeight.w600,
@@ -52,7 +54,7 @@ abstract final class AppTypography {
         bodyLarge: body,
         bodyMedium: body,
         bodySmall: caption,
-        labelLarge: button.copyWith(color: AppColors.textPrimary),
+        labelLarge: button,
       );
 
   /// Nome da família de fontes de título para uso pontual em widgets.

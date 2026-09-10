@@ -6,6 +6,7 @@ import '../../../../app/di/repository_providers.dart';
 import '../../../../app/providers/company_catalog.dart';
 import '../../../../app/router/route_paths.dart';
 import '../../../../app/theme/app_colors.dart';
+import '../../../../app/theme/app_palette.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/enums/task_status.dart';
@@ -221,8 +222,8 @@ class _Content extends ConsumerWidget {
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Row(
                   children: [
-                    const Icon(Icons.radio_button_unchecked,
-                        size: 20, color: AppColors.border),
+                    Icon(Icons.radio_button_unchecked,
+                        size: 20, color: context.c.border),
                     const SizedBox(width: 10),
                     Expanded(
                         child: Text(item.description, style: AppTypography.body)),

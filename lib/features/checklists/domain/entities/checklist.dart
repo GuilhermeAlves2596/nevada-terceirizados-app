@@ -26,6 +26,18 @@ abstract class Checklist with _$Checklist {
     String? clientId,
     String? contractId,
     String? locationId,
+
+    /// Checklists PADRÃO (cadastrados pelo gestor no painel web) são vinculados
+    /// a um **tipo de cliente** e marcados com [isStandard] = true.
+    String? clientTypeId,
+    @Default(false) bool isStandard,
+
+    /// Quando um supervisor edita um padrão, é criada uma **cópia** dele com
+    /// [ownerId] = uid do supervisor e [sourceId] = id do padrão de origem
+    /// (o padrão do gestor fica intacto). Checklists criados pelo supervisor
+    /// também levam [ownerId]. Padrão do gestor: ownerId nulo.
+    String? ownerId,
+    String? sourceId,
     @Default(<ChecklistItem>[]) List<ChecklistItem> items,
     @Default(true) bool active,
     required DateTime createdAt,

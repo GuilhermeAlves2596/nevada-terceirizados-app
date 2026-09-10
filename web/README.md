@@ -49,6 +49,35 @@ real é das **Security Rules** + **restrição da API key** no Google Cloud
 3. O supervisor criado loga por **e-mail** e cai na troca de senha obrigatória no
    1º acesso (fluxo `mustChangePassword`, já existente no app mobile).
 
+## Segurança e cache
+
+### App Check (anti-abuso)
+O painel inicializa o **App Check** com **reCAPTCHA Enterprise** (o v3 clássico
+está sendo descontinuado) quando `NEXT_PUBLIC_APPCHECK_SITE_KEY` está definido —
+ele atesta que a requisição vem do app real. Para ativar:
+
+1. **Google Cloud Console** (mesmo projeto) → ativar a **reCAPTCHA Enterprise
+   API** → **reCAPTCHA Enterprise → Criar chave**: tipo **Site**, domínios
+   `localhost` (+ prod depois), **sem** desafio de caixa de seleção
+   (score-based). Copie o **ID da chave**.
+2. Firebase Console → **App Check** → registrar o app **Web** com provedor
+   **reCAPTCHA Enterprise**, colando o ID da chave. Use o mesmo valor em
+   `NEXT_PUBLIC_APPCHECK_SITE_KEY`.
+3. **Dev/localhost:** com `NEXT_PUBLIC_APPCHECK_DEBUG=true`, o navegador imprime
+   um *debug token* no console — registre-o em App Check → app Web → **Tokens de
+   debug** (senão o localhost é bloqueado quando houver enforcement).
+4. Quando validar, **force o App Check** por serviço (Firestore, Storage,
+   Functions) no console. Antes disso fica em **modo monitor** (não bloqueia
+   nada). Sem a site key, o App Check é ignorado.
+
+> Defesa em camadas: App Check + Security Rules + restrição da API key +
+> alertas de orçamento (GCP → Billing → Budgets).
+
+### Cache offline (Firestore)
+No navegador o Firestore usa **cache persistente** (IndexedDB, multi-aba) —
+reduz leituras (custo) e dá resiliência offline. Configurado em
+`src/lib/firebase.ts` (`persistentLocalCache`); no SSR usa a instância simples.
+
 ## Troubleshooting
 
 - **`EXDEV: cross-device link not permitted` no build** (telemetria do Next

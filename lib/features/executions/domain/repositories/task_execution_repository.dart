@@ -53,4 +53,10 @@ abstract interface class TaskExecutionRepository {
 
   /// Finaliza (finishedAt + status COMPLETED + progresso 100).
   Future<TaskExecution> finish(String executionId);
+
+  /// Lista as execuções CONCLUÍDAS da empresa (para relatórios). O recorte por
+  /// contrato/escopo do supervisor é aplicado na camada de apresentação.
+  Future<List<TaskExecution>> findCompletedForCompany({
+    required String companyId,
+  });
 }

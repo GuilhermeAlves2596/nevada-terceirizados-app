@@ -14,7 +14,9 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Client {
 
- String get id; String get companyId; String get name; String? get document; String? get phone; String? get email; String? get address; bool get active; DateTime get createdAt; DateTime get updatedAt;
+ String get id; String get companyId; String get name; String? get document; String? get phone; String? get email; String? get address;/// Tipo de cliente (cadastrado pelo gestor no painel web). Usado para
+/// vincular os checklists padrão ao cliente pelo seu tipo.
+ String? get clientTypeId; bool get active; DateTime get createdAt; DateTime get updatedAt;
 /// Create a copy of Client
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +27,16 @@ $ClientCopyWith<Client> get copyWith => _$ClientCopyWithImpl<Client>(this as Cli
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Client&&(identical(other.id, id) || other.id == id)&&(identical(other.companyId, companyId) || other.companyId == companyId)&&(identical(other.name, name) || other.name == name)&&(identical(other.document, document) || other.document == document)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.email, email) || other.email == email)&&(identical(other.address, address) || other.address == address)&&(identical(other.active, active) || other.active == active)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Client&&(identical(other.id, id) || other.id == id)&&(identical(other.companyId, companyId) || other.companyId == companyId)&&(identical(other.name, name) || other.name == name)&&(identical(other.document, document) || other.document == document)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.email, email) || other.email == email)&&(identical(other.address, address) || other.address == address)&&(identical(other.clientTypeId, clientTypeId) || other.clientTypeId == clientTypeId)&&(identical(other.active, active) || other.active == active)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,companyId,name,document,phone,email,address,active,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,companyId,name,document,phone,email,address,clientTypeId,active,createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'Client(id: $id, companyId: $companyId, name: $name, document: $document, phone: $phone, email: $email, address: $address, active: $active, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'Client(id: $id, companyId: $companyId, name: $name, document: $document, phone: $phone, email: $email, address: $address, clientTypeId: $clientTypeId, active: $active, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -45,7 +47,7 @@ abstract mixin class $ClientCopyWith<$Res>  {
   factory $ClientCopyWith(Client value, $Res Function(Client) _then) = _$ClientCopyWithImpl;
 @useResult
 $Res call({
- String id, String companyId, String name, String? document, String? phone, String? email, String? address, bool active, DateTime createdAt, DateTime updatedAt
+ String id, String companyId, String name, String? document, String? phone, String? email, String? address, String? clientTypeId, bool active, DateTime createdAt, DateTime updatedAt
 });
 
 
@@ -62,7 +64,7 @@ class _$ClientCopyWithImpl<$Res>
 
 /// Create a copy of Client
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? companyId = null,Object? name = null,Object? document = freezed,Object? phone = freezed,Object? email = freezed,Object? address = freezed,Object? active = null,Object? createdAt = null,Object? updatedAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? companyId = null,Object? name = null,Object? document = freezed,Object? phone = freezed,Object? email = freezed,Object? address = freezed,Object? clientTypeId = freezed,Object? active = null,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,companyId: null == companyId ? _self.companyId : companyId // ignore: cast_nullable_to_non_nullable
@@ -71,6 +73,7 @@ as String,document: freezed == document ? _self.document : document // ignore: c
 as String?,phone: freezed == phone ? _self.phone : phone // ignore: cast_nullable_to_non_nullable
 as String?,email: freezed == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
 as String?,address: freezed == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
+as String?,clientTypeId: freezed == clientTypeId ? _self.clientTypeId : clientTypeId // ignore: cast_nullable_to_non_nullable
 as String?,active: null == active ? _self.active : active // ignore: cast_nullable_to_non_nullable
 as bool,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
@@ -159,10 +162,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String companyId,  String name,  String? document,  String? phone,  String? email,  String? address,  bool active,  DateTime createdAt,  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String companyId,  String name,  String? document,  String? phone,  String? email,  String? address,  String? clientTypeId,  bool active,  DateTime createdAt,  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Client() when $default != null:
-return $default(_that.id,_that.companyId,_that.name,_that.document,_that.phone,_that.email,_that.address,_that.active,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.companyId,_that.name,_that.document,_that.phone,_that.email,_that.address,_that.clientTypeId,_that.active,_that.createdAt,_that.updatedAt);case _:
   return orElse();
 
 }
@@ -180,10 +183,10 @@ return $default(_that.id,_that.companyId,_that.name,_that.document,_that.phone,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String companyId,  String name,  String? document,  String? phone,  String? email,  String? address,  bool active,  DateTime createdAt,  DateTime updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String companyId,  String name,  String? document,  String? phone,  String? email,  String? address,  String? clientTypeId,  bool active,  DateTime createdAt,  DateTime updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _Client():
-return $default(_that.id,_that.companyId,_that.name,_that.document,_that.phone,_that.email,_that.address,_that.active,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.companyId,_that.name,_that.document,_that.phone,_that.email,_that.address,_that.clientTypeId,_that.active,_that.createdAt,_that.updatedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -200,10 +203,10 @@ return $default(_that.id,_that.companyId,_that.name,_that.document,_that.phone,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String companyId,  String name,  String? document,  String? phone,  String? email,  String? address,  bool active,  DateTime createdAt,  DateTime updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String companyId,  String name,  String? document,  String? phone,  String? email,  String? address,  String? clientTypeId,  bool active,  DateTime createdAt,  DateTime updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _Client() when $default != null:
-return $default(_that.id,_that.companyId,_that.name,_that.document,_that.phone,_that.email,_that.address,_that.active,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.companyId,_that.name,_that.document,_that.phone,_that.email,_that.address,_that.clientTypeId,_that.active,_that.createdAt,_that.updatedAt);case _:
   return null;
 
 }
@@ -215,7 +218,7 @@ return $default(_that.id,_that.companyId,_that.name,_that.document,_that.phone,_
 
 
 class _Client implements Client {
-  const _Client({required this.id, required this.companyId, required this.name, this.document, this.phone, this.email, this.address, this.active = true, required this.createdAt, required this.updatedAt});
+  const _Client({required this.id, required this.companyId, required this.name, this.document, this.phone, this.email, this.address, this.clientTypeId, this.active = true, required this.createdAt, required this.updatedAt});
   
 
 @override final  String id;
@@ -225,6 +228,9 @@ class _Client implements Client {
 @override final  String? phone;
 @override final  String? email;
 @override final  String? address;
+/// Tipo de cliente (cadastrado pelo gestor no painel web). Usado para
+/// vincular os checklists padrão ao cliente pelo seu tipo.
+@override final  String? clientTypeId;
 @override@JsonKey() final  bool active;
 @override final  DateTime createdAt;
 @override final  DateTime updatedAt;
@@ -239,16 +245,16 @@ _$ClientCopyWith<_Client> get copyWith => __$ClientCopyWithImpl<_Client>(this, _
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Client&&(identical(other.id, id) || other.id == id)&&(identical(other.companyId, companyId) || other.companyId == companyId)&&(identical(other.name, name) || other.name == name)&&(identical(other.document, document) || other.document == document)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.email, email) || other.email == email)&&(identical(other.address, address) || other.address == address)&&(identical(other.active, active) || other.active == active)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Client&&(identical(other.id, id) || other.id == id)&&(identical(other.companyId, companyId) || other.companyId == companyId)&&(identical(other.name, name) || other.name == name)&&(identical(other.document, document) || other.document == document)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.email, email) || other.email == email)&&(identical(other.address, address) || other.address == address)&&(identical(other.clientTypeId, clientTypeId) || other.clientTypeId == clientTypeId)&&(identical(other.active, active) || other.active == active)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,companyId,name,document,phone,email,address,active,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,companyId,name,document,phone,email,address,clientTypeId,active,createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'Client(id: $id, companyId: $companyId, name: $name, document: $document, phone: $phone, email: $email, address: $address, active: $active, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'Client(id: $id, companyId: $companyId, name: $name, document: $document, phone: $phone, email: $email, address: $address, clientTypeId: $clientTypeId, active: $active, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -259,7 +265,7 @@ abstract mixin class _$ClientCopyWith<$Res> implements $ClientCopyWith<$Res> {
   factory _$ClientCopyWith(_Client value, $Res Function(_Client) _then) = __$ClientCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String companyId, String name, String? document, String? phone, String? email, String? address, bool active, DateTime createdAt, DateTime updatedAt
+ String id, String companyId, String name, String? document, String? phone, String? email, String? address, String? clientTypeId, bool active, DateTime createdAt, DateTime updatedAt
 });
 
 
@@ -276,7 +282,7 @@ class __$ClientCopyWithImpl<$Res>
 
 /// Create a copy of Client
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? companyId = null,Object? name = null,Object? document = freezed,Object? phone = freezed,Object? email = freezed,Object? address = freezed,Object? active = null,Object? createdAt = null,Object? updatedAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? companyId = null,Object? name = null,Object? document = freezed,Object? phone = freezed,Object? email = freezed,Object? address = freezed,Object? clientTypeId = freezed,Object? active = null,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_Client(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,companyId: null == companyId ? _self.companyId : companyId // ignore: cast_nullable_to_non_nullable
@@ -285,6 +291,7 @@ as String,document: freezed == document ? _self.document : document // ignore: c
 as String?,phone: freezed == phone ? _self.phone : phone // ignore: cast_nullable_to_non_nullable
 as String?,email: freezed == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
 as String?,address: freezed == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
+as String?,clientTypeId: freezed == clientTypeId ? _self.clientTypeId : clientTypeId // ignore: cast_nullable_to_non_nullable
 as String?,active: null == active ? _self.active : active // ignore: cast_nullable_to_non_nullable
 as bool,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_colors.dart';
+import '../../../../app/theme/app_palette.dart';
 import '../../../../app/theme/app_radius.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/extensions/date_extensions.dart';
@@ -32,7 +33,7 @@ class TaskInfoCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: AppColors.primarySoft,
+                  color: context.c.primarySoft,
                   borderRadius: AppRadius.brMd,
                 ),
                 child: Icon(view.serviceType.icon,
@@ -90,7 +91,7 @@ class _Row extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 18, color: AppColors.textMuted),
+          Icon(icon, size: 18, color: context.c.textMuted),
           const SizedBox(width: 10),
           SizedBox(
             width: 92,

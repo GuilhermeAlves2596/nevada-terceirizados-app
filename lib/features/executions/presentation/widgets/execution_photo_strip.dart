@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_colors.dart';
+import '../../../../app/theme/app_palette.dart';
 import '../../../../app/theme/app_radius.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/extensions/date_extensions.dart';
@@ -189,9 +190,9 @@ class _AddTile extends StatelessWidget {
         width: ExecutionPhotoStrip._size,
         height: ExecutionPhotoStrip._size,
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: context.c.surface,
           borderRadius: AppRadius.brMd,
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: context.c.border),
         ),
         child: busy
             ? const Center(

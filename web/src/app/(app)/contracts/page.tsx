@@ -13,6 +13,7 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth-context";
+import { Loader } from "@/components/spinner";
 import {
   CONTRACT_STATUSES,
   contractStatusLabel,
@@ -186,7 +187,7 @@ export default function ContractsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Contratos</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-muted">
             Contratos da empresa por cliente.
           </p>
         </div>
@@ -218,17 +219,17 @@ export default function ContractsPage() {
 
       <div className="mt-8">
         {loading ? (
-          <p className="text-sm text-slate-500">Carregando…</p>
+          <Loader />
         ) : loadError ? (
           <p className="text-sm text-red-600">{loadError}</p>
         ) : contracts.length === 0 ? (
-          <p className="rounded-lg border border-dashed border-slate-200 p-6 text-center text-sm text-slate-500">
+          <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted">
             Nenhum contrato cadastrado ainda.
           </p>
         ) : (
-          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+          <div className="overflow-hidden rounded-2xl border border-border bg-surface">
             <table className="w-full text-sm">
-              <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+              <thead className="bg-surface-2 text-left text-xs uppercase tracking-wide text-muted">
                 <tr>
                   <th className="px-5 py-3 font-medium">Contrato</th>
                   <th className="px-5 py-3 font-medium">Cliente</th>
@@ -239,17 +240,17 @@ export default function ContractsPage() {
                   <th className="px-5 py-3" />
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-border">
                 {contracts.map((c) => (
                   <tr key={c.id}>
                     <td className="px-5 py-3 font-medium">{c.name}</td>
-                    <td className="px-5 py-3 text-slate-600">
+                    <td className="px-5 py-3 text-muted">
                       {clientNames.get(c.clientId) ?? "—"}
                     </td>
                     <td className="px-5 py-3">
                       <StatusBadge status={c.status} />
                     </td>
-                    <td className="hidden px-5 py-3 text-slate-500 md:table-cell">
+                    <td className="hidden px-5 py-3 text-muted md:table-cell">
                       {period(c)}
                     </td>
                     <td className="px-5 py-3">
@@ -258,7 +259,7 @@ export default function ContractsPage() {
                           onClick={() => openEdit(c)}
                           title="Editar"
                           aria-label="Editar"
-                          className="rounded-lg border border-slate-300 p-2 text-slate-600 hover:bg-slate-50 hover:text-brand"
+                          className="rounded-lg border border-border p-2 text-muted hover:bg-surface-2 hover:text-brand"
                         >
                           <EditIcon />
                         </button>
@@ -292,30 +293,30 @@ export default function ContractsPage() {
           <form
             onSubmit={onSave}
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-lg"
+            className="w-full max-w-lg rounded-2xl bg-surface p-6 shadow-lg"
           >
             <h2 className="text-lg font-semibold">
               {form.id ? "Editar contrato" : "Novo contrato"}
             </h2>
 
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              <label className="block text-sm font-medium text-slate-700 sm:col-span-2">
+              <label className="block text-sm font-medium text-fg sm:col-span-2">
                 Nome
                 <input
                   required
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+                  className="mt-1 w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
                 />
               </label>
 
-              <label className="block text-sm font-medium text-slate-700">
+              <label className="block text-sm font-medium text-fg">
                 Cliente
                 <select
                   required
                   value={form.clientId}
                   onChange={(e) => setForm({ ...form, clientId: e.target.value })}
-                  className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+                  className="mt-1 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
                 >
                   <option value="" disabled>
                     Selecione…
@@ -328,14 +329,14 @@ export default function ContractsPage() {
                 </select>
               </label>
 
-              <label className="block text-sm font-medium text-slate-700">
+              <label className="block text-sm font-medium text-fg">
                 Status
                 <select
                   value={form.status}
                   onChange={(e) =>
                     setForm({ ...form, status: e.target.value as ContractStatus })
                   }
-                  className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+                  className="mt-1 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
                 >
                   {CONTRACT_STATUSES.map((s) => (
                     <option key={s.value} value={s.value}>
@@ -345,7 +346,7 @@ export default function ContractsPage() {
                 </select>
               </label>
 
-              <label className="block text-sm font-medium text-slate-700">
+              <label className="block text-sm font-medium text-fg">
                 Início
                 <input
                   type="date"
@@ -354,21 +355,21 @@ export default function ContractsPage() {
                   onChange={(e) =>
                     setForm({ ...form, startDate: e.target.value })
                   }
-                  className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+                  className="mt-1 w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
                 />
               </label>
 
-              <label className="block text-sm font-medium text-slate-700">
+              <label className="block text-sm font-medium text-fg">
                 Fim (opcional)
                 <input
                   type="date"
                   value={form.endDate}
                   onChange={(e) => setForm({ ...form, endDate: e.target.value })}
-                  className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+                  className="mt-1 w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
                 />
               </label>
 
-              <label className="block text-sm font-medium text-slate-700 sm:col-span-2">
+              <label className="block text-sm font-medium text-fg sm:col-span-2">
                 Descrição (opcional)
                 <textarea
                   rows={3}
@@ -376,7 +377,7 @@ export default function ContractsPage() {
                   onChange={(e) =>
                     setForm({ ...form, description: e.target.value })
                   }
-                  className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+                  className="mt-1 w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
                 />
               </label>
             </div>
@@ -388,7 +389,7 @@ export default function ContractsPage() {
                 type="button"
                 onClick={() => setForm(null)}
                 disabled={saving}
-                className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium hover:bg-slate-50 disabled:opacity-60"
+                className="rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-surface-2 disabled:opacity-60"
               >
                 Cancelar
               </button>
@@ -411,11 +412,11 @@ export default function ContractsPage() {
           onClick={() => !deleting && setConfirmDelete(null)}
         >
           <div
-            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-lg"
+            className="w-full max-w-md rounded-2xl bg-surface p-6 shadow-lg"
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-lg font-semibold">Excluir contrato</h2>
-            <p className="mt-2 text-sm text-slate-600">
+            <p className="mt-2 text-sm text-muted">
               Excluir <span className="font-medium">{confirmDelete.name}</span>?
               Esta ação não pode ser desfeita.
             </p>
@@ -426,7 +427,7 @@ export default function ContractsPage() {
               <button
                 onClick={() => setConfirmDelete(null)}
                 disabled={deleting}
-                className="rounded-lg border border-slate-300 px-4 py-1.5 text-sm font-medium hover:bg-slate-50 disabled:opacity-60"
+                className="rounded-lg border border-border px-4 py-1.5 text-sm font-medium hover:bg-surface-2 disabled:opacity-60"
               >
                 Cancelar
               </button>
@@ -448,13 +449,13 @@ export default function ContractsPage() {
 function StatusBadge({ status }: { status?: string }) {
   const styles: Record<string, string> = {
     active: "bg-green-100 text-green-700",
-    inactive: "bg-slate-100 text-slate-600",
+    inactive: "bg-surface-2 text-muted",
     expired: "bg-amber-100 text-amber-700",
   };
   return (
     <span
       className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
-        styles[status ?? ""] ?? "bg-slate-100 text-slate-600"
+        styles[status ?? ""] ?? "bg-surface-2 text-muted"
       }`}
     >
       {contractStatusLabel(status)}

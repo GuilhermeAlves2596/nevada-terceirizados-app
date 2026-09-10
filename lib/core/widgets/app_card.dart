@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../app/theme/app_colors.dart';
+import '../../app/theme/app_palette.dart';
 import '../../app/theme/app_radius.dart';
 import '../../app/theme/app_shadows.dart';
 import '../../app/theme/app_spacing.dart';
@@ -25,7 +25,7 @@ class AppCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: color ?? AppColors.white,
+      color: color ?? context.c.card,
       borderRadius: AppRadius.brLg,
       child: InkWell(
         onTap: onTap,
@@ -33,7 +33,7 @@ class AppCard extends StatelessWidget {
         child: Ink(
           padding: padding,
           decoration: BoxDecoration(
-            color: color ?? AppColors.white,
+            color: color ?? context.c.card,
             borderRadius: AppRadius.brLg,
             border: border,
             boxShadow: AppShadows.card,

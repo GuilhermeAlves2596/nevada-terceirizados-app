@@ -225,4 +225,15 @@ class MockTaskExecutionRepository implements TaskExecutionRepository {
       finishedAt: DateTime.now(),
     ));
   }
+
+  @override
+  Future<List<TaskExecution>> findCompletedForCompany({
+    required String companyId,
+  }) async {
+    return _db.executions
+        .where((e) =>
+            e.companyId == companyId &&
+            e.status == ExecutionStatus.completed)
+        .toList();
+  }
 }

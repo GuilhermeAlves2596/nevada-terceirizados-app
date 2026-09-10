@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/route_paths.dart';
 import '../../../../app/theme/app_colors.dart';
+import '../../../../app/theme/app_palette.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/widgets/app_avatar.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
@@ -57,12 +58,13 @@ class DashboardHeader extends ConsumerWidget {
           itemBuilder: (context) => [
             PopupMenuItem(
               value: 'profile',
-              child: _menuRow(Icons.person_outline, 'Meu perfil'),
+              child: _menuRow(context, Icons.person_outline, 'Meu perfil'),
             ),
             const PopupMenuDivider(),
             PopupMenuItem(
               value: 'logout',
-              child: _menuRow(Icons.logout, 'Sair', color: AppColors.danger),
+              child:
+                  _menuRow(context, Icons.logout, 'Sair', color: AppColors.danger),
             ),
           ],
           child: AppAvatar(initials: user.initials, imageUrl: user.photoUrl),
@@ -71,10 +73,11 @@ class DashboardHeader extends ConsumerWidget {
     );
   }
 
-  Widget _menuRow(IconData icon, String label, {Color? color}) {
+  Widget _menuRow(BuildContext context, IconData icon, String label,
+      {Color? color}) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: color ?? AppColors.textPrimary),
+        Icon(icon, size: 20, color: color ?? context.c.textPrimary),
         const SizedBox(width: 12),
         Text(
           label,

@@ -15,6 +15,13 @@ abstract interface class ChecklistRepository {
     String? description,
     String? clientId,
     String? contractId,
+
+    /// Dono (uid do supervisor) — checklists criados/copiados pelo supervisor.
+    String? ownerId,
+
+    /// Quando é uma cópia de um checklist padrão: id do padrão de origem.
+    String? sourceId,
+    String? clientTypeId,
     required List<ChecklistItemInput> items,
   });
 
