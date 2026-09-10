@@ -91,6 +91,9 @@ class FirebaseChecklistRepository implements ChecklistRepository {
     String? description,
     String? clientId,
     String? contractId,
+    String? ownerId,
+    String? sourceId,
+    String? clientTypeId,
     required List<ChecklistItemInput> items,
   }) async {
     final ref = _col.doc();
@@ -112,6 +115,9 @@ class FirebaseChecklistRepository implements ChecklistRepository {
       description: description?.trim(),
       clientId: clientId,
       contractId: contractId,
+      ownerId: ownerId,
+      sourceId: sourceId,
+      clientTypeId: clientTypeId,
       items: builtItems,
       createdAt: now,
       updatedAt: now,

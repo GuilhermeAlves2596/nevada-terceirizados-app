@@ -15,6 +15,10 @@ abstract class Client with _$Client {
     String? phone,
     String? email,
     String? address,
+
+    /// Tipo de cliente (cadastrado pelo gestor no painel web). Usado para
+    /// vincular os checklists padrão ao cliente pelo seu tipo.
+    String? clientTypeId,
     @Default(true) bool active,
     required DateTime createdAt,
     required DateTime updatedAt,
