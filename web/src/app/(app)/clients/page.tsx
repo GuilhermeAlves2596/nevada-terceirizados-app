@@ -11,6 +11,8 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth-context";
+import { useToast } from "@/lib/toast";
+import { errorMessage } from "@/lib/errors";
 import { Loader } from "@/components/spinner";
 import {
   fetchClients,
@@ -45,8 +47,10 @@ const EMPTY_FORM: FormState = {
 };
 
 export default function ClientsPage() {
-  const { profile } = useAuth();
+  const { profile, subscriptionActive } = useAuth();
   const companyId = profile?.companyId ?? null;
+  const toast = useToast();
+  const subInactive = subscriptionActive === false;
 
   const [clients, setClients] = useState<Client[]>([]);
   const [contracts, setContracts] = useState<Contract[]>([]);
@@ -60,7 +64,6 @@ export default function ClientsPage() {
 
   const [confirmDelete, setConfirmDelete] = useState<Client | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const [actionError, setActionError] = useState<string | null>(null);
 
   const contractCountByClient = useMemo(() => {
     const m = new Map<string, number>();
@@ -165,24 +168,26 @@ export default function ClientsPage() {
           createdAt: serverTimestamp(),
         });
       }
+      const edited = Boolean(form.id);
       setForm(null);
       await load();
-    } catch {
-      setFormError("Falha ao salvar o cliente. Verifique suas permissões.");
+      toast.success(edited ? "Cliente atualizado." : "Cliente cadastrado.");
+    } catch (err) {
+      toast.error(errorMessage(err, { subscriptionInactive: subInactive }));
     } finally {
       setSaving(false);
     }
   }
 
   async function onDelete(c: Client) {
-    setActionError(null);
     setDeleting(true);
     try {
       await deleteDoc(doc(db, "clients", c.id));
       setConfirmDelete(null);
       await load();
-    } catch {
-      setActionError("Falha ao excluir o cliente.");
+      toast.success("Cliente excluído.");
+    } catch (err) {
+      toast.error(errorMessage(err, { subscriptionInactive: subInactive }));
     } finally {
       setDeleting(false);
     }
@@ -286,10 +291,7 @@ export default function ClientsPage() {
                           <EditIcon />
                         </button>
                         <button
-                          onClick={() => {
-                            setActionError(null);
-                            setConfirmDelete(c);
-                          }}
+                          onClick={() => setConfirmDelete(c)}
                           title="Excluir"
                           aria-label="Excluir"
                           className="rounded-lg border border-red-200 p-2 text-red-600 hover:bg-red-50"
@@ -461,9 +463,6 @@ export default function ClientsPage() {
                 Excluir <span className="font-medium">{confirmDelete.name}</span>?
                 Esta ação não pode ser desfeita.
               </p>
-            )}
-            {actionError && (
-              <p className="mt-3 text-sm text-red-600">{actionError}</p>
             )}
             <div className="mt-6 flex justify-end gap-3">
               <button

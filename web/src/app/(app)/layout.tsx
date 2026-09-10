@@ -46,7 +46,7 @@ export default function AppLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, profile, loading, signOut } = useAuth();
+  const { user, profile, subscriptionActive, loading, signOut } = useAuth();
   const { theme, toggle } = useTheme();
   const router = useRouter();
   const pathname = usePathname();
@@ -221,6 +221,12 @@ export default function AppLayout({
         </header>
 
         <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
+          {subscriptionActive === false && (
+            <div className="mb-6 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
+              A assinatura da empresa está <strong>inativa</strong>. Cadastros e
+              alterações ficam bloqueados até a assinatura ser regularizada.
+            </div>
+          )}
           {children}
         </main>
       </div>

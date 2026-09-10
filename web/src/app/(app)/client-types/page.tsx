@@ -11,6 +11,8 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth-context";
+import { useToast } from "@/lib/toast";
+import { errorMessage } from "@/lib/errors";
 import { fetchClients, fetchClientTypes, type Client, type ClientType } from "@/lib/model";
 import { Loader } from "@/components/spinner";
 import { EditIcon, TrashIcon } from "@/components/icons";
@@ -20,8 +22,10 @@ type FormState = { id: string | null; name: string; active: boolean };
 const EMPTY_FORM: FormState = { id: null, name: "", active: true };
 
 export default function ClientTypesPage() {
-  const { profile } = useAuth();
+  const { profile, subscriptionActive } = useAuth();
   const companyId = profile?.companyId ?? null;
+  const toast = useToast();
+  const subInactive = subscriptionActive === false;
 
   const [types, setTypes] = useState<ClientType[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
@@ -34,7 +38,6 @@ export default function ClientTypesPage() {
 
   const [confirmDelete, setConfirmDelete] = useState<ClientType | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const [actionError, setActionError] = useState<string | null>(null);
 
   const usageByType = useMemo(() => {
     const m = new Map<string, number>();
@@ -96,6 +99,7 @@ export default function ClientTypesPage() {
         active: form.active,
         updatedAt: serverTimestamp(),
       };
+      const edited = Boolean(form.id);
       if (form.id) {
         await updateDoc(doc(db, "clientTypes", form.id), base);
       } else {
@@ -104,22 +108,23 @@ export default function ClientTypesPage() {
       }
       setForm(null);
       await load();
-    } catch {
-      setFormError("Falha ao salvar. Verifique suas permissões.");
+      toast.success(edited ? "Tipo atualizado." : "Tipo cadastrado.");
+    } catch (err) {
+      toast.error(errorMessage(err, { subscriptionInactive: subInactive }));
     } finally {
       setSaving(false);
     }
   }
 
   async function onDelete(t: ClientType) {
-    setActionError(null);
     setDeleting(true);
     try {
       await deleteDoc(doc(db, "clientTypes", t.id));
       setConfirmDelete(null);
       await load();
-    } catch {
-      setActionError("Falha ao excluir o tipo.");
+      toast.success("Tipo excluído.");
+    } catch (err) {
+      toast.error(errorMessage(err, { subscriptionInactive: subInactive }));
     } finally {
       setDeleting(false);
     }
@@ -184,10 +189,7 @@ export default function ClientTypesPage() {
                     <EditIcon />
                   </button>
                   <button
-                    onClick={() => {
-                      setActionError(null);
-                      setConfirmDelete(t);
-                    }}
+                    onClick={() => setConfirmDelete(t)}
                     title="Excluir"
                     aria-label="Excluir"
                     className="rounded-lg border border-red-200 p-2 text-red-600 hover:bg-red-50"
@@ -276,9 +278,6 @@ export default function ClientTypesPage() {
               <p className="mt-2 text-sm text-muted">
                 Excluir <span className="font-medium">{confirmDelete.name}</span>?
               </p>
-            )}
-            {actionError && (
-              <p className="mt-3 text-sm text-red-600">{actionError}</p>
             )}
             <div className="mt-6 flex justify-end gap-3">
               <button

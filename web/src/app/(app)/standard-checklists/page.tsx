@@ -11,6 +11,8 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth-context";
+import { useToast } from "@/lib/toast";
+import { errorMessage } from "@/lib/errors";
 import {
   fetchClientTypes,
   fetchStandardChecklists,
@@ -50,8 +52,10 @@ const EMPTY_FORM = (): FormState => ({
 });
 
 export default function StandardChecklistsPage() {
-  const { profile } = useAuth();
+  const { profile, subscriptionActive } = useAuth();
   const companyId = profile?.companyId ?? null;
+  const toast = useToast();
+  const subInactive = subscriptionActive === false;
 
   const [lists, setLists] = useState<StandardChecklist[]>([]);
   const [types, setTypes] = useState<ClientType[]>([]);
@@ -179,10 +183,12 @@ export default function StandardChecklistsPage() {
           createdAt: serverTimestamp(),
         });
       }
+      const edited = Boolean(form.id);
       setForm(null);
       await load();
-    } catch {
-      setFormError("Falha ao salvar. Verifique suas permissões.");
+      toast.success(edited ? "Checklist atualizado." : "Checklist cadastrado.");
+    } catch (err) {
+      toast.error(errorMessage(err, { subscriptionInactive: subInactive }));
     } finally {
       setSaving(false);
     }
@@ -194,8 +200,9 @@ export default function StandardChecklistsPage() {
       await deleteDoc(doc(db, "checklists", c.id));
       setConfirmDelete(null);
       await load();
-    } catch {
-      // mantém o modal; erro silencioso simples
+      toast.success("Checklist excluído.");
+    } catch (err) {
+      toast.error(errorMessage(err, { subscriptionInactive: subInactive }));
     } finally {
       setDeleting(false);
     }

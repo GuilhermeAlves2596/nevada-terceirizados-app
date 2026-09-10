@@ -9,7 +9,7 @@ import '../../../../app/theme/app_palette.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/enums/task_priority.dart';
-import '../../../../core/errors/app_exception.dart';
+import '../../../../core/errors/error_messages.dart';
 import '../../../../core/extensions/date_extensions.dart';
 import '../../../../core/utils/snackbars.dart';
 import '../../../../core/widgets/app_button.dart';
@@ -128,8 +128,8 @@ class _NewTaskPageState extends ConsumerState<NewTaskPage> {
       showSuccessSnack(context,
           _isEditing ? 'Tarefa atualizada!' : 'Tarefa atribuída com sucesso!');
       context.pop();
-    } on AppException catch (e) {
-      if (mounted) showErrorSnack(context, e.message);
+    } catch (e) {
+      if (mounted) showErrorSnack(context, messageForError(e));
     } finally {
       if (mounted) setState(() => _saving = false);
     }

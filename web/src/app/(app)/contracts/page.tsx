@@ -13,6 +13,8 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth-context";
+import { useToast } from "@/lib/toast";
+import { errorMessage } from "@/lib/errors";
 import { Loader } from "@/components/spinner";
 import {
   CONTRACT_STATUSES,
@@ -49,8 +51,10 @@ const EMPTY_FORM: FormState = {
 };
 
 export default function ContractsPage() {
-  const { profile } = useAuth();
+  const { profile, subscriptionActive } = useAuth();
   const companyId = profile?.companyId ?? null;
+  const toast = useToast();
+  const subInactive = subscriptionActive === false;
 
   const [clients, setClients] = useState<Client[]>([]);
   const [contracts, setContracts] = useState<Contract[]>([]);
@@ -63,7 +67,6 @@ export default function ContractsPage() {
 
   const [confirmDelete, setConfirmDelete] = useState<Contract | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const [actionError, setActionError] = useState<string | null>(null);
 
   const clientNames = useMemo(() => {
     const m = new Map<string, string>();
@@ -142,6 +145,7 @@ export default function ContractsPage() {
         endDate: end ? Timestamp.fromDate(end) : null,
         updatedAt: serverTimestamp(),
       };
+      const edited = Boolean(form.id);
       if (form.id) {
         await updateDoc(doc(db, "contracts", form.id), base);
       } else {
@@ -154,22 +158,23 @@ export default function ContractsPage() {
       }
       setForm(null);
       await load();
-    } catch {
-      setFormError("Falha ao salvar o contrato. Verifique suas permissões.");
+      toast.success(edited ? "Contrato atualizado." : "Contrato cadastrado.");
+    } catch (err) {
+      toast.error(errorMessage(err, { subscriptionInactive: subInactive }));
     } finally {
       setSaving(false);
     }
   }
 
   async function onDelete(c: Contract) {
-    setActionError(null);
     setDeleting(true);
     try {
       await deleteDoc(doc(db, "contracts", c.id));
       setConfirmDelete(null);
       await load();
-    } catch {
-      setActionError("Falha ao excluir o contrato.");
+      toast.success("Contrato excluído.");
+    } catch (err) {
+      toast.error(errorMessage(err, { subscriptionInactive: subInactive }));
     } finally {
       setDeleting(false);
     }
@@ -264,10 +269,7 @@ export default function ContractsPage() {
                           <EditIcon />
                         </button>
                         <button
-                          onClick={() => {
-                            setActionError(null);
-                            setConfirmDelete(c);
-                          }}
+                          onClick={() => setConfirmDelete(c)}
                           title="Excluir"
                           aria-label="Excluir"
                           className="rounded-lg border border-red-200 p-2 text-red-600 hover:bg-red-50"
@@ -420,9 +422,6 @@ export default function ContractsPage() {
               Excluir <span className="font-medium">{confirmDelete.name}</span>?
               Esta ação não pode ser desfeita.
             </p>
-            {actionError && (
-              <p className="mt-3 text-sm text-red-600">{actionError}</p>
-            )}
             <div className="mt-6 flex justify-end gap-3">
               <button
                 onClick={() => setConfirmDelete(null)}

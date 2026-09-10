@@ -10,9 +10,11 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { httpsCallable, type FunctionsError } from "firebase/functions";
+import { httpsCallable } from "firebase/functions";
 import { db, functions } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth-context";
+import { useToast } from "@/lib/toast";
+import { errorMessage } from "@/lib/errors";
 import { Loader } from "@/components/spinner";
 import {
   fetchClients,
@@ -45,8 +47,10 @@ const deleteUserAccount = httpsCallable<{ userId: string }, { ok: boolean }>(
 );
 
 export default function SupervisorsPage() {
-  const { profile } = useAuth();
+  const { profile, subscriptionActive } = useAuth();
   const companyId = profile?.companyId ?? null;
+  const toast = useToast();
+  const subInactive = subscriptionActive === false;
 
   const [list, setList] = useState<Supervisor[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,13 +61,11 @@ export default function SupervisorsPage() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
   const [created, setCreated] = useState<CreatedCreds | null>(null);
 
   const [viewing, setViewing] = useState<Supervisor | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Supervisor | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const [actionError, setActionError] = useState<string | null>(null);
 
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [clientNames, setClientNames] = useState<Map<string, string>>(new Map());
@@ -132,12 +134,10 @@ export default function SupervisorsPage() {
     setName("");
     setEmail("");
     setPhone("");
-    setFormError(null);
   }
 
   async function onCreate(e: React.FormEvent) {
     e.preventDefault();
-    setFormError(null);
     setSubmitting(true);
     try {
       const res = await createSupervisor({
@@ -152,32 +152,37 @@ export default function SupervisorsPage() {
       setShowForm(false);
       resetForm();
       await load();
+      toast.success("Supervisor cadastrado.");
     } catch (err) {
-      const fe = err as FunctionsError;
-      setFormError(fe?.message ?? "Falha ao cadastrar o supervisor.");
+      toast.error(
+        errorMessage(err, {
+          subscriptionInactive: subInactive,
+          fallback: "Falha ao cadastrar o supervisor.",
+        }),
+      );
     } finally {
       setSubmitting(false);
     }
   }
 
   async function onDelete(s: Supervisor) {
-    setActionError(null);
     setDeleting(true);
     try {
       await deleteUserAccount({ userId: s.id });
       setConfirmDelete(null);
       setViewing(null);
       await load();
+      toast.success("Supervisor excluído.");
     } catch (err) {
-      const fe = err as FunctionsError;
-      setActionError(fe?.message ?? "Falha ao excluir o supervisor.");
+      toast.error(
+        errorMessage(err, { fallback: "Falha ao excluir o supervisor." }),
+      );
     } finally {
       setDeleting(false);
     }
   }
 
   function openLinking(s: Supervisor) {
-    setActionError(null);
     setSelectedContractIds(new Set(s.contractIds ?? []));
     setViewing(null);
     setLinking(s);
@@ -185,7 +190,6 @@ export default function SupervisorsPage() {
 
   async function onSaveLink() {
     if (!linking) return;
-    setActionError(null);
     setSavingLink(true);
     try {
       const ids = Array.from(selectedContractIds);
@@ -204,8 +208,9 @@ export default function SupervisorsPage() {
       });
       setLinking(null);
       await load();
-    } catch {
-      setActionError("Falha ao salvar o vínculo de contratos.");
+      toast.success("Contratos vinculados.");
+    } catch (err) {
+      toast.error(errorMessage(err, { subscriptionInactive: subInactive }));
     } finally {
       setSavingLink(false);
     }
@@ -222,10 +227,7 @@ export default function SupervisorsPage() {
         </div>
         {companyId && (
           <button
-            onClick={() => {
-              setShowForm((v) => !v);
-              setFormError(null);
-            }}
+            onClick={() => setShowForm((v) => !v)}
             className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark"
           >
             {showForm ? "Cancelar" : "Novo supervisor"}
@@ -313,10 +315,6 @@ export default function SupervisorsPage() {
             </label>
           </div>
 
-          {formError && (
-            <p className="mt-3 text-sm text-red-600">{formError}</p>
-          )}
-
           <div className="mt-5 flex items-center gap-3">
             <button
               type="submit"
@@ -373,10 +371,7 @@ export default function SupervisorsPage() {
                     <LinkIcon />
                   </button>
                   <button
-                    onClick={() => {
-                      setActionError(null);
-                      setConfirmDelete(s);
-                    }}
+                    onClick={() => setConfirmDelete(s)}
                     title="Excluir"
                     aria-label="Excluir"
                     className="rounded-lg border border-red-200 p-2 text-red-600 hover:bg-red-50"
@@ -438,7 +433,6 @@ export default function SupervisorsPage() {
                 onClick={() => {
                   const s = viewing;
                   setViewing(null);
-                  setActionError(null);
                   setConfirmDelete(s);
                 }}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50"
@@ -518,10 +512,6 @@ export default function SupervisorsPage() {
               </ul>
             )}
 
-            {actionError && (
-              <p className="mt-3 text-sm text-red-600">{actionError}</p>
-            )}
-
             <div className="mt-6 flex justify-end gap-3">
               <button
                 onClick={() => setLinking(null)}
@@ -557,7 +547,6 @@ export default function SupervisorsPage() {
               Excluir <span className="font-medium">{confirmDelete.name ?? confirmDelete.email}</span>?
               Isso remove a conta de acesso e o perfil — não pode ser desfeito.
             </p>
-            {actionError && <p className="mt-3 text-sm text-red-600">{actionError}</p>}
             <div className="mt-6 flex justify-end gap-3">
               <button
                 onClick={() => setConfirmDelete(null)}

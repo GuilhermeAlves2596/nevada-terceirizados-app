@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { doc, getDoc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth-context";
+import { useToast } from "@/lib/toast";
+import { errorMessage } from "@/lib/errors";
 import { Loader } from "@/components/spinner";
 
 const ROLE_LABEL: Record<string, string> = {
@@ -15,6 +17,7 @@ const ROLE_LABEL: Record<string, string> = {
 
 export default function ProfilePage() {
   const { user, profile, reloadProfile } = useAuth();
+  const toast = useToast();
   const email = user?.email ?? profile?.email ?? "";
 
   const [name, setName] = useState("");
@@ -23,7 +26,6 @@ export default function ProfilePage() {
   const [companyName, setCompanyName] = useState<string | null>(null);
 
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -59,7 +61,6 @@ export default function ProfilePage() {
       return;
     }
     setError(null);
-    setSaved(false);
     setSaving(true);
     try {
       await updateDoc(doc(db, "users", profile.uid), {
@@ -69,9 +70,9 @@ export default function ProfilePage() {
         updatedAt: serverTimestamp(),
       });
       await reloadProfile();
-      setSaved(true);
-    } catch {
-      setError("Não foi possível salvar. Tente novamente.");
+      toast.success("Perfil atualizado.");
+    } catch (err) {
+      toast.error(errorMessage(err, { fallback: "Não foi possível salvar." }));
     } finally {
       setSaving(false);
     }
@@ -150,9 +151,6 @@ export default function ProfilePage() {
         </p>
 
         {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
-        {saved && !error && (
-          <p className="mt-3 text-sm text-green-600">Perfil atualizado.</p>
-        )}
 
         <div className="mt-6 flex justify-end">
           <button

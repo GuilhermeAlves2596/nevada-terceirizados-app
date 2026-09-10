@@ -10,7 +10,7 @@ import '../../../../app/theme/app_palette.dart';
 import '../../../../app/theme/app_radius.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_typography.dart';
-import '../../../../core/errors/app_exception.dart';
+import '../../../../core/errors/error_messages.dart';
 import '../../../../core/utils/credentials.dart';
 import '../../../../core/utils/dialogs.dart';
 import '../../../../core/utils/snackbars.dart';
@@ -114,8 +114,8 @@ class _EmployeeFormPageState extends ConsumerState<EmployeeFormPage> {
         if (!mounted) return;
         context.pop();
       }
-    } on AppException catch (e) {
-      if (mounted) showErrorSnack(context, e.message);
+    } catch (e) {
+      if (mounted) showErrorSnack(context, messageForError(e));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -155,8 +155,8 @@ class _EmployeeFormPageState extends ConsumerState<EmployeeFormPage> {
           .resetEmployeePassword(widget.existing!.id);
       if (!mounted) return;
       await _showCredentials(widget.existing!, pwd, title: 'Senha redefinida!');
-    } on AppException catch (e) {
-      if (mounted) showErrorSnack(context, e.message);
+    } catch (e) {
+      if (mounted) showErrorSnack(context, messageForError(e));
     } finally {
       if (mounted) setState(() => _saving = false);
     }

@@ -32,6 +32,8 @@ export type Profile = {
 type AuthState = {
   user: User | null;
   profile: Profile | null;
+  /** Assinatura da empresa do usuário ativa? null = sem empresa/indefinido. */
+  subscriptionActive: boolean | null;
   loading: boolean;
   signOut: () => Promise<void>;
   reloadProfile: () => Promise<void>;
@@ -40,6 +42,7 @@ type AuthState = {
 const AuthContext = createContext<AuthState>({
   user: null,
   profile: null,
+  subscriptionActive: null,
   loading: true,
   signOut: async () => {},
   reloadProfile: async () => {},
@@ -49,18 +52,35 @@ const AuthContext = createContext<AuthState>({
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [subscriptionActive, setSubscriptionActive] = useState<boolean | null>(
+    null,
+  );
+
   const [loading, setLoading] = useState(true);
 
   const loadProfile = useCallback(async (uid: string) => {
     try {
       const snap = await getDoc(doc(db, "users", uid));
-      setProfile(
-        snap.exists()
-          ? { uid, ...(snap.data() as Omit<Profile, "uid">) }
-          : null,
-      );
+      const p = snap.exists()
+        ? ({ uid, ...(snap.data() as Omit<Profile, "uid">) } as Profile)
+        : null;
+      setProfile(p);
+
+      // Carrega o status da assinatura da empresa do usuário (se houver).
+      if (p?.companyId) {
+        try {
+          const cSnap = await getDoc(doc(db, "companies", p.companyId));
+          const status = cSnap.data()?.subscriptionStatus as string | undefined;
+          setSubscriptionActive(status === "active" || status === "trial");
+        } catch {
+          setSubscriptionActive(null);
+        }
+      } else {
+        setSubscriptionActive(null);
+      }
     } catch {
       setProfile(null);
+      setSubscriptionActive(null);
     }
   }, []);
 
@@ -71,6 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await loadProfile(u.uid);
       } else {
         setProfile(null);
+        setSubscriptionActive(null);
       }
       setLoading(false);
     });
@@ -88,7 +109,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, profile, loading, signOut, reloadProfile }}
+      value={{
+        user,
+        profile,
+        subscriptionActive,
+        loading,
+        signOut,
+        reloadProfile,
+      }}
     >
       {children}
     </AuthContext.Provider>
